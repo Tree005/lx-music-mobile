@@ -7,7 +7,7 @@ import { setNavActiveId } from '@/core/common'
 import Text from '@/components/common/Text'
 import { PhIcon } from '@/components/common/PhIcon'
 
-// 顶部搜索框：浅灰胶囊 + 左侧放大镜 + 提示文字 + 右侧扫码图标
+// 顶部搜索框：浅灰胶囊 + 左侧放大镜 + 提示文字
 // 整条可点，点击进入搜索页
 export default () => {
   const theme = useTheme()
