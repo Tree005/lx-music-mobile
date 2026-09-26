@@ -14,11 +14,11 @@ import { scaleSizeH } from '@/utils/pixelRatio'
 
 // 导入外部歌单的平台（用参考图里的化名，顺序也照参考图）
 const PLATFORMS = [
-  { id: 'wy', labelKey: 'songlist_platform_wy', descKey: 'songlist_import_desc_link' },
-  { id: 'kw', labelKey: 'songlist_platform_kw', descKey: 'songlist_import_desc_link' },
-  { id: 'tx', labelKey: 'songlist_platform_tx', descKey: 'songlist_import_desc_link' },
-  { id: 'kg', labelKey: 'songlist_platform_kg', descKey: 'songlist_import_desc_link_or_code' },
-  { id: 'mg', labelKey: 'songlist_platform_mg', descKey: 'songlist_import_desc_link' },
+  { id: 'wy', labelKey: 'source_alias_wy', descKey: 'songlist_import_desc_link' },
+  { id: 'kw', labelKey: 'source_alias_kw', descKey: 'songlist_import_desc_link' },
+  { id: 'tx', labelKey: 'source_alias_tx', descKey: 'songlist_import_desc_link' },
+  { id: 'kg', labelKey: 'source_alias_kg', descKey: 'songlist_import_desc_link_or_code' },
+  { id: 'mg', labelKey: 'source_alias_mg', descKey: 'songlist_import_desc_link' },
 ] as const
 
 type Platform = typeof PLATFORMS[number]

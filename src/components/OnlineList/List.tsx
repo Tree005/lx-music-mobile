@@ -2,7 +2,7 @@ import { useMemo, useRef, useState, forwardRef, useImperativeHandle } from 'reac
 import { FlatList, type FlatListProps, RefreshControl, View } from 'react-native'
 
 // import { useMusicList } from '@/store/list/hook'
-import ListItem, { ITEM_HEIGHT } from './ListItem'
+import ListItem, { ITEM_HEIGHT, PIC_ITEM_HEIGHT } from './ListItem'
 import { createStyle, getRowInfo, type RowInfoType } from '@/utils/tools'
 import type { Position } from './ListMenu'
 import type { SelectMode } from './MultipleModeBar'
@@ -31,6 +31,9 @@ export interface ListProps {
   ListHeaderComponent?: FlatListType['ListEmptyComponent']
   checkHomePagerIdle: boolean
   rowType?: RowInfoType
+  /** 歌单详情页样式：行带封面与收藏按钮 */
+  showPic?: boolean
+  onToggleLove?: (musicInfo: LX.Music.MusicInfoOnline, isLoved: boolean) => void
 }
 export interface ListType {
   setList: (list: LX.Music.MusicInfoOnline[], isAppend: boolean, showSource: boolean) => void
@@ -55,6 +58,8 @@ const List = forwardRef<ListType, ListProps>(({
   ListHeaderComponent,
   checkHomePagerIdle,
   rowType,
+  showPic,
+  onToggleLove,
 }, ref) => {
   // const t = useI18n()
   const theme = useTheme()
@@ -192,11 +197,14 @@ const List = forwardRef<ListType, ListProps>(({
       rowInfo={rowInfo.current}
       isShowAlbumName={isShowAlbumName}
       isShowInterval={isShowInterval}
+      showPic={showPic}
+      onToggleLove={onToggleLove}
     />
   )
   const getkey: FlatListType['keyExtractor'] = item => item.id
+  const itemHeight = showPic ? PIC_ITEM_HEIGHT : ITEM_HEIGHT
   const getItemLayout: FlatListType['getItemLayout'] = (data, index) => {
-    return { length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index }
+    return { length: itemHeight, offset: itemHeight * index, index }
   }
   const refreshControl = useMemo(() => (
     <RefreshControl

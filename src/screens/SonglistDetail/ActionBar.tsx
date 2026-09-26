@@ -1,26 +1,42 @@
-import { memo } from 'react'
-import { View } from 'react-native'
-import Button from '@/components/common/Button'
+import { memo, type ComponentType } from 'react'
+import { TouchableOpacity, View } from 'react-native'
+import { DownloadSimple, Heart, PlayCircle, type IconProps } from 'phosphor-react-native'
 
-import { createStyle } from '@/utils/tools'
-import { pop } from '@/navigation'
-import { useTheme } from '@/store/theme/hook'
-import commonState from '@/store/common/state'
 import Text from '@/components/common/Text'
+import { PhIcon } from '@/components/common/PhIcon'
+import { createStyle } from '@/utils/tools'
+import { useTheme } from '@/store/theme/hook'
+import { useI18n } from '@/lang'
 import { handleCollect, handlePlay } from './listAction'
 import songlistState from '@/store/songlist/state'
-import { useI18n } from '@/lang'
+import listState from '@/store/list/state'
 import { useListInfo } from './state'
-// import { NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
 
+const Action = ({ Icon, label, color, weight, onPress }: {
+  Icon: ComponentType<IconProps>
+  label: string
+  color: string
+  weight?: IconProps['weight']
+  onPress?: () => void
+}) => {
+  return (
+    <TouchableOpacity style={styles.action} activeOpacity={0.7} onPress={onPress}>
+      <PhIcon Icon={Icon} size={28} color={color} weight={weight} />
+      <Text style={styles.actionLabel} size={14}>{label}</Text>
+    </TouchableOpacity>
+  )
+}
+
+// 三个操作：收藏歌单（已收藏则显示已收藏）/ 播放全部 / 全部下载
+// 「全部下载」还没实现，先只摆出来
 export default memo(() => {
   const theme = useTheme()
   const t = useI18n()
   const info = useListInfo()
 
-  const back = () => {
-    void pop(commonState.componentIds.songlistDetail!)
-  }
+  // 收藏过这个歌单的话，userList 里会有对应记录
+  const listId = `${info.source}__${info.id}`
+  const isCollected = listState.userList.some(l => l.sourceListId === info.id || l.sourceListId === listId)
 
   const handlePlayAll = () => {
     if (!songlistState.listDetailInfo.info.name) return
@@ -33,16 +49,14 @@ export default memo(() => {
   }
 
   return (
-    <View style={styles.container}>
-      <Button onPress={handleCollection} style={styles.controlBtn}>
-        <Text style={{ ...styles.controlBtnText, color: theme['c-button-font'] }}>{t('collect_songlist')}</Text>
-      </Button>
-      <Button onPress={handlePlayAll} style={styles.controlBtn}>
-        <Text style={{ ...styles.controlBtnText, color: theme['c-button-font'] }}>{t('play_all')}</Text>
-      </Button>
-      <Button onPress={back} style={styles.controlBtn}>
-        <Text style={{ ...styles.controlBtnText, color: theme['c-button-font'] }}>{t('back')}</Text>
-      </Button>
+    <View style={{ ...styles.container, borderBottomColor: theme['c-border-background'] }}>
+      {
+        isCollected
+          ? <Action Icon={Heart} label={t('collected_songlist')} color={theme['c-primary']} weight="fill" onPress={handleCollection} />
+          : <Action Icon={Heart} label={t('collect_songlist')} color={theme['c-font']} onPress={handleCollection} />
+      }
+      <Action Icon={PlayCircle} label={t('play_all')} color={theme['c-primary']} weight="fill" onPress={handlePlayAll} />
+      <Action Icon={DownloadSimple} label={t('download_all')} color={theme['c-primary']} weight="fill" />
     </View>
   )
 })
@@ -53,19 +67,15 @@ const styles = createStyle({
     width: '100%',
     flexGrow: 0,
     flexShrink: 0,
+    paddingTop: 8,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
   },
-  controlBtn: {
-    flexGrow: 1,
-    flexShrink: 1,
-    width: '33%',
-    paddingTop: 12,
-    paddingBottom: 12,
-    paddingLeft: 10,
-    paddingRight: 10,
+  action: {
+    flex: 1,
+    alignItems: 'center',
   },
-  controlBtnText: {
-    fontSize: 13,
-    textAlign: 'center',
+  actionLabel: {
+    marginTop: 8,
   },
 })
-

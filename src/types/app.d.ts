@@ -43,6 +43,11 @@ interface GlobalData {
   settingActiveId: SettingScreenIds
 
   /**
+   * 歌单详情页当前查看的歌单 id（歌单详情是独立子页面，靠它传参）
+   */
+  songlistDetailListId: string
+
+  /**
    * 首页是否正在滚动中，用于防止意外误触播放歌曲
    */
   homePagerIdle: boolean

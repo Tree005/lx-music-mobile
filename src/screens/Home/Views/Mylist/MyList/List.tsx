@@ -13,6 +13,7 @@ import { createStyle } from '@/utils/tools'
 import { LIST_IDS, LIST_SCROLL_POSITION_KEY } from '@/config/constant'
 import { getListPosition, saveListPosition } from '@/utils/data'
 import { getListMusics } from '@/core/list'
+import { useMusicPic } from '@/utils/hooks/useMusicPic'
 import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
 import { BorderWidths } from '@/theme'
 
@@ -27,15 +28,16 @@ const ListItem = memo(({ item, onPress, onRemove }: {
 }) => {
   const t = useI18n()
   const theme = useTheme()
-  // 封面取歌单里第一首歌的图，没有就交给 Image 的占位图
-  const [picUrl, setPicUrl] = useState('')
+  // 封面取歌单里第一首歌的图（没有就交给 Image 的占位图）
+  const [firstMusic, setFirstMusic] = useState<LX.Music.MusicInfo | undefined>()
   const [musicCount, setMusicCount] = useState<number | null>(null)
+  const picUrl = useMusicPic(firstMusic)
 
   useEffect(() => {
     let isUnmounted = false
     void getListMusics(item.id).then(musics => {
       if (isUnmounted) return
-      setPicUrl(musics[0]?.meta.picUrl ?? '')
+      setFirstMusic(musics[0])
       setMusicCount(musics.length)
     })
     return () => {
@@ -44,7 +46,7 @@ const ListItem = memo(({ item, onPress, onRemove }: {
   }, [item.id])
 
   const source = item.source
-    ? t(`songlist_platform_short_${item.source}`)
+    ? t(`source_alias_${item.source}`)
     : t('songlist_source_user')
 
   return (
@@ -71,7 +73,7 @@ const ListItem = memo(({ item, onPress, onRemove }: {
 
 
 export default ({ onOpenList, onRemove }: {
-  /** 点歌单：切到该歌单 */
+  /** 点歌单：打开歌单详情页 */
   onOpenList: (item: LX.List.UserListInfo) => void
   /** 点 ✕：删除歌单 */
   onRemove: (item: LX.List.UserListInfo) => void

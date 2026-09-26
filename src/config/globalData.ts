@@ -59,6 +59,8 @@ global.lx = {
 
   settingActiveId: 'basic',
 
+  songlistDetailListId: '',
+
   homePagerIdle: true,
 
   // syncKeyInfo: initValue as LX.Sync.KeyInfo,

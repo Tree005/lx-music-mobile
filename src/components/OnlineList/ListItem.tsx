@@ -1,17 +1,22 @@
-import { memo, useRef } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import { View, TouchableOpacity } from 'react-native'
 // import Button from '@/components/common/Button'
 import Text from '@/components/common/Text'
 import Badge, { type BadgeType } from '@/components/common/Badge'
-import { DotsThreeVertical } from 'phosphor-react-native'
+import { DotsThreeVertical, Heart } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
+import Image from '@/components/common/Image'
 import { useI18n } from '@/lang'
 import { useTheme } from '@/store/theme/hook'
 import { scaleSizeH } from '@/utils/pixelRatio'
-import { LIST_ITEM_HEIGHT } from '@/config/constant'
+import { LIST_IDS, LIST_ITEM_HEIGHT } from '@/config/constant'
 import { createStyle, type RowInfo } from '@/utils/tools'
+import { useMusicPic } from '@/utils/hooks/useMusicPic'
+import { getListMusics } from '@/core/list'
 
 export const ITEM_HEIGHT = scaleSizeH(LIST_ITEM_HEIGHT)
+/** 歌单详情页的行：带封面，比列表模式高一些 */
+export const PIC_ITEM_HEIGHT = scaleSizeH(68)
 
 const useQualityTag = (musicInfo: LX.Music.MusicInfoOnline) => {
   const t = useI18n()
@@ -30,7 +35,7 @@ const useQualityTag = (musicInfo: LX.Music.MusicInfoOnline) => {
   return info
 }
 
-export default memo(({ item, index, showSource, onPress, onLongPress, onShowMenu, selectedList, rowInfo, isShowAlbumName, isShowInterval }: {
+export default memo(({ item, index, showSource, onPress, onLongPress, onShowMenu, selectedList, rowInfo, isShowAlbumName, isShowInterval, showPic = false, onToggleLove }: {
   item: LX.Music.MusicInfoOnline
   index: number
   showSource?: boolean
@@ -41,6 +46,9 @@ export default memo(({ item, index, showSource, onPress, onLongPress, onShowMenu
   rowInfo: RowInfo
   isShowAlbumName: boolean
   isShowInterval: boolean
+  /** 歌单详情页样式：显示封面与收藏按钮（隐藏序号、音质标签与时长） */
+  showPic?: boolean
+  onToggleLove?: (item: LX.Music.MusicInfoOnline, isLoved: boolean) => void
 }) => {
   const theme = useTheme()
 
@@ -56,29 +64,75 @@ export default memo(({ item, index, showSource, onPress, onLongPress, onShowMenu
     }
   }
   const tagInfo = useQualityTag(item)
+  // 在线歌曲的 meta.picUrl 通常是空的，这里按需去音源接口取（内部有缓存）
+  const picUrl = useMusicPic(showPic ? item : undefined)
+  // null 表示还没查到初始值
+  const [loved, setLoved] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    if (!showPic) return
+    let isUnmounted = false
+    void getListMusics(LIST_IDS.LOVE).then(list => {
+      if (isUnmounted) return
+      setLoved(list.some(m => m.id == item.id))
+    })
+    return () => {
+      isUnmounted = true
+    }
+  }, [showPic, item.id])
+
+  const handleToggleLove = () => {
+    const isLoved = loved ?? false
+    setLoved(!isLoved)
+    onToggleLove?.(item, isLoved)
+  }
 
   const singer = `${item.singer}${isShowAlbumName && item.meta.albumName ? ` · ${item.meta.albumName}` : ''}`
 
   return (
-    <View style={{ ...styles.listItem, width: rowInfo.rowWidth, height: ITEM_HEIGHT, backgroundColor: isSelected ? theme['c-primary-background-hover'] : 'rgba(0,0,0,0)' }}>
+    <View style={{
+      ...styles.listItem,
+      width: rowInfo.rowWidth,
+      height: showPic ? PIC_ITEM_HEIGHT : ITEM_HEIGHT,
+      backgroundColor: isSelected ? theme['c-primary-background-hover'] : 'rgba(0,0,0,0)',
+    }}>
       <TouchableOpacity style={styles.listItemLeft} onPress={() => { onPress(item, index) }} onLongPress={() => { onLongPress(item, index) }}>
-        <Text style={styles.sn} size={13} color={theme['c-300']}>{index + 1}</Text>
+        {
+          showPic
+            ? <Image style={styles.pic} url={picUrl} />
+            : <Text style={styles.sn} size={13} color={theme['c-300']}>{index + 1}</Text>
+        }
         <View style={styles.itemInfo}>
           <Text numberOfLines={1}>{item.name}</Text>
-          <View style={styles.listItemSingle}>
-            { tagInfo.type ? <Badge type={tagInfo.type}>{tagInfo.text}</Badge> : null }
-            { showSource ? <Badge type="tertiary">{item.source}</Badge> : null }
-            <Text style={styles.listItemSingleText} size={11} color={theme['c-500']} numberOfLines={1}>{singer}</Text>
-          </View>
+          {
+            showPic
+              ? <Text style={styles.listItemSingleTextPic} size={13} color={theme['c-500']} numberOfLines={1}>{singer}</Text>
+              : (
+                  <View style={styles.listItemSingle}>
+                    { tagInfo.type ? <Badge type={tagInfo.type}>{tagInfo.text}</Badge> : null }
+                    { showSource ? <Badge type="tertiary">{item.source}</Badge> : null }
+                    <Text style={styles.listItemSingleText} size={11} color={theme['c-500']} numberOfLines={1}>{singer}</Text>
+                  </View>
+                )
+          }
         </View>
         {
-          isShowInterval ? (
+          !showPic && isShowInterval ? (
             <Text size={12} color={theme['c-250']} numberOfLines={1}>{item.interval}</Text>
           ) : null
         }
       </TouchableOpacity>
-     <TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.moreButton}>
-        <PhIcon Icon={DotsThreeVertical} color={theme['c-350']} size={12} />
+      {
+        showPic
+          ? (
+              <TouchableOpacity style={styles.iconButton} onPress={handleToggleLove}>
+                <PhIcon Icon={Heart} size={20} color={loved ? theme['c-primary'] : theme['c-350']} weight={loved ? 'fill' : 'regular'} />
+              </TouchableOpacity>
+            )
+          : null
+      }
+      <TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={showPic ? styles.iconButton : styles.moreButton}>
+        <PhIcon Icon={DotsThreeVertical} color={theme['c-350']} size={showPic ? 20 : 12} />
       </TouchableOpacity>
     </View>
   )
@@ -87,7 +141,7 @@ export default memo(({ item, index, showSource, onPress, onLongPress, onShowMenu
     prevProps.index === nextProps.index &&
     prevProps.isShowAlbumName === nextProps.isShowAlbumName &&
     prevProps.isShowInterval === nextProps.isShowInterval &&
-    nextProps.selectedList.includes(nextProps.item) == prevProps.selectedList.includes(nextProps.item)
+    nextProps.selectedList.includes(nextProps.item) == prevProps.selectedList.includes(prevProps.item)
   )
 })
 
@@ -115,6 +169,20 @@ const styles = createStyle({
     // backgroundColor: 'rgba(0,0,0,0.2)',
     paddingLeft: 3,
     paddingRight: 3,
+  },
+  pic: {
+    width: 44,
+    height: 44,
+    borderRadius: 4,
+    marginLeft: 20,
+    marginRight: 14,
+  },
+  iconButton: {
+    height: '100%',
+    paddingLeft: 12,
+    paddingRight: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   itemInfo: {
     flexGrow: 1,
@@ -147,6 +215,12 @@ const styles = createStyle({
     flexShrink: 1,
     fontWeight: '300',
   },
+  listItemSingleTextPic: {
+    flexGrow: 0,
+    flexShrink: 1,
+    fontWeight: '300',
+    paddingTop: 3,
+  },
   listItemBadge: {
     // fontSize: 10,
     paddingLeft: 5,
@@ -169,4 +243,3 @@ const styles = createStyle({
     justifyContent: 'center',
   },
 })
-

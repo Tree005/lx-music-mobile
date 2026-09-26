@@ -116,7 +116,15 @@ export const BOTTOM_TABS = [
   { id: 'nav_mine', icon: 'account' },
 ] as const
 
-export type NAV_ID_Type = typeof NAV_MENUS[number]['id'] | typeof BOTTOM_TABS[number]['id']
+// 不在横屏侧栏里出现的子页面 nav id（带参数、只从页面里跳进去）
+export const HIDDEN_NAV_IDS = [
+  'nav_songlist_detail',
+] as const
+
+export type NAV_ID_Type =
+  | typeof NAV_MENUS[number]['id']
+  | typeof BOTTOM_TABS[number]['id']
+  | typeof HIDDEN_NAV_IDS[number]
 export type NAV_TAB_Type = typeof BOTTOM_TABS[number]['id']
 
 // 每个导航 id 归属的底部 Tab（用于 TabBar 高亮、返回键回退）
@@ -131,6 +139,7 @@ export const TAB_OF_ID: Record<NAV_ID_Type, NAV_TAB_Type> = {
   nav_download: 'nav_mine',
   nav_history: 'nav_mine',
   nav_setting: 'nav_mine',
+  nav_songlist_detail: 'nav_mine',
 }
 
 export const LXM_FILE_EXT_RXP = ['json', 'lxmc', 'bin']

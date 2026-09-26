@@ -1,39 +1,24 @@
-import { forwardRef, memo, useEffect, useImperativeHandle, useState } from 'react'
-import { View } from 'react-native'
-import { BorderWidths } from '@/theme'
+import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
+import { TouchableOpacity, View } from 'react-native'
+import { CaretLeft } from 'phosphor-react-native'
+
 import ButtonBar from './ActionBar'
-import { useNavigationComponentDidAppear } from '@/navigation'
-import { NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
-import { scaleSizeW } from '@/utils/pixelRatio'
-import { useTheme } from '@/store/theme/hook'
-import Text, { AnimatedText } from '@/components/common/Text'
-import { createStyle } from '@/utils/tools'
+import { PhIcon } from '@/components/common/PhIcon'
+import Text from '@/components/common/Text'
 import Image from '@/components/common/Image'
-import { useListInfo } from './state'
-import { useAnimateOnecNumber } from '@/utils/hooks/useAnimateNumber'
+import { pop, useNavigationComponentDidAppear } from '@/navigation'
+import { NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
+import { useTheme } from '@/store/theme/hook'
 import { useStatusbarHeight } from '@/store/common/hook'
+import commonState from '@/store/common/state'
+import { createStyle } from '@/utils/tools'
+import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
+import { useListInfo } from './state'
 
-const IMAGE_WIDTH = scaleSizeW(70)
+const IMAGE_WIDTH = scaleSizeW(100)
 
-const CountText = memo(({ count }: { count: string }) => {
-  const [animFade] = useAnimateOnecNumber(0, 1, 250, false)
-  const [animTranslateY] = useAnimateOnecNumber(10, 0, 250, false)
-  return (
-    <AnimatedText style={{
-      ...styles.playCount,
-      opacity: animFade,
-      transform: [
-        { translateY: animTranslateY },
-      ],
-    }} numberOfLines={ 1 }>{count}</AnimatedText>
-  )
-}, (prevProps, nextProps) => {
-  return true
-})
-
-const Pic = ({ componentId, playCount, imgUrl }: {
+const Pic = ({ componentId, imgUrl }: {
   componentId: string
-  playCount: string
   imgUrl?: string
 }) => {
   const [pic, setPic] = useState(imgUrl)
@@ -48,11 +33,8 @@ const Pic = ({ componentId, playCount, imgUrl }: {
   })
 
   return (
-    <View style={{ ...styles.listItemImg, width: IMAGE_WIDTH, height: IMAGE_WIDTH }}>
-      <Image nativeID={`${NAV_SHEAR_NATIVE_IDS.songlistDetail_pic}_to_${info.id}`} url={pic} style={{ flex: 1, borderRadius: 4 }} />
-      {
-        playCount && animated ? <CountText count={playCount} /> : null
-      }
+    <View style={{ ...styles.picWrap, width: IMAGE_WIDTH, height: IMAGE_WIDTH }}>
+      <Image nativeID={`${NAV_SHEAR_NATIVE_IDS.songlistDetail_pic}_to_${info.id}`} url={pic} style={styles.pic} />
     </View>
   )
 }
@@ -71,6 +53,7 @@ export interface DetailInfo {
   imgUrl?: string
 }
 
+// 头部：返回箭头 + 封面 + 歌单名 + 歌单描述（对齐参考图，播放量角标已去掉）
 export default forwardRef<HeaderType, HeaderProps>(({ componentId }: { componentId: string }, ref) => {
   const statusBarHeight = useStatusbarHeight()
   const theme = useTheme()
@@ -83,24 +66,25 @@ export default forwardRef<HeaderType, HeaderProps>(({ componentId }: { component
     },
   }), [])
 
+  const back = () => {
+    void pop(commonState.componentIds.songlistDetail!)
+  }
+
   return (
-    <View style={{ ...styles.container, paddingTop: statusBarHeight, borderBottomColor: theme['c-border-background'] }}>
-      <View style={{ flexDirection: 'row', flexGrow: 0, flexShrink: 0, padding: 10 }}>
-        <Pic componentId={componentId} playCount={detailInfo.playCount} imgUrl={detailInfo.imgUrl} />
-        <View style={{ flexDirection: 'column', flexGrow: 1, flexShrink: 1, paddingLeft: 5 }} nativeID={NAV_SHEAR_NATIVE_IDS.songlistDetail_title}>
-          <Text size={14} numberOfLines={ 1 }>{detailInfo.name}</Text>
-          <View style={{ flexGrow: 0, flexShrink: 1 }}>
-            <Text size={13} color={theme['c-font-label']} numberOfLines={ 4 }>{detailInfo.desc}</Text>
-          </View>
+    <View style={{ ...styles.container, paddingTop: statusBarHeight, backgroundColor: theme['c-content-background'] }}>
+      <View style={styles.backRow}>
+        <TouchableOpacity style={styles.backBtn} onPress={back}>
+          <PhIcon Icon={CaretLeft} size={22} color={theme['c-font']} />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.info}>
+        <Pic componentId={componentId} imgUrl={detailInfo.imgUrl} />
+        <View style={styles.infoText} nativeID={NAV_SHEAR_NATIVE_IDS.songlistDetail_title}>
+          <Text style={styles.name} size={22} numberOfLines={2}>{detailInfo.name}</Text>
+          <Text style={styles.desc} size={14} color={theme['c-font-label']} numberOfLines={4}>{detailInfo.desc}</Text>
         </View>
       </View>
       <ButtonBar />
-      {/* <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <View style={{ flexGrow: 0, flexShrink: 1, paddingTop: 5, paddingRight: 5 }}>
-              <Text style={{ fontSize: 12, color: AppColors.normal20 }} numberOfLines={ 1 }>{playCount || '-'}</Text>
-              <Text style={{ fontSize: 12, color: AppColors.normal30 }} numberOfLines={ 1 }>{this.props.selectListInfo.author || this.props.listDetailData.info.author}</Text>
-            </View>
-      </View> */}
     </View>
   )
 })
@@ -109,41 +93,45 @@ const styles = createStyle({
   container: {
     flexDirection: 'column',
     flexWrap: 'nowrap',
-    borderBottomWidth: BorderWidths.normal,
   },
-  listItemImg: {
-    // backgroundColor: '#eee',
+  backRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: scaleSizeH(44),
+    paddingLeft: 8,
+  },
+  backBtn: {
+    width: 44,
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  info: {
+    flexDirection: 'row',
+    paddingLeft: 20,
+    paddingRight: 20,
+    paddingTop: 4,
+    paddingBottom: 20,
+  },
+  picWrap: {
     flexGrow: 0,
     flexShrink: 0,
     overflow: 'hidden',
-    // width: 70,
-    // height: 70,
-    // ...Platform.select({
-    //   ios: {
-    //     shadowColor: '#000',
-    //     shadowOffset: {
-    //       width: 0,
-    //       height: 1,
-    //     },
-    //     shadowOpacity: 0.20,
-    //     shadowRadius: 1.41,
-    //   },
-    //   android: {
-    //     elevation: 2,
-    //   },
-    // }),
   },
-  playCount: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    width: '100%',
-    fontSize: 12,
-    paddingLeft: 3,
-    paddingRight: 3,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    color: '#fff',
-    borderBottomLeftRadius: 4,
-    borderBottomRightRadius: 4,
+  pic: {
+    flex: 1,
+    borderRadius: 8,
+  },
+  infoText: {
+    flexGrow: 1,
+    flexShrink: 1,
+    paddingLeft: 16,
+    justifyContent: 'center',
+  },
+  name: {
+    fontWeight: 'bold',
+  },
+  desc: {
+    marginTop: 10,
   },
 })

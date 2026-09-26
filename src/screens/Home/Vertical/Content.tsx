@@ -39,8 +39,8 @@ const Content = ({ onIsTabChange }: ContentProps) => {
   } else {
     content = (
       <>
-        {/* 搜索页自带「取消」按钮，设置页自带两级返回栏，都不需要通用返回栏 */}
-        {id == 'nav_search' || id == 'nav_setting' ? null : <SubPageHeader id={id} />}
+        {/* 搜索页自带「取消」、设置页自带两级返回栏、歌单详情页自带头部，都不需要通用返回栏 */}
+        {id == 'nav_search' || id == 'nav_setting' || id == 'nav_songlist_detail' ? null : <SubPageHeader id={id} />}
         <SubPage id={id} />
       </>
     )

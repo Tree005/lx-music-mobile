@@ -118,6 +118,8 @@ export default forwardRef<MusicListType, MusicListProps>(({ componentId }, ref) 
     onRefresh={handleRefresh}
     onLoadMore={handleLoadMore}
     ListHeaderComponent={header}
+    // 歌单详情页的行：带封面与收藏按钮（对齐参考图）
+    showPic={true}
     // progressViewOffset={}
    />
 })

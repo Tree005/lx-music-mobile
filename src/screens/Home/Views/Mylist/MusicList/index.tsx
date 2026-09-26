@@ -1,6 +1,9 @@
 import { useCallback, useRef } from 'react'
 
 import listState from '@/store/list/state'
+import settingState from '@/store/setting/state'
+import { addListMusics, removeListMusics } from '@/core/list'
+import { LIST_IDS } from '@/config/constant'
 import ListMenu, { type ListMenuType, type Position, type SelectInfo } from './ListMenu'
 import { clearMusicUrl, handleDislikeMusic, handlePlay, handlePlayLater, handleRemove, handleShare, handleShowMusicSourceDetail, handleUpdateMusicInfo, handleUpdateMusicPosition } from './listAction'
 import List, { type ListType } from './List'
@@ -18,7 +21,13 @@ import MusicToggleModal, { type MusicToggleModalType } from './MusicToggleModal'
 import { scaleSizeH } from '@/utils/pixelRatio'
 
 
-export default ({ embedded }: { embedded?: boolean }) => {
+export default ({ embedded, detailMode = false, canRemoveMusic = false }: {
+  embedded?: boolean
+  /** 歌单详情页样式：行带封面、收藏与移除按钮 */
+  detailMode?: boolean
+  /** 详情页里是否允许把歌从歌单里移除（只有自建歌单可以） */
+  canRemoveMusic?: boolean
+}) => {
   // const t = useI18n()
   const activeListRef = useRef<ActiveListType>(null)
   const listMusicSearchRef = useRef<ListMusicSearchType>(null)
@@ -95,6 +104,14 @@ export default ({ embedded }: { embedded?: boolean }) => {
     layoutHeightRef.current = e.nativeEvent.layout.height
   }, [])
 
+  const handleRemoveMusic = useCallback((musicInfo: LX.Music.MusicInfo) => {
+    void removeListMusics(listState.activeListId, [musicInfo.id])
+  }, [])
+  const handleToggleLove = useCallback((musicInfo: LX.Music.MusicInfo, isLoved: boolean) => {
+    if (isLoved) void removeListMusics(LIST_IDS.LOVE, [musicInfo.id])
+    else void addListMusics(LIST_IDS.LOVE, [musicInfo], settingState.setting['list.addMusicLocationType'])
+  }, [])
+
   const handleAddMusic = useCallback((info: SelectInfo) => {
     if (info.selectedList.length) {
       listMusicMultiAddRef.current?.show({ selectedList: info.selectedList, listId: info.listId, isMove: false })
@@ -154,6 +171,10 @@ export default ({ embedded }: { embedded?: boolean }) => {
           onShowMenu={showMenu}
           onMuiltSelectMode={hancelMultiSelect}
           onSelectAll={isAll => multipleModeBarRef.current?.setIsSelectAll(isAll)}
+          showPic={detailMode}
+          showRemove={detailMode && canRemoveMusic}
+          onRemoveItem={handleRemoveMusic}
+          onToggleLove={handleToggleLove}
         />
         <ListMusicSearch
           ref={listMusicSearchRef}

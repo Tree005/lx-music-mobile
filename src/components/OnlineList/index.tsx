@@ -7,6 +7,9 @@ import ListMusicMultiAdd, { type MusicMultiAddModalType as ListAddMultiType } fr
 import ListMusicAdd, { type MusicAddModalType as ListMusicAddType } from '@/components/MusicAddModal'
 import MultipleModeBar, { type MultipleModeBarType, type SelectMode } from './MultipleModeBar'
 import { clearMusicUrl, handleDislikeMusic, handlePlay, handlePlayLater, handleShare, handleShowMusicSourceDetail } from './listAction'
+import { addListMusics, removeListMusics } from '@/core/list'
+import { LIST_IDS } from '@/config/constant'
+import settingState from '@/store/setting/state'
 import { createStyle } from '@/utils/tools'
 
 export interface OnlineListProps {
@@ -17,6 +20,8 @@ export interface OnlineListProps {
   ListHeaderComponent?: ListProps['ListHeaderComponent']
   checkHomePagerIdle?: boolean
   rowType?: RowInfoType
+  /** 歌单详情页样式：行带封面与收藏按钮 */
+  showPic?: boolean
 }
 export interface OnlineListType {
   setList: (list: LX.Music.MusicInfoOnline[], isAppend?: boolean, showSource?: boolean) => void
@@ -31,6 +36,7 @@ export default forwardRef<OnlineListType, OnlineListProps>(({
   ListHeaderComponent,
   checkHomePagerIdle = false,
   rowType,
+  showPic,
 }, ref) => {
   const listRef = useRef<ListType>(null)
   const multipleModeBarRef = useRef<MultipleModeBarType>(null)
@@ -48,6 +54,12 @@ export default forwardRef<OnlineListType, OnlineListProps>(({
       listRef.current?.setStatus(val)
     },
   }))
+
+  // 详情页行内的收藏按钮：加入 / 移出「我的收藏」
+  const handleToggleLove = (musicInfo: LX.Music.MusicInfoOnline, isLoved: boolean) => {
+    if (isLoved) void removeListMusics(LIST_IDS.LOVE, [musicInfo.id])
+    else void addListMusics(LIST_IDS.LOVE, [musicInfo], settingState.setting['list.addMusicLocationType'])
+  }
 
   const hancelMultiSelect = () => {
     multipleModeBarRef.current?.show()
@@ -93,6 +105,8 @@ export default forwardRef<OnlineListType, OnlineListProps>(({
           ListHeaderComponent={ListHeaderComponent}
           checkHomePagerIdle={checkHomePagerIdle}
           rowType={rowType}
+          showPic={showPic}
+          onToggleLove={handleToggleLove}
         />
         <MultipleModeBar
           ref={multipleModeBarRef}

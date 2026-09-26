@@ -12,6 +12,7 @@ import Text from '@/components/common/Text'
 import { BorderWidths } from '@/theme'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import { setActiveList } from '@/core/list'
+import { setNavActiveId } from '@/core/common'
 
 const TABS = ['music', 'list'] as const
 type TabType = typeof TABS[number]
@@ -36,10 +37,11 @@ export default ({ embedded }: { embedded?: boolean }) => {
   const handleImport = useCallback(() => {
     songlistImportRef.current?.show()
   }, [])
-  // 点歌单：把当前列表切成该歌单，并切到单曲 tab 看它的歌
+  // 点歌单：打开歌单详情子页面（详情里的歌曲列表复用「单曲」那套，所以先把当前列表切成它）
   const handleOpenList = useCallback((item: LX.List.UserListInfo) => {
     setActiveList(item.id)
-    setTab('music')
+    global.lx.songlistDetailListId = item.id
+    setNavActiveId('nav_songlist_detail')
   }, [])
 
   return (

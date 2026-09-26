@@ -7,7 +7,7 @@ import playerState from '@/store/player/state'
 import { getListPosition, getListPrevSelectId, saveListPosition } from '@/utils/data'
 // import { useMusicList } from '@/store/list/hook'
 import { getListMusics, setActiveList } from '@/core/list'
-import ListItem, { ITEM_HEIGHT } from './ListItem'
+import ListItem, { ITEM_HEIGHT, PIC_ITEM_HEIGHT } from './ListItem'
 import { createStyle, getRowInfo } from '@/utils/tools'
 import { usePlayInfo, usePlayMusicInfo } from '@/store/player/hook'
 import type { Position } from './ListMenu'
@@ -21,6 +21,12 @@ export interface ListProps {
   onShowMenu: (musicInfo: LX.Music.MusicInfo, index: number, position: Position) => void
   onMuiltSelectMode: () => void
   onSelectAll: (isAll: boolean) => void
+  /** 歌单详情页样式：带封面、收藏与移除按钮 */
+  showPic?: boolean
+  /** 显示「从歌单移除」按钮（只有自建歌单可以） */
+  showRemove?: boolean
+  onRemoveItem?: (musicInfo: LX.Music.MusicInfo, index: number) => void
+  onToggleLove?: (musicInfo: LX.Music.MusicInfo, isLoved: boolean) => void
 }
 export interface ListType {
   setIsMultiSelectMode: (isMultiSelectMode: boolean) => void
@@ -44,7 +50,7 @@ const usePlayIndex = () => {
 }
 
 
-const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, onSelectAll }, ref) => {
+const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, onSelectAll, showPic, showRemove, onRemoveItem, onToggleLove }, ref) => {
   // const t = useI18n()
   const flatListRef = useRef<FlatList>(null)
   const [currentList, setList] = useState<LX.List.ListMusics>([])
@@ -261,11 +267,16 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
       rowInfo={rowInfo.current}
       isShowAlbumName={isShowAlbumName}
       isShowInterval={isShowInterval}
+      showPic={showPic}
+      showRemove={showRemove}
+      onRemoveItem={onRemoveItem}
+      onToggleLove={onToggleLove}
     />
   )
   const getkey: FlatListType['keyExtractor'] = item => item.id
+  const itemHeight = showPic ? PIC_ITEM_HEIGHT : ITEM_HEIGHT
   const getItemLayout: FlatListType['getItemLayout'] = (data, index) => {
-    return { length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index }
+    return { length: itemHeight, offset: itemHeight * index, index }
   }
 
   return (
