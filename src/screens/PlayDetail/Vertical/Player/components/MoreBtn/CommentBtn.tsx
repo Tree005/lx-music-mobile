@@ -1,3 +1,4 @@
+import { ChatCircle } from 'phosphor-react-native'
 import Btn from './Btn'
 import { navigations } from '@/navigation'
 import commonState from '@/store/common/state'
@@ -8,5 +9,5 @@ export default () => {
     navigations.pushCommentScreen(commonState.componentIds.playDetail!)
   }
 
-  return <Btn icon="comment" onPress={handleShowCommentScreen} />
+  return <Btn icon={ChatCircle} onPress={handleShowCommentScreen} />
 }

@@ -1,6 +1,7 @@
 import { useRef, useImperativeHandle, forwardRef, useCallback } from 'react'
 import { TextInput, View, TouchableOpacity, StyleSheet, type TextInputProps } from 'react-native'
-import { Icon } from '@/components/common/Icon'
+import { XCircle } from 'phosphor-react-native'
+import { PhIcon } from '@/components/common/PhIcon'
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { setSpText } from '@/utils/pixelRatio'
@@ -124,7 +125,7 @@ export default forwardRef<InputType, InputProps>(({ onChangeText, onClearText, c
         {clearBtn
           ? <View style={styles.clearBtnContent}>
               <TouchableOpacity style={styles.clearBtn} onPress={clearText}>
-                <Icon name="remove" color={theme['c-primary-dark-100-alpha-500']} size={11} />
+                <PhIcon Icon={XCircle} color={theme['c-primary-dark-100-alpha-500']} size={11} />
               </TouchableOpacity>
             </View>
           : null

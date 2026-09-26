@@ -2,7 +2,8 @@ import { forwardRef, useImperativeHandle, useMemo, useRef } from 'react'
 import { View, TouchableOpacity } from 'react-native'
 
 import Modal, { type ModalType } from './Modal'
-import { Icon } from '@/components/common/Icon'
+import { X } from 'phosphor-react-native'
+import { PhIcon } from '@/components/common/PhIcon'
 import { useKeyboard } from '@/utils/hooks'
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
@@ -84,7 +85,7 @@ export default forwardRef<PopupType, PopupProps>(({
 
   const closeBtnComponent = useMemo(() => closeBtn
     ? <TouchableOpacity style={styles.closeBtn} onPress={() => modalRef.current?.setVisible(false)}>
-        <Icon name="close" style={{ color: theme['c-font-label'] }} size={12} />
+        <PhIcon Icon={X} color={theme['c-font-label']} size={12} />
       </TouchableOpacity>
     : null, [closeBtn, theme])
 

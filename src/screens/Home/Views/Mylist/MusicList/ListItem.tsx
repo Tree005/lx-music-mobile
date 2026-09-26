@@ -2,7 +2,8 @@ import { memo, useRef } from 'react'
 import { View, TouchableOpacity } from 'react-native'
 import { LIST_ITEM_HEIGHT } from '@/config/constant'
 // import { BorderWidths } from '@/theme'
-import { Icon } from '@/components/common/Icon'
+import { DotsThreeVertical, PlayCircle } from 'phosphor-react-native'
+import { PhIcon } from '@/components/common/PhIcon'
 import { createStyle, type RowInfo } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { useAssertApiSupport } from '@/store/common/hook'
@@ -48,7 +49,7 @@ export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPres
       <TouchableOpacity style={styles.listItemLeft} onPress={() => { onPress(item, index) }} onLongPress={() => { onLongPress(item, index) }}>
         {
           active
-            ? <Icon style={styles.sn} name="play-outline" size={13} color={theme['c-primary-font']} />
+            ? <View style={styles.sn}><PhIcon Icon={PlayCircle} size={13} color={theme['c-primary-font']} /></View>
             : <Text style={styles.sn} size={13} color={theme['c-300']}>{index + 1}</Text>
         }
         <View style={styles.itemInfo}>
@@ -70,7 +71,7 @@ export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPres
       </TouchableOpacity>
       {/* <View style={styles.listItemRight}> */}
       <TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.moreButton}>
-        <Icon name="dots-vertical" style={{ color: theme['c-350'] }} size={12} />
+        <PhIcon Icon={DotsThreeVertical} size={12} color={theme['c-350']} />
       </TouchableOpacity>
       {/* </View> */}
     </View>
@@ -111,6 +112,8 @@ const styles = createStyle({
     // backgroundColor: 'rgba(0,0,0,0.2)',
     paddingLeft: 3,
     paddingRight: 3,
+    // 换成 PhIcon 后外层包 View，用 alignItems 让图标在 38 宽度内居中（与序号文字对齐）
+    alignItems: 'center',
   },
   itemInfo: {
     flexGrow: 1,

@@ -7,7 +7,8 @@ import {
   Pressable,
 } from 'react-native'
 
-import { Icon } from '../Icon'
+import { CheckSquare, MinusSquare, Square } from 'phosphor-react-native'
+import { PhIcon } from '../PhIcon'
 import { createStyle } from '@/utils/tools'
 import { scaleSizeW } from '@/utils/pixelRatio'
 
@@ -56,8 +57,8 @@ const Checkbox = ({
   const indeterminate = status === 'indeterminate'
 
   const icon = indeterminate
-    ? 'minus-box'
-    : 'checkbox-marked'
+    ? MinusSquare
+    : CheckSquare
 
   const { current: scaleAnim } = React.useRef<Animated.Value>(
     new Animated.Value(checked ? 1 : 0),
@@ -91,19 +92,18 @@ const Checkbox = ({
       accessibilityLiveRegion="polite"
       style={{ ...styles.container, padding: PADDING, marginLeft: -PADDING }}
     >
-      <Icon
-        allowFontScaling={false}
-        name="checkbox-blank-outline"
+      <PhIcon
+        Icon={Square}
         size={24 * size}
         color={tintColors.false}
       />
       <View style={[StyleSheet.absoluteFill, styles.fillContainer]}>
         <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-          <Icon
-            allowFontScaling={false}
-            name={icon}
+          <PhIcon
+            Icon={icon}
             size={24 * size}
             color={tintColors.true}
+            weight="fill"
           />
         </Animated.View>
       </View>

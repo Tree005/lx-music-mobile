@@ -1,4 +1,5 @@
 import { memo, useMemo } from 'react'
+import { ListDashes, Prohibit, Repeat, RepeatOnce, Shuffle } from 'phosphor-react-native'
 import { toast } from '@/utils/tools'
 import { MUSIC_TOGGLE_MODE_LIST, MUSIC_TOGGLE_MODE } from '@/config/constant'
 import { useSettingValue } from '@/store/setting/hook'
@@ -41,19 +42,19 @@ export default memo(() => {
     let playModeIcon = null
     switch (togglePlayMethod) {
       case MUSIC_TOGGLE_MODE.listLoop:
-        playModeIcon = 'list-loop'
+        playModeIcon = Repeat
         break
       case MUSIC_TOGGLE_MODE.random:
-        playModeIcon = 'list-random'
+        playModeIcon = Shuffle
         break
       case MUSIC_TOGGLE_MODE.list:
-        playModeIcon = 'list-order'
+        playModeIcon = ListDashes
         break
       case MUSIC_TOGGLE_MODE.singleLoop:
-        playModeIcon = 'single-loop'
+        playModeIcon = RepeatOnce
         break
       default:
-        playModeIcon = 'single'
+        playModeIcon = Prohibit
         break
     }
     return playModeIcon

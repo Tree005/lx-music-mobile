@@ -1,10 +1,12 @@
 import { useCallback, useRef } from 'react'
+import { View } from 'react-native'
 import Text from '@/components/common/Text'
 import { useTheme } from '@/store/theme/hook'
 import Button, { type BtnType } from '@/components/common/Button'
 import { createStyle } from '@/utils/tools'
 import { type BoardItem } from '@/store/leaderboard/state'
-import { Icon } from '@/components/common/Icon'
+import { CaretRight } from 'phosphor-react-native'
+import { PhIcon } from '@/components/common/PhIcon'
 
 // index={index}
 // longPressIndex={longPressIndex}
@@ -44,7 +46,7 @@ export default ({ item, activeId, index, longPressIndex, onBoundChange, onShowMe
     >
       {
         active
-          ? <Icon style={styles.listActiveIcon} name="chevron-right" size={12} color={theme['c-primary-font']} />
+          ? <View style={styles.listActiveIcon}><PhIcon Icon={CaretRight} size={12} color={theme['c-primary-font']} /></View>
           : null
       }
       <Text style={styles.listName} size={14} textBreakStrategy="simple" color={active ? theme['c-primary-font-active'] : theme['c-font']} numberOfLines={1}>{item.name}</Text>

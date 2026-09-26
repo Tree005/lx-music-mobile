@@ -1,7 +1,8 @@
 import { memo, useState, useMemo, useCallback } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { BorderWidths } from '@/theme'
-import { Icon } from '@/components/common/Icon'
+import { ThumbsUp } from 'phosphor-react-native'
+import { PhIcon } from '@/components/common/PhIcon'
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { type Comment } from '../utils'
@@ -51,7 +52,7 @@ const CommentFloor = memo(({ comment, isLast }: {
     if (comment.likedCount == null) return null
     return (
       <View style={styles.like}>
-        <Icon name="thumbs-up" style={{ color: theme['c-450'] }} size={12} />
+        <PhIcon Icon={ThumbsUp} size={12} color={theme['c-450']} />
         <Text style={styles.likedCount} size={12} color={ theme['c-450'] }>{comment.likedCount}</Text>
       </View>
     )

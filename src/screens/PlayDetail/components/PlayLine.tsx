@@ -5,8 +5,9 @@ import { createStyle } from '@/utils/tools'
 import { type Lines } from 'lrc-file-parser'
 import { useTheme } from '@/store/theme/hook'
 import { BorderWidths } from '@/theme'
+import { Play } from 'phosphor-react-native'
+import { PhIcon } from '@/components/common/PhIcon'
 import { formatPlayTime2 } from '@/utils'
-import { Icon } from '@/components/common/Icon'
 
 
 export interface PlayLineType {
@@ -86,7 +87,7 @@ export default forwardRef<PlayLineType, PlayLineProps>(({ onPlayLine }, ref) => 
       <View style={styles.lineContent}>
         <View style={{ ...styles.line, borderBottomColor: theme['c-primary-alpha-700'] }} />
         <TouchableOpacity style={styles.button} onPress={handlePlayLine}>
-          <Icon name="play" color={theme['c-button-font']} size={18} />
+          <PhIcon Icon={Play} color={theme['c-button-font']} size={18} weight="fill" />
         </TouchableOpacity>
       </View>
     </Animated.View>

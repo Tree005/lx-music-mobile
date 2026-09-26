@@ -10,7 +10,8 @@ import { BG_IMAGES, getAllThemes, type LocalTheme } from '@/theme/themes'
 import Text from '@/components/common/Text'
 import { createStyle } from '@/utils/tools'
 import { scaleSizeH } from '@/utils/pixelRatio'
-import { Icon } from '@/components/common/Icon'
+import { CaretRight } from 'phosphor-react-native'
+import { PhIcon } from '@/components/common/PhIcon'
 import ImageBackground from '@/components/common/ImageBackground'
 
 const useActive = (id: string) => {
@@ -60,7 +61,7 @@ const MoreBtn = ({ showAll, setShowAll }: {
       : (
           <TouchableOpacity style={styles.moreBtn} activeOpacity={0.5} onPress={() => { setShowAll(!showAll) }}>
             <Text size={14} color={theme['c-primary-font']} numberOfLines={1}>{t('setting_basic_theme_more_btn_show')}</Text>
-            <Icon name="chevron-right" size={12} color={theme['c-primary-font']} />
+            <PhIcon Icon={CaretRight} size={12} color={theme['c-primary-font']} />
           </TouchableOpacity>
         )
 

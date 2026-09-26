@@ -3,7 +3,8 @@ import { View, TouchableOpacity } from 'react-native'
 // import Button from '@/components/common/Button'
 import Text from '@/components/common/Text'
 import Badge, { type BadgeType } from '@/components/common/Badge'
-import { Icon } from '@/components/common/Icon'
+import { DotsThreeVertical } from 'phosphor-react-native'
+import { PhIcon } from '@/components/common/PhIcon'
 import { useI18n } from '@/lang'
 import { useTheme } from '@/store/theme/hook'
 import { scaleSizeH } from '@/utils/pixelRatio'
@@ -77,7 +78,7 @@ export default memo(({ item, index, showSource, onPress, onLongPress, onShowMenu
         }
       </TouchableOpacity>
      <TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.moreButton}>
-        <Icon name="dots-vertical" style={{ color: theme['c-350'] }} size={12} />
+        <PhIcon Icon={DotsThreeVertical} color={theme['c-350']} size={12} />
       </TouchableOpacity>
     </View>
   )

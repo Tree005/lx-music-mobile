@@ -6,7 +6,8 @@ import { createStyle, tipDialog } from '@/utils/tools'
 import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
 import { useTheme } from '@/store/theme/hook'
 import Text from '../Text'
-import { Icon } from '../Icon'
+import { Question } from 'phosphor-react-native'
+import { PhIcon } from '../PhIcon'
 
 export interface CheckBoxProps {
   check: boolean
@@ -62,7 +63,7 @@ export default ({ check, label, children, onChange, helpTitle, helpDesc, disable
     }
     return (helpTitle ?? helpDesc) ? (
       <TouchableOpacity style={styles.helpBtn} onPress={handleShowHelp}>
-        <Icon size={15 * size} name="help" />
+        <PhIcon Icon={Question} size={15 * size} />
       </TouchableOpacity>
     ) : null
   }, [helpTitle, helpDesc, size])

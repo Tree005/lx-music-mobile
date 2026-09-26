@@ -1,5 +1,6 @@
 import { TouchableOpacity } from 'react-native'
-import { MciIcon } from '@/components/common/MciIcon'
+import { Play, Pause, SkipBack, SkipForward } from 'phosphor-react-native'
+import { PhIcon } from '@/components/common/PhIcon'
 import { useIsPlay } from '@/store/player/hook'
 import { useTheme } from '@/store/theme/hook'
 import { playNext, playPrev, togglePlay } from '@/core/player/player'
@@ -19,7 +20,7 @@ const PlayPrevBtn = () => {
 
   return (
     <TouchableOpacity style={styles.cotrolBtn} activeOpacity={0.5} onPress={handlePlayPrev}>
-      <MciIcon name="skip-previous" color={theme['c-button-font']} size={BTN_SIZE} />
+      <PhIcon Icon={SkipBack} weight="fill" color={theme['c-button-font']} size={BTN_SIZE} />
     </TouchableOpacity>
   )
 }
@@ -29,7 +30,7 @@ const PlayNextBtn = () => {
 
   return (
     <TouchableOpacity style={styles.cotrolBtn} activeOpacity={0.5} onPress={handlePlayNext}>
-      <MciIcon name="skip-next" color={theme['c-button-font']} size={BTN_SIZE} />
+      <PhIcon Icon={SkipForward} weight="fill" color={theme['c-button-font']} size={BTN_SIZE} />
     </TouchableOpacity>
   )
 }
@@ -40,7 +41,7 @@ const TogglePlayBtn = () => {
 
   return (
     <TouchableOpacity style={styles.cotrolBtn} activeOpacity={0.5} onPress={togglePlay}>
-      <MciIcon name={isPlay ? 'pause' : 'play'} color={theme['c-button-font']} size={BTN_SIZE} />
+      <PhIcon Icon={isPlay ? Pause : Play} weight="fill" color={theme['c-button-font']} size={BTN_SIZE} />
     </TouchableOpacity>
   )
 }

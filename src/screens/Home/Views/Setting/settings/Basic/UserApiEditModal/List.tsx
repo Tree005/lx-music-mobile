@@ -9,7 +9,8 @@ import { useSettingValue } from '@/store/setting/hook'
 import { removeUserApi, setUserApiAllowShowUpdateAlert } from '@/core/userApi'
 import { BorderRadius } from '@/theme'
 import CheckBox from '@/components/common/CheckBox'
-import { Icon } from '@/components/common/Icon'
+import { X } from 'phosphor-react-native'
+import { PhIcon } from '@/components/common/PhIcon'
 import settingState from '@/store/setting/state'
 import apiSourceInfo from '@/utils/musicSdk/api-source-info'
 import { setApiSource } from '@/core/apiSource'
@@ -57,7 +58,7 @@ const ListItem = ({ item, activeId, onRemove, onChangeAllowShowUpdateAlert }: {
       </View>
       <View style={styles.listItemRight}>
         <TouchableOpacity style={styles.btn} onPress={handleRemove}>
-          <Icon name="close" color={theme['c-button-font']} />
+          <PhIcon Icon={X} size={15} color={theme['c-button-font']} />
         </TouchableOpacity>
       </View>
     </View>

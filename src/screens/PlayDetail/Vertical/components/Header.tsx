@@ -2,6 +2,7 @@ import { memo, useRef } from 'react'
 
 import { View, StyleSheet } from 'react-native'
 
+import { CaretLeft, SlidersHorizontal } from 'phosphor-react-native'
 import { pop } from '@/navigation'
 import StatusBar from '@/components/common/StatusBar'
 import { useTheme } from '@/store/theme/hook'
@@ -46,10 +47,10 @@ export default memo(() => {
     <View style={{ height: HEADER_HEIGHT + statusBarHeight, paddingTop: statusBarHeight }} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_header}>
       <StatusBar />
       <View style={styles.container}>
-        <Btn icon="chevron-left" onPress={back} />
+        <Btn icon={CaretLeft} onPress={back} />
         <Title />
         <TimeoutExitBtn />
-        <Btn icon="slider" onPress={showSetting} />
+        <Btn icon={SlidersHorizontal} onPress={showSetting} />
       </View>
       <SettingPopup ref={popupRef} direction="vertical" />
     </View>

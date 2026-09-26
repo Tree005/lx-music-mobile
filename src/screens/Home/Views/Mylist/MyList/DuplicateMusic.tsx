@@ -7,7 +7,8 @@ import { scaleSizeH } from '@/utils/pixelRatio'
 import { useTheme } from '@/store/theme/hook'
 import { type DuplicateMusicItem, filterDuplicateMusic } from './utils'
 import { getListMusics, removeListMusics } from '@/core/list'
-import { Icon } from '@/components/common/Icon'
+import { PlayCircle, XCircle } from 'phosphor-react-native'
+import { PhIcon } from '@/components/common/PhIcon'
 import { useUnmounted } from '@/utils/hooks'
 import { playList } from '@/core/player/player'
 import { useI18n } from '@/lang'
@@ -73,10 +74,10 @@ const ListItem = memo(({ info, index, onRemove, onPlay, selectedList, onPress }:
       </View>
       <View style={styles.listItemBtns}>
         <Button style={styles.listItemBtn} onPress={() => { onPlay(info) }}>
-          <Icon name="play-outline" style={{ color: theme['c-button-font'] }} size={18} />
+          <PhIcon Icon={PlayCircle} size={18} color={theme['c-button-font']} />
         </Button>
         <Button style={styles.listItemBtn} onPress={() => { onRemove(index) }}>
-          <Icon name="remove" style={{ color: theme['c-button-font'] }} size={18} />
+          <PhIcon Icon={XCircle} size={18} color={theme['c-button-font']} />
         </Button>
       </View>
     </View>

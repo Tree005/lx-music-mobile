@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { PlusCircle } from 'phosphor-react-native'
 import MusicAddModal, { type MusicAddModalType } from '@/components/MusicAddModal'
 import playerState from '@/store/player/state'
 import Btn from './Btn'
@@ -19,7 +20,7 @@ export default () => {
 
   return (
     <>
-      <Btn icon="add-music" onPress={handleShowMusicAddModal} />
+      <Btn icon={PlusCircle} onPress={handleShowMusicAddModal} />
       <MusicAddModal ref={musicAddModalRef} />
     </>
   )

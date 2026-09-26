@@ -1,7 +1,8 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react'
-import { TouchableOpacity } from 'react-native'
+import { TouchableOpacity, View } from 'react-native'
 
-import { Icon } from '@/components/common/Icon'
+import { CaretRight, MagnifyingGlass } from 'phosphor-react-native'
+import { PhIcon } from '@/components/common/PhIcon'
 import { BorderWidths } from '@/theme'
 import { useTheme } from '@/store/theme/hook'
 import { useActiveListId, useListFetching } from '@/store/list/hook'
@@ -60,11 +61,11 @@ export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, o
 
   return (
     <TouchableOpacity onPress={showList} onLongPress={onScrollToTop} style={{ ...styles.currentList, opacity: visibleBar ? 1 : 0, borderBottomColor: theme['c-border-background'] }}>
-      <Icon style={styles.currentListIcon} color={theme['c-button-font']} name="chevron-right" size={12} />
+      <View style={styles.currentListIcon}><PhIcon Icon={CaretRight} size={12} color={theme['c-button-font']} /></View>
       { fetching ? <Loading color={theme['c-button-font']} style={styles.loading} /> : null }
       <Text style={styles.currentListText} numberOfLines={1} color={theme['c-button-font']}>{currentListName}</Text>
       <TouchableOpacity style={styles.currentListBtns} onPress={onShowSearchBar}>
-        <Icon color={theme['c-button-font']} name="search-2" />
+        <PhIcon Icon={MagnifyingGlass} size={15} color={theme['c-button-font']} />
       </TouchableOpacity>
     </TouchableOpacity>
   )

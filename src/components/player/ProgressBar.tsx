@@ -4,7 +4,9 @@ import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { scaleSizeW, scaleSizeH } from '@/utils/pixelRatio'
 import { useDrag } from '@/utils/hooks'
-import { Icon } from '@/components/common/Icon'
+// 注意：Circle 在 phosphor-react-native 中只以 CircleIcon 导出
+import { CircleIcon } from 'phosphor-react-native'
+import { PhIcon } from '@/components/common/PhIcon'
 // import { AppColors } from '@/theme'
 
 
@@ -102,12 +104,18 @@ const Progress = ({ progress, duration, buffered }: {
                 <>
                   <View style={{ ...styles.progressBar, backgroundColor: theme['c-primary-light-100-alpha-700'], width: progressStr, position: 'absolute', left: 0, top: 0 }} />
                   <View style={{ ...styles.progressBar, backgroundColor: theme['c-primary-light-100-alpha-600'], width: `${dragProgress * 100}%`, position: 'absolute', left: 0, top: 0 }}>
-                    <Icon name="full_stop" color={theme['c-primary-light-100']} rawSize={progressDotSize} style={progressDotStyle} />
+                    {/* PhIcon 不支持 style，用 View 承载原本的绝对定位 */}
+                    <View style={progressDotStyle}>
+                      <PhIcon Icon={CircleIcon} color={theme['c-primary-light-100']} size={progressDotSize} weight="fill" />
+                    </View>
                   </View>
                 </>
               ) : (
                 <View style={{ ...styles.progressBar, backgroundColor: theme['c-primary-light-100-alpha-400'], width: progressStr, position: 'absolute', left: 0, top: 0 }}>
-                  <Icon name="full_stop" color={theme['c-primary-light-100']} rawSize={progressDotSize} style={progressDotStyle} />
+                  {/* PhIcon 不支持 style，用 View 承载原本的绝对定位 */}
+                  <View style={progressDotStyle}>
+                    <PhIcon Icon={CircleIcon} color={theme['c-primary-light-100']} size={progressDotSize} weight="fill" />
+                  </View>
                 </View>
               )
         }

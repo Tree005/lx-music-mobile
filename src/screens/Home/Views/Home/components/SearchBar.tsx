@@ -1,5 +1,5 @@
 import { TouchableOpacity } from 'react-native'
-import { MagnifyingGlass, QrCode } from 'phosphor-react-native'
+import { MagnifyingGlass } from 'phosphor-react-native'
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
@@ -25,7 +25,6 @@ export default () => {
     >
       <PhIcon Icon={MagnifyingGlass} size={18} color={theme['c-font-label']} />
       <Text style={styles.tip} size={14} color={theme['c-font-label']} numberOfLines={1}>{t('home_search_tip')}</Text>
-      <PhIcon Icon={QrCode} size={18} color={theme['c-font-label']} />
     </TouchableOpacity>
   )
 }

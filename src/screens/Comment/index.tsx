@@ -2,7 +2,8 @@ import { memo, useMemo, useEffect, useRef, useState, useCallback } from 'react'
 import { View, TouchableOpacity } from 'react-native'
 import PagerView, { type PagerViewOnPageSelectedEvent } from 'react-native-pager-view'
 import Header from './components/Header'
-import { Icon } from '@/components/common/Icon'
+import { ArrowsClockwise } from 'phosphor-react-native'
+import { PhIcon } from '@/components/common/PhIcon'
 import CommentHot from './CommentHot'
 import CommentNew from './CommentNew'
 import { createStyle, toast } from '@/utils/tools'
@@ -136,7 +137,7 @@ export default memo(({ componentId }: {
           </View>
           <View>
             <TouchableOpacity onPress={refreshComment} style={{ ...styles.btn, width: BAR_HEIGHT }}>
-              <Icon name="available_updates" size={20} color={theme['c-600']} />
+              <PhIcon Icon={ArrowsClockwise} size={20} color={theme['c-600']} />
             </TouchableOpacity>
           </View>
         </View>

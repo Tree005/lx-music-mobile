@@ -1,5 +1,6 @@
 import { View, TouchableOpacity } from 'react-native'
-import { Icon } from '@/components/common/Icon'
+import { CaretLeft } from 'phosphor-react-native'
+import { PhIcon } from '@/components/common/PhIcon'
 import Text from '@/components/common/Text'
 import { useI18n } from '@/lang'
 import { useTheme } from '@/store/theme/hook'
@@ -33,7 +34,7 @@ const SubPageHeader = ({ id }: { id: NAV_ID_Type }) => {
     }}>
       {/* 左侧返回按钮 */}
       <TouchableOpacity style={styles.btn} onPress={back}>
-        <Icon name="chevron-left" size={20} color={theme['c-font']} />
+        <PhIcon Icon={CaretLeft} size={20} color={theme['c-font']} />
       </TouchableOpacity>
       {/* 居中标题 */}
       <Text style={styles.title} size={18} numberOfLines={1}>{t(id)}</Text>

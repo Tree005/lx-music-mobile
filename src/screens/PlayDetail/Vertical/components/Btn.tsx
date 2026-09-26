@@ -1,5 +1,7 @@
 import { TouchableOpacity } from 'react-native'
-import { Icon } from '@/components/common/Icon'
+import { type ComponentType } from 'react'
+import { type IconProps } from 'phosphor-react-native'
+import { PhIcon } from '@/components/common/PhIcon'
 import { createStyle } from '@/utils/tools'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import { HEADER_HEIGHT as _HEADER_HEIGHT } from '@/config/constant'
@@ -7,13 +9,14 @@ import { HEADER_HEIGHT as _HEADER_HEIGHT } from '@/config/constant'
 export const HEADER_HEIGHT = scaleSizeH(_HEADER_HEIGHT)
 
 export default ({ icon, color, onPress }: {
-  icon: string
+  /** Phosphor 图标组件 */
+  icon: ComponentType<IconProps>
   color?: string
   onPress: () => void
 }) => {
   return (
     <TouchableOpacity onPress={onPress} style={{ ...styles.button, width: HEADER_HEIGHT }}>
-      <Icon name={icon} color={color} size={18} />
+      <PhIcon Icon={icon} color={color} size={18} />
     </TouchableOpacity>
   )
 }

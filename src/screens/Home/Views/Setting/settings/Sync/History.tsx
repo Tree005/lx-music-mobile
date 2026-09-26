@@ -1,7 +1,8 @@
 import { memo, useRef, useState, useCallback, useImperativeHandle, forwardRef } from 'react'
 import { View, TouchableOpacity, ScrollView } from 'react-native'
 // import { gzip, ungzip } from 'pako'
-import { Icon } from '@/components/common/Icon'
+import { XCircle } from 'phosphor-react-native'
+import { PhIcon } from '@/components/common/PhIcon'
 
 import Button from '../../components/Button'
 import { getSyncHostHistory, removeSyncHostHistory, setSyncHost } from '@/plugins/sync/data'
@@ -43,7 +44,7 @@ const HistoryListItem = ({ item, index, onRemove, onSelect }: {
         <Text numberOfLines={1}>{item}</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={handleRemove} style={styles.listBtn}>
-        <Icon name="remove" color={theme['c-font-label']} size={12} />
+        <PhIcon Icon={XCircle} size={12} color={theme['c-font-label']} />
       </TouchableOpacity>
     </View>
   )

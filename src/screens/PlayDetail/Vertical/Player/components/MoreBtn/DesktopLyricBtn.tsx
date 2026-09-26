@@ -1,4 +1,5 @@
 import Btn from './Btn'
+import { TextAa } from 'phosphor-react-native'
 import { useSettingValue } from '@/store/setting/hook'
 import DesktopLyricEnable, { type DesktopLyricEnableType } from '@/components/DesktopLyricEnable'
 import { memo, useRef } from 'react'
@@ -22,7 +23,7 @@ export default memo(() => {
 
   return (
     <>
-      <Btn icon={enabledLyric ? 'lyric-on' : 'lyric-off'} onPress={update} onLongPress={updateLock} />
+      <Btn icon={enabledLyric ? TextAa : TextAa} onPress={update} onLongPress={updateLock} />
       <DesktopLyricEnable ref={desktopLyricEnableRef} />
     </>
   )

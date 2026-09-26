@@ -10,7 +10,8 @@ import { getOpenStoragePath, saveOpenStoragePath } from '@/utils/data'
 import Button from '@/components/common/Button'
 import ButtonPrimary from '@/components/common/ButtonPrimary'
 import { useUnmounted } from '@/utils/hooks'
-import { Icon } from '@/components/common/Icon'
+import { X } from 'phosphor-react-native'
+import { PhIcon } from '@/components/common/PhIcon'
 import type { PathItem } from './ListItem'
 const filterFileName = /[\\:*?#"<>|]/
 
@@ -152,7 +153,7 @@ export default forwardRef<OpenDirModalType, { onOpenDir: (dir: string) => Promis
                     <Text size={12}>{path}</Text>
                   </Button>
                   <Button style={styles.removeBtn} onPress={() => { removeSelectStoragePath(path) }}>
-                    <Icon color={theme['c-font-label']} name="close" size={12} />
+                    <PhIcon Icon={X} color={theme['c-font-label']} size={12} />
                   </Button>
                 </View>
               )

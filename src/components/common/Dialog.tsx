@@ -2,7 +2,8 @@ import { useImperativeHandle, forwardRef, useMemo, useRef } from 'react'
 import { View, TouchableHighlight } from 'react-native'
 
 import Modal, { type ModalType } from './Modal'
-import { Icon } from '@/components/common/Icon'
+import { X } from 'phosphor-react-native'
+import { PhIcon } from '@/components/common/PhIcon'
 import { useKeyboard } from '@/utils/hooks'
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
@@ -92,7 +93,7 @@ export default forwardRef<DialogType, DialogProps>(({
   const closeBtnComponent = useMemo(() => {
     return closeBtn
       ? <TouchableHighlight style={{ ...styles.closeBtn, width: scaleSizeH(HEADER_HEIGHT) }} underlayColor={theme['c-primary-dark-200-alpha-600']} onPress={() => modalRef.current?.setVisible(false)}>
-          <Icon name="close" color={theme['c-primary-dark-500-alpha-500']} size={10} />
+          <PhIcon Icon={X} color={theme['c-primary-dark-500-alpha-500']} size={10} />
         </TouchableHighlight>
       : null
   }, [closeBtn, theme])
