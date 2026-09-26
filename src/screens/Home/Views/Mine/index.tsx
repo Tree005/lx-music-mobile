@@ -64,7 +64,7 @@ export default () => {
         }
       </View>
       <View style={{ ...styles.divider, backgroundColor: theme['c-150'] }} />
-      <Text style={styles.sectionTitle} size={17}>{t('list_name_love')}</Text>
+      {/* 「我的收藏」标题与新建/导入入口由 Mylist 自己渲染 */}
       <Mylist embedded />
     </View>
   )
@@ -97,12 +97,5 @@ const styles = createStyle({
   // 宫格与收藏之间的分隔灰条
   divider: {
     height: scaleSizeH(10),
-  },
-  sectionTitle: {
-    fontWeight: 'bold',
-    paddingLeft: 20,
-    paddingRight: 20,
-    paddingTop: 14,
-    paddingBottom: 8,
   },
 })

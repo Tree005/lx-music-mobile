@@ -1,11 +1,14 @@
 import { useRef, useImperativeHandle, forwardRef, useState } from 'react'
-import ConfirmAlert, { type ConfirmAlertType } from '@/components/common/ConfirmAlert'
+import { TextInput, View } from 'react-native'
+
+import Dialog, { type DialogType } from '@/components/common/Dialog'
+import Button from '@/components/common/Button'
 import Text from '@/components/common/Text'
-import { View } from 'react-native'
-import Input, { type InputType } from '@/components/common/Input'
 import { createUserList, updateUserList } from '@/core/list'
 import { confirmDialog, createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
+import { useI18n } from '@/lang'
+import { scaleSizeH, setSpText } from '@/utils/pixelRatio'
 import listState from '@/store/list/state'
 
 interface NameInputType {
@@ -13,11 +16,12 @@ interface NameInputType {
   getText: () => string
   focus: () => void
 }
+
 const NameInput = forwardRef<NameInputType, {}>((props, ref) => {
+  const t = useI18n()
   const theme = useTheme()
   const [text, setText] = useState('')
-  const [placeholder, setPlaceholder] = useState('')
-  const inputRef = useRef<InputType>(null)
+  const inputRef = useRef<TextInput>(null)
 
   useImperativeHandle(ref, () => ({
     getText() {
@@ -25,7 +29,6 @@ const NameInput = forwardRef<NameInputType, {}>((props, ref) => {
     },
     setName(text) {
       setText(text)
-      setPlaceholder(text || global.i18n.t('list_create_input_placeholder'))
     },
     focus() {
       inputRef.current?.focus()
@@ -33,12 +36,20 @@ const NameInput = forwardRef<NameInputType, {}>((props, ref) => {
   }))
 
   return (
-    <Input
+    <TextInput
       ref={inputRef}
-      placeholder={placeholder}
+      autoCapitalize="none"
+      autoComplete="off"
+      placeholder={t('songlist_create_placeholder')}
+      placeholderTextColor={theme['c-font-label']}
+      selectionColor={theme['c-primary-light-100-alpha-300']}
       value={text}
       onChangeText={setText}
-      style={{ ...styles.input, backgroundColor: theme['c-primary-input-background'] }}
+      style={{
+        ...styles.input,
+        color: theme['c-font'],
+        borderColor: theme['c-border-background'],
+      }}
     />
   )
 })
@@ -48,19 +59,22 @@ export interface ListNameEditType {
   showCreate: (position: number) => void
   show: (listInfo: LX.List.UserListInfo) => void
 }
+
 const initSelectInfo = {}
 
 
+// 新建 / 重命名歌单弹窗：居中卡片（无关闭按钮），对齐参考图
 export default forwardRef<ListNameEditType, {}>((props, ref) => {
-  const alertRef = useRef<ConfirmAlertType>(null)
+  const t = useI18n()
+  const theme = useTheme()
+  const dialogRef = useRef<DialogType>(null)
   const nameInputRef = useRef<NameInputType>(null)
   const [position, setPosition] = useState(0)
   const selectedListInfo = useRef<LX.List.UserListInfo>(initSelectInfo as LX.List.UserListInfo)
   const [visible, setVisible] = useState(false)
 
-  const handleShow = () => {
-    alertRef.current?.setVisible(true)
-    const name = position == -1 ? '' : (selectedListInfo.current.name ?? '')
+  const handleShow = (name: string) => {
+    dialogRef.current?.setVisible(true)
     requestAnimationFrame(() => {
       nameInputRef.current?.setName(name)
       setTimeout(() => {
@@ -68,31 +82,36 @@ export default forwardRef<ListNameEditType, {}>((props, ref) => {
       }, 300)
     })
   }
+
   useImperativeHandle(ref, () => ({
     showCreate(position) {
       setPosition(position)
-      if (visible) handleShow()
+      if (visible) handleShow('')
       else {
         setVisible(true)
         requestAnimationFrame(() => {
-          handleShow()
+          handleShow('')
         })
       }
     },
     show(listInfo) {
       setPosition(-1)
       selectedListInfo.current = listInfo
-      if (visible) handleShow()
+      if (visible) handleShow(listInfo.name ?? '')
       else {
         setVisible(true)
         requestAnimationFrame(() => {
-          handleShow()
+          handleShow(listInfo.name ?? '')
         })
       }
     },
   }))
 
-  const handleRename = () => {
+  const handleCancel = () => {
+    dialogRef.current?.setVisible(false)
+  }
+
+  const handleConfirm = () => {
     let name = nameInputRef.current?.getText() ?? ''
     if (!name.length) return
     if (name.length > 100) name = name.substring(0, 100)
@@ -107,39 +126,64 @@ export default forwardRef<ListNameEditType, {}>((props, ref) => {
         void createUserList(position, [{ id: `userlist_${now}`, name, locationUpdateTime: now }])
       })
     }
-    alertRef.current?.setVisible(false)
+    dialogRef.current?.setVisible(false)
   }
 
   return (
     visible
-      ? <ConfirmAlert
-          ref={alertRef}
-          onConfirm={handleRename}
-        >
-          <View style={styles.renameContent}>
-            <Text style={{ marginBottom: 5 }}>{ position == -1 ? global.i18n.t('list_rename_title') : global.i18n.t('list_create')}</Text>
+      ? <Dialog ref={dialogRef} closeBtn={false}>
+          <View style={styles.content}>
+            <Text style={styles.title} size={17}>{position == -1 ? t('list_rename_title') : t('songlist_create')}</Text>
             <NameInput ref={nameInputRef} />
+            <View style={styles.btns}>
+              <Button style={{ ...styles.btn, ...styles.btnLeft, backgroundColor: theme['c-050'] }} onPress={handleCancel}>
+                <Text size={16} color={theme['c-font']}>{t('cancel')}</Text>
+              </Button>
+              <Button style={{ ...styles.btn, backgroundColor: theme['c-font'] }} onPress={handleConfirm}>
+                <Text size={16} color={theme['c-content-background']}>{position == -1 ? t('confirm') : t('songlist_create_btn')}</Text>
+              </Button>
+            </View>
           </View>
-        </ConfirmAlert>
+        </Dialog>
       : null
   )
 })
 
 
 const styles = createStyle({
-  renameContent: {
-    flexGrow: 1,
-    flexShrink: 1,
-    flexDirection: 'column',
+  content: {
+    paddingLeft: 20,
+    paddingRight: 20,
+    paddingTop: 22,
+    paddingBottom: 20,
+  },
+  title: {
+    textAlign: 'center',
+    fontWeight: 'bold',
+    marginBottom: 18,
   },
   input: {
-    flexGrow: 1,
-    flexShrink: 1,
-    minWidth: 290,
-    borderRadius: 4,
-    // paddingTop: 2,
-    // paddingBottom: 2,
+    height: scaleSizeH(52),
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingLeft: 12,
+    paddingRight: 12,
+    paddingTop: 0,
+    paddingBottom: 0,
+    fontSize: setSpText(15),
+  },
+  btns: {
+    flexDirection: 'row',
+    marginTop: 20,
+  },
+  btn: {
+    flex: 1,
+    height: scaleSizeH(52),
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  btnLeft: {
+    marginRight: 16,
   },
 })
-
-
