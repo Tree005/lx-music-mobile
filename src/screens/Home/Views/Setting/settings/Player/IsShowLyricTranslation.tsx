@@ -7,6 +7,7 @@ import { useSettingValue } from '@/store/setting/hook'
 
 
 import CheckBoxItem from '../../components/CheckBoxItem'
+import { Translate } from 'phosphor-react-native'
 import { toggleTranslation } from '@/core/lyric'
 
 export default memo(() => {
@@ -19,7 +20,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem check={isShowLyricTranslation} onChange={setShowLyricTranslation} label={t('setting_play_show_translation')} />
+      <CheckBoxItem icon={Translate} check={isShowLyricTranslation} onChange={setShowLyricTranslation} label={t('setting_play_show_translation')} />
     </View>
   )
 })

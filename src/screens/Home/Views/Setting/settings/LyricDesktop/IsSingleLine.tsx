@@ -6,6 +6,7 @@ import { createStyle } from '@/utils/tools'
 
 
 import CheckBoxItem from '../../components/CheckBoxItem'
+import { Rows } from 'phosphor-react-native'
 import { setDesktopLyricSingleLine } from '@/core/desktopLyric'
 import { updateSetting } from '@/core/common'
 
@@ -20,7 +21,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem check={isSingleLine} onChange={update} label={t('setting_lyric_desktop_single_line')} />
+      <CheckBoxItem icon={Rows} check={isSingleLine} onChange={update} label={t('setting_lyric_desktop_single_line')} />
     </View>
   )
 })

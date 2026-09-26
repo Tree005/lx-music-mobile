@@ -7,6 +7,7 @@ import { useSettingValue } from '@/store/setting/hook'
 
 
 import CheckBoxItem from '../../components/CheckBoxItem'
+import { ClockCounterClockwise } from 'phosphor-react-native'
 
 export default memo(() => {
   const t = useI18n()
@@ -19,7 +20,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem check={isShowInterval} onChange={setShowInterval} label={t('setting_list_show interval')} />
+      <CheckBoxItem icon={ClockCounterClockwise} check={isShowInterval} onChange={setShowInterval} label={t('setting_list_show interval')} />
     </View>
   )
 })

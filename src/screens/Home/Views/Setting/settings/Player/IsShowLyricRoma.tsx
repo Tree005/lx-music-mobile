@@ -7,6 +7,7 @@ import { useSettingValue } from '@/store/setting/hook'
 
 
 import CheckBoxItem from '../../components/CheckBoxItem'
+import { TextAa } from 'phosphor-react-native'
 import { toggleRoma } from '@/core/lyric'
 
 export default memo(() => {
@@ -19,7 +20,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem check={isShowLyricRoma} onChange={setShowLyricRoma} label={t('setting_play_show_roma')} />
+      <CheckBoxItem icon={TextAa} check={isShowLyricRoma} onChange={setShowLyricRoma} label={t('setting_play_show_roma')} />
     </View>
   )
 })

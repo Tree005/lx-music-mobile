@@ -2,6 +2,7 @@ import { memo, useCallback, useState, useEffect, useRef, useMemo } from 'react'
 import { View } from 'react-native'
 
 import CheckBoxItem from '../../components/CheckBoxItem'
+import { CloudArrowUp } from 'phosphor-react-native'
 import ConfirmAlert, { type ConfirmAlertType } from '@/components/common/ConfirmAlert'
 import Input from '@/components/common/Input'
 import { connectServer, disconnectServer } from '@/plugins/sync'
@@ -155,7 +156,7 @@ export default memo(({ host, setHost }: {
   return (
     <>
       <View style={styles.infoContent}>
-        <CheckBoxItem disabled={!host} check={isEnableSync} label={t('setting_sync_enable')} onChange={handleSetEnableSync} />
+        <CheckBoxItem icon={CloudArrowUp} disabled={!host} check={isEnableSync} label={t('setting_sync_enable')} onChange={handleSetEnableSync} />
         <Text style={styles.textAddr} size={13}>{t('setting_sync_address', { address })}</Text>
         <Text style={styles.text} size={13}>{t('setting_sync_status', { status })}</Text>
       </View>

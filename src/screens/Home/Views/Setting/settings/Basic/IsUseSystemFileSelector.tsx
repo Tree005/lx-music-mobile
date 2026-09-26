@@ -6,6 +6,8 @@ import { View } from 'react-native'
 import { useSettingValue } from '@/store/setting/hook'
 
 
+import { Folder } from 'phosphor-react-native'
+
 import CheckBoxItem from '../../components/CheckBoxItem'
 
 export default memo(() => {
@@ -18,6 +20,7 @@ export default memo(() => {
   return (
     <View style={styles.content}>
       <CheckBoxItem
+      icon={Folder}
       check={val}
       label={t('setting_basic_use_system_file_selector')}
       helpDesc={t('setting_basic_use_system_file_selector_tip')}

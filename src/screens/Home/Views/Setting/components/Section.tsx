@@ -1,19 +1,24 @@
 import { View } from 'react-native'
 
 import { createStyle } from '@/utils/tools'
+import { useTheme } from '@/store/theme/hook'
 import Text from '@/components/common/Text'
-
 
 interface Props {
   title: string
   children: React.ReactNode | React.ReactNode[]
 }
 
+// 分组容器：标题是「整条浅灰底 + 灰色小字」的 section header（左右通栏）
 export default ({ title, children }: Props) => {
+  const theme = useTheme()
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title} size={17}>{title}</Text>
-      <View>
+      <View style={{ ...styles.titleBar, backgroundColor: theme['c-150'] }}>
+        <Text style={styles.title} size={13} color={theme['c-font-label']}>{title}</Text>
+      </View>
+      <View style={styles.body}>
         {children}
       </View>
     </View>
@@ -23,16 +28,21 @@ export default ({ title, children }: Props) => {
 
 const styles = createStyle({
   container: {
-    // 分组之间的留白由标题的 marginTop 提供
+    // 分组之间留白
+    marginBottom: 12,
+  },
+  titleBar: {
+    // 通栏：左右 20 内边距，浅灰底铺满整行
+    paddingLeft: 20,
+    paddingRight: 20,
+    paddingTop: 9,
+    paddingBottom: 9,
+    marginBottom: 6,
   },
   title: {
-    // 去掉原来的左侧竖线，改为普通粗体标题
-    fontWeight: 'bold',
-    // FlatList 已提供 15 的左内边距，这里补 5，让标题左边缘与设置项对齐在约 20 处
-    paddingLeft: 5,
-    // 上方 24 留白用于区分分组，下方 8 留白用于分隔标题与选项
-    marginTop: 24,
-    marginBottom: 8,
-    // lineHeight: 16,
+    // 灰色小字，与参考图的 section header 一致
+  },
+  body: {
+    // 设置项自己的左右内边距（20）由各组件提供
   },
 })

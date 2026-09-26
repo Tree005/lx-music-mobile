@@ -7,6 +7,7 @@ import { useSettingValue } from '@/store/setting/hook'
 
 
 import CheckBoxItem from '../../components/CheckBoxItem'
+import { FadersHorizontal } from 'phosphor-react-native'
 
 export default memo(() => {
   const t = useI18n()
@@ -18,7 +19,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem check={isHandleAudioFocus} onChange={setHandleAudioFocus} label={t('setting_play_handle_audio_focus')} />
+      <CheckBoxItem icon={FadersHorizontal} check={isHandleAudioFocus} onChange={setHandleAudioFocus} label={t('setting_play_handle_audio_focus')} />
     </View>
   )
 })

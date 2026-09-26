@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react'
 
 import { StyleSheet, View } from 'react-native'
+import { Translate } from 'phosphor-react-native'
 
 import SubTitle from '../../components/SubTitle'
 import CheckBox from '@/components/common/CheckBox'
@@ -28,7 +29,7 @@ export default memo(() => {
   const t = useI18n()
 
   return (
-    <SubTitle title={t('setting_basic_lang')}>
+    <SubTitle title={t('setting_basic_lang')} icon={Translate}>
       <View style={styles.list}>
         {
           langList.map(({ locale, name }) => <Item name={name} id={locale} key={locale} />)

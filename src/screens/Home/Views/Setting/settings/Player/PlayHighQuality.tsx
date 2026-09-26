@@ -2,6 +2,7 @@ import { memo, useMemo } from 'react'
 
 import { StyleSheet, View } from 'react-native'
 
+import { Waveform } from 'phosphor-react-native'
 import SubTitle from '../../components/SubTitle'
 import CheckBox from '@/components/common/CheckBox'
 import { useSettingValue } from '@/store/setting/hook'
@@ -31,7 +32,7 @@ export default memo(() => {
   }, [])
 
   return (
-    <SubTitle title={t('setting_play_play_quality')}>
+    <SubTitle title={t('setting_play_play_quality')} icon={Waveform}>
       <View style={styles.list}>
         {
           playQualityList.map((q) => <Item name={q} id={q} key={q} />)

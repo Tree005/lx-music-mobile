@@ -7,6 +7,7 @@ import { useSettingValue } from '@/store/setting/hook'
 
 
 import CheckBoxItem from '../../components/CheckBoxItem'
+import { ClockCounterClockwise } from 'phosphor-react-native'
 
 export default memo(() => {
   const t = useI18n()
@@ -17,7 +18,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem check={isSavePlayTime} label={t('setting_player_save_play_time')} onChange={setSavePlayTime} />
+      <CheckBoxItem icon={ClockCounterClockwise} check={isSavePlayTime} label={t('setting_player_save_play_time')} onChange={setSavePlayTime} />
     </View>
   )
 })

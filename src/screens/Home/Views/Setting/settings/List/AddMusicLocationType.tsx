@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native'
 
 import SubTitle from '../../components/SubTitle'
 import CheckBox from '@/components/common/CheckBox'
+import { ArrowsDownUp } from 'phosphor-react-native'
 import { useSettingValue } from '@/store/setting/hook'
 import { useI18n } from '@/lang'
 import { updateSetting } from '@/core/common'
@@ -32,7 +33,7 @@ export default memo(() => {
   const t = useI18n()
 
   return (
-    <SubTitle title={t('setting_list_add_music_location_type')}>
+    <SubTitle title={t('setting_list_add_music_location_type')} icon={ArrowsDownUp}>
       <View style={styles.list}>
         <Item id="top" name={t('setting_list_add_music_location_type_top')} />
         <Item id="bottom" name={t('setting_list_add_music_location_type_bottom')} />

@@ -6,6 +6,8 @@ import { View } from 'react-native'
 import { useSettingValue } from '@/store/setting/hook'
 
 
+import { ClockCounterClockwise } from 'phosphor-react-native'
+
 import CheckBoxItem from '../../components/CheckBoxItem'
 
 export default memo(() => {
@@ -17,7 +19,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem check={isShowHistorySearch} onChange={handleUpdate} label={t('setting_search_show_history_search')} />
+      <CheckBoxItem icon={ClockCounterClockwise} check={isShowHistorySearch} onChange={handleUpdate} label={t('setting_search_show_history_search')} />
     </View>
   )
 })

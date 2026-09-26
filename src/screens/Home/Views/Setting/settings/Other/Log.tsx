@@ -8,6 +8,7 @@ import Button from '../../components/Button'
 import { createStyle, toast } from '@/utils/tools'
 import ConfirmAlert, { type ConfirmAlertType } from '@/components/common/ConfirmAlert'
 import CheckBoxItem from '../../components/CheckBoxItem'
+import { Bug, FileText } from 'phosphor-react-native'
 import { useI18n } from '@/lang'
 import Text from '@/components/common/Text'
 
@@ -63,8 +64,8 @@ export default memo(() => {
     <>
       <SubTitle title={t('setting_other_log')}>
         <View style={styles.checkBox}>
-          <CheckBoxItem check={isEnableSyncErrorLog} label={t('setting_other_log_sync_log')} onChange={handleSetEnableSyncErrorLog} />
-          <CheckBoxItem check={isEnableUserApiLog} label={t('setting_other_log_user_api_log')} onChange={handleSetEnableUserApiLog} />
+          <CheckBoxItem icon={Bug} check={isEnableSyncErrorLog} label={t('setting_other_log_sync_log')} onChange={handleSetEnableSyncErrorLog} />
+          <CheckBoxItem icon={FileText} check={isEnableUserApiLog} label={t('setting_other_log_user_api_log')} onChange={handleSetEnableUserApiLog} />
         </View>
         <View style={styles.btn}>
           <Button onPress={openLogModal}>{t('setting_other_log_btn_show')}</Button>

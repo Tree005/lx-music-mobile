@@ -6,6 +6,8 @@ import { View } from 'react-native'
 import { useSettingValue } from '@/store/setting/hook'
 
 
+import { SlidersHorizontal } from 'phosphor-react-native'
+
 import CheckBoxItem from '../../components/CheckBoxItem'
 
 export default memo(() => {
@@ -17,7 +19,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem check={allowProgressBarSeek} label={t('setting_basic_allow_progress_bar_seek')} onChange={setAllowProgressBarSeek} />
+      <CheckBoxItem icon={SlidersHorizontal} check={allowProgressBarSeek} label={t('setting_basic_allow_progress_bar_seek')} onChange={setAllowProgressBarSeek} />
     </View>
   )
 })

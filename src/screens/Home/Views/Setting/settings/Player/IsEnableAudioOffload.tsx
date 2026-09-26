@@ -7,6 +7,7 @@ import { useSettingValue } from '@/store/setting/hook'
 
 
 import CheckBoxItem from '../../components/CheckBoxItem'
+import { Cpu } from 'phosphor-react-native'
 
 export default memo(() => {
   const t = useI18n()
@@ -19,6 +20,7 @@ export default memo(() => {
   return (
     <View style={styles.content}>
       <CheckBoxItem
+        icon={Cpu}
         check={isEnableAudioOffload}
         onChange={setHandleAudioFocus}
         helpDesc={t('setting_play_audio_offload_tip')}

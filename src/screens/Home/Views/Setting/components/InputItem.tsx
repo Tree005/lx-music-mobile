@@ -79,8 +79,9 @@ export default memo(({ value, label, onChanged, ...props }: InputItemProps) => {
 
 const styles = createStyle({
   container: {
-    // FlatList 已提供 15 的左内边距，这里补 5，与设置项左对齐
-    paddingLeft: 5,
+    // 与分组标题、设置项左对齐（同 20）
+    paddingLeft: 20,
+    paddingRight: 20,
     marginBottom: 16,
   },
   label: {

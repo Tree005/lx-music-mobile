@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react'
 
 import { StyleSheet, View } from 'react-native'
+import { TextAa } from 'phosphor-react-native'
 
 import SubTitle from '../../components/SubTitle'
 import CheckBox from '@/components/common/CheckBox'
@@ -71,7 +72,7 @@ export default memo(() => {
   }, [t])
 
   return (
-    <SubTitle title={t('setting_basic_font_size')}>
+    <SubTitle title={t('setting_basic_font_size')} icon={TextAa}>
       <View style={styles.preview}>
         <SizeText />
       </View>

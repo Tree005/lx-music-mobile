@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react'
 
 import { StyleSheet, View } from 'react-native'
+import { Tag } from 'phosphor-react-native'
 
 import SubTitle from '../../components/SubTitle'
 import CheckBox from '@/components/common/CheckBox'
@@ -46,7 +47,7 @@ export default memo(() => {
   }, [t])
 
   return (
-    <SubTitle title={t('setting_basic_sourcename')}>
+    <SubTitle title={t('setting_basic_sourcename')} icon={Tag}>
       <View style={styles.list}>
         {
           list.map(({ id, name }) => <Item name={name} id={id} key={id} />)

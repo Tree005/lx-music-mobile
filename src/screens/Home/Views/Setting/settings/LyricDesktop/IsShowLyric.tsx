@@ -2,6 +2,7 @@ import { memo, useRef } from 'react'
 import { View } from 'react-native'
 
 import CheckBoxItem from '../../components/CheckBoxItem'
+import { Monitor } from 'phosphor-react-native'
 
 import { createStyle } from '@/utils/tools'
 
@@ -21,7 +22,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem check={isEnable} onChange={(enable) => { void handleChangeEnableDesktopLyric(enable) }} label={t('setting_lyric_desktop_enable')} />
+      <CheckBoxItem icon={Monitor} check={isEnable} onChange={(enable) => { void handleChangeEnableDesktopLyric(enable) }} label={t('setting_lyric_desktop_enable')} />
       <DesktopLyricEnable ref={desktopLyricEnableRef} />
     </View>
   )

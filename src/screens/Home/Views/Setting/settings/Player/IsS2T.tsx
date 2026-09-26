@@ -7,6 +7,7 @@ import { useSettingValue } from '@/store/setting/hook'
 
 
 import CheckBoxItem from '../../components/CheckBoxItem'
+import { ArrowsLeftRight } from 'phosphor-react-native'
 
 export default memo(() => {
   const t = useI18n()
@@ -17,7 +18,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem check={isS2t} onChange={setS2T} label={t('setting_play_s2t')} />
+      <CheckBoxItem icon={ArrowsLeftRight} check={isS2t} onChange={setS2T} label={t('setting_play_s2t')} />
     </View>
   )
 })

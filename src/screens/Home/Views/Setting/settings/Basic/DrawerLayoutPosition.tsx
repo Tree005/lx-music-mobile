@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react'
 
 import { StyleSheet, View } from 'react-native'
+import { Sidebar } from 'phosphor-react-native'
 
 import SubTitle from '../../components/SubTitle'
 import CheckBox from '@/components/common/CheckBox'
@@ -42,7 +43,7 @@ export default memo(() => {
   }, [t])
 
   return (
-    <SubTitle title={t('setting_basic_drawer_layout_position')}>
+    <SubTitle title={t('setting_basic_drawer_layout_position')} icon={Sidebar}>
       <View style={styles.list}>
         {
           list.map(({ position, name }) => <Item key={position} position={position} label={name} />)

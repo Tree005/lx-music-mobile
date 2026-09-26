@@ -1,6 +1,8 @@
 import { memo } from 'react'
 import { View } from 'react-native'
 
+import { ImageSquare } from 'phosphor-react-native'
+
 import CheckBoxItem from '../../components/CheckBoxItem'
 import { createStyle } from '@/utils/tools'
 import { useI18n } from '@/lang'
@@ -17,7 +19,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem check={isDynamicBg} label={t('setting_basic_theme_dynamic_bg')} onChange={setIsDynamicBg} />
+      <CheckBoxItem icon={ImageSquare} check={isDynamicBg} label={t('setting_basic_theme_dynamic_bg')} onChange={setIsDynamicBg} />
     </View>
   )
 })

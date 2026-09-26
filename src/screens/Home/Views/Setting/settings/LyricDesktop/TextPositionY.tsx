@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react'
 import { View } from 'react-native'
 
+import { ArrowsVertical } from 'phosphor-react-native'
 import SubTitle from '../../components/SubTitle'
 import CheckBox from '@/components/common/CheckBox'
 import { useSettingValue } from '@/store/setting/hook'
@@ -45,7 +46,7 @@ export default memo(() => {
   }
 
   return (
-    <SubTitle title={t('setting_lyric_desktop_text_y')}>
+    <SubTitle title={t('setting_lyric_desktop_text_y')} icon={ArrowsVertical}>
       <View style={styles.list}>
         {
           list.map(({ id, name }) => <Item name={name} id={id} key={id} change={setPosition} />)
