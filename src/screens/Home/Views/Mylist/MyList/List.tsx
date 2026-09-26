@@ -1,98 +1,88 @@
-import { memo, useEffect, useRef } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import { View, TouchableOpacity, FlatList, type NativeScrollEvent, type NativeSyntheticEvent, type FlatListProps } from 'react-native'
 
-import { CaretRight, DotsThreeVertical } from 'phosphor-react-native'
+import { X } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
+import Image from '@/components/common/Image'
+import Text from '@/components/common/Text'
 
 import { useTheme } from '@/store/theme/hook'
-import { useActiveListId, useListFetching, useMyList } from '@/store/list/hook'
+import { useI18n } from '@/lang'
+import { useMyList } from '@/store/list/hook'
 import { createStyle } from '@/utils/tools'
-import { LIST_SCROLL_POSITION_KEY } from '@/config/constant'
+import { LIST_IDS, LIST_SCROLL_POSITION_KEY } from '@/config/constant'
 import { getListPosition, saveListPosition } from '@/utils/data'
-import { setActiveList } from '@/core/list'
-import Text from '@/components/common/Text'
-import { type Position } from './ListMenu'
-import { scaleSizeH } from '@/utils/pixelRatio'
-import Loading from '@/components/common/Loading'
+import { getListMusics } from '@/core/list'
+import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
+import { BorderWidths } from '@/theme'
 
-type FlatListType = FlatListProps<LX.List.MyListInfo>
+type FlatListType = FlatListProps<LX.List.UserListInfo>
 
-const ITEM_HEIGHT = scaleSizeH(40)
+const ITEM_HEIGHT = scaleSizeH(88)
 
-const ListItem = memo(({ item, index, activeId, onPress, onShowMenu }: {
-  onPress: (item: LX.List.MyListInfo) => void
-  index: number
-  activeId: string
-  item: LX.List.MyListInfo
-  onShowMenu: (item: LX.List.MyListInfo, index: number, position: { x: number, y: number, w: number, h: number }) => void
+const ListItem = memo(({ item, onPress, onRemove }: {
+  onPress: (item: LX.List.UserListInfo) => void
+  onRemove: (item: LX.List.UserListInfo) => void
+  item: LX.List.UserListInfo
 }) => {
+  const t = useI18n()
   const theme = useTheme()
-  const moreButtonRef = useRef<TouchableOpacity>(null)
-  const fetching = useListFetching(item.id)
+  // 封面取歌单里第一首歌的图，没有就交给 Image 的占位图
+  const [picUrl, setPicUrl] = useState('')
+  const [musicCount, setMusicCount] = useState<number | null>(null)
 
-  const active = activeId == item.id
-
-  const handleShowMenu = () => {
-    if (moreButtonRef.current?.measure) {
-      moreButtonRef.current.measure((fx, fy, width, height, px, py) => {
-        // console.log(fx, fy, width, height, px, py)
-        onShowMenu(item, index, { x: Math.ceil(px), y: Math.ceil(py), w: Math.ceil(width), h: Math.ceil(height) })
-      })
+  useEffect(() => {
+    let isUnmounted = false
+    void getListMusics(item.id).then(musics => {
+      if (isUnmounted) return
+      setPicUrl(musics[0]?.meta.picUrl ?? '')
+      setMusicCount(musics.length)
+    })
+    return () => {
+      isUnmounted = true
     }
-  }
+  }, [item.id])
 
-  const handlePress = () => {
-    onPress(item)
-  }
+  const source = item.source
+    ? t(`songlist_platform_short_${item.source}`)
+    : t('songlist_source_user')
 
   return (
-    <View style={{ ...styles.listItem, height: ITEM_HEIGHT }}>
-      {
-        active
-          ? <View style={styles.listActiveIcon}><PhIcon Icon={CaretRight} size={12} color={theme['c-primary-font']} /></View>
-          : null
-      }
-      { fetching ? <Loading color={active ? theme['c-primary-font'] : theme['c-font']} style={styles.loading} /> : null }
-      <TouchableOpacity style={styles.listName} onPress={handlePress}>
-        <Text numberOfLines={1} color={active ? theme['c-primary-font'] : theme['c-font']}>{item.name}</Text>
+    <TouchableOpacity
+      style={{ ...styles.listItem, borderBottomColor: theme['c-border-background'] }}
+      activeOpacity={0.7}
+      onPress={() => { onPress(item) }}
+    >
+      <Image style={styles.pic} url={picUrl} />
+      <View style={styles.info}>
+        <Text style={styles.name} size={16} numberOfLines={1}>{item.name}</Text>
+        <Text style={styles.desc} size={13} numberOfLines={1} color={theme['c-font-label']}>
+          {musicCount == null ? source : `${source} · ${t('songlist_music_count', { count: musicCount })}`}
+        </Text>
+      </View>
+      <TouchableOpacity style={styles.removeBtn} onPress={() => { onRemove(item) }}>
+        <PhIcon Icon={X} size={20} color={theme['c-font-label']} />
       </TouchableOpacity>
-      <TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.listMoreBtn}>
-        <PhIcon Icon={DotsThreeVertical} size={12} color={theme['c-350']} />
-      </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   )
 }, (prevProps, nextProps) => {
-  return !!(prevProps.item === nextProps.item &&
-    prevProps.index === nextProps.index &&
-    prevProps.item.name == nextProps.item.name &&
-    prevProps.activeId != nextProps.item.id &&
-    nextProps.activeId != nextProps.item.id
-  )
+  return !!(prevProps.item === nextProps.item && prevProps.item.name == nextProps.item.name)
 })
 
 
-export default ({ onShowMenu }: {
-  onShowMenu: (info: { listInfo: LX.List.MyListInfo, index: number }, position: Position) => void
+export default ({ onOpenList, onRemove }: {
+  /** 点歌单：切到该歌单 */
+  onOpenList: (item: LX.List.UserListInfo) => void
+  /** 点 ✕：删除歌单 */
+  onRemove: (item: LX.List.UserListInfo) => void
 }) => {
   const flatListRef = useRef<FlatList>(null)
   const allList = useMyList()
-  const activeListId = useActiveListId()
-
-  const handleToggleList = (item: LX.List.MyListInfo) => {
-    // setVisiblePanel(false)
-    global.app_event.changeLoveListVisible(false)
-    requestAnimationFrame(() => {
-      setActiveList(item.id)
-    })
-  }
-
+  // 只显示歌单：收藏 / 导入的、以及自建的，试听列表与我的收藏是内置列表，不列出来
+  const list = allList.filter(item => item.id !== LIST_IDS.DEFAULT && item.id !== LIST_IDS.LOVE) as LX.List.UserListInfo[]
 
   const handleScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
     void saveListPosition(LIST_SCROLL_POSITION_KEY, nativeEvent.contentOffset.y)
-  }
-
-  const showMenu = (listInfo: LX.List.MyListInfo, index: number, position: Position) => {
-    onShowMenu({ listInfo, index }, position)
   }
 
   useEffect(() => {
@@ -101,14 +91,12 @@ export default ({ onShowMenu }: {
     })
   }, [])
 
-  const renderItem: FlatListType['renderItem'] = ({ item, index }) => (
+  const renderItem: FlatListType['renderItem'] = ({ item }) => (
     <ListItem
       key={item.id}
       item={item}
-      index={index}
-      activeId={activeListId}
-      onPress={handleToggleList}
-      onShowMenu={showMenu}
+      onPress={onOpenList}
+      onRemove={onRemove}
     />
   )
   const getkey: FlatListType['keyExtractor'] = item => item.id
@@ -121,15 +109,13 @@ export default ({ onShowMenu }: {
       ref={flatListRef}
       onScroll={handleScroll}
       style={styles.container}
-      data={allList}
+      data={list}
       maxToRenderPerBatch={9}
-      // updateCellsBatchingPeriod={80}
       windowSize={9}
       removeClippedSubviews={true}
       initialNumToRender={18}
       renderItem={renderItem}
       keyExtractor={getkey}
-      // extraData={activeIndex}
       getItemLayout={getItemLayout}
     />
   )
@@ -141,51 +127,35 @@ const styles = createStyle({
     flexShrink: 1,
     flexGrow: 0,
   },
-  // listContainer: {
-  //   // borderBottomWidth: BorderWidths.normal2,
-  // },
-
   listItem: {
-    height: 'auto',
+    height: ITEM_HEIGHT,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingRight: 5,
-    paddingLeft: 5,
-    // borderBottomWidth: BorderWidths.normal,
+    paddingLeft: 20,
+    paddingRight: 10,
+    borderBottomWidth: BorderWidths.normal,
   },
-  listActiveIcon: {
-    // width: 18,
-    marginLeft: 3,
-    // paddingRight: 5,
-    textAlign: 'center',
+  pic: {
+    width: scaleSizeW(48),
+    height: scaleSizeW(48),
+    borderRadius: 6,
   },
-  loading: {
-    marginLeft: 5,
-  },
-  listName: {
-    height: '100%',
-    // height: 46,
-    // paddingTop: 12,
-    // paddingBottom: 12,
-    justifyContent: 'center',
+  info: {
     flexGrow: 1,
     flexShrink: 1,
-    paddingLeft: 5,
-    // backgroundColor: 'rgba(0,0,0,0.1)',
+    paddingLeft: 14,
+    paddingRight: 10,
   },
-  // listNameText: {
-  //   // height: 46,
-  //   fontSize: 14,
-  // },
-  listMoreBtn: {
+  name: {
+    fontWeight: 'bold',
+  },
+  desc: {
+    marginTop: 6,
+  },
+  removeBtn: {
+    width: 44,
     height: '100%',
-    width: 36,
-    // height: 46,
-    // paddingTop: 12,
-    // paddingBottom: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    // backgroundColor: 'rgba(0,0,0,0.1)',
   },
 })
-

@@ -1,13 +1,8 @@
-import { useRef } from 'react'
 import { View } from 'react-native'
 import { ArrowsDownUp, Plus } from 'phosphor-react-native'
 
-import ListMenu, { type ListMenuType } from './ListMenu'
 import List from './List'
-import ListImportExport, { type ListImportExportType } from './ListImportExport'
-import { handleRemove, handleSync } from './listAction'
-import ListMusicSort, { type ListMusicSortType } from './ListMusicSort'
-import DuplicateMusic, { type DuplicateMusicType } from './DuplicateMusic'
+import { handleRemove } from './listAction'
 import Button from '@/components/common/Button'
 import Text from '@/components/common/Text'
 import { PhIcon } from '@/components/common/PhIcon'
@@ -18,27 +13,22 @@ import { scaleSizeH } from '@/utils/pixelRatio'
 import listState from '@/store/list/state'
 
 
-// 歌单列表：作为「我的收藏」的第二个 tab 直接渲染
-// （原来是抽屉式懒加载，靠 changeLoveListVisible 事件才会挂载，现在是 tab 所以直接显示）
-// 新建 / 重命名 / 导入歌单都在父层（Mylist）里，这里只负责列表和菜单
-export default ({ onCreate, onRename, onImport }: {
-  /** 新建歌单，参数是插入位置 */
+// 歌单列表：收藏 / 导入的歌单与自建歌单都在这里
+// （原来是抽屉式懒加载，且会把内置的「试听列表 / 我的收藏」也列出来，现在两者都去掉了）
+export default ({ onOpenList, onCreate, onImport }: {
+  /** 点歌单：切到该歌单 */
+  onOpenList: (item: LX.List.UserListInfo) => void
+  /** 新建歌单 */
   onCreate: (position: number) => void
-  /** 重命名歌单 */
-  onRename: (listInfo: LX.List.UserListInfo) => void
   /** 打开导入歌单弹层 */
   onImport: () => void
 }) => {
   const t = useI18n()
   const theme = useTheme()
-  const listMenuRef = useRef<ListMenuType>(null)
-  const listMusicSortRef = useRef<ListMusicSortType>(null)
-  const duplicateMusicRef = useRef<DuplicateMusicType>(null)
-  const listImportExportRef = useRef<ListImportExportType>(null)
 
   return (
     <View style={styles.container}>
-      <List onShowMenu={(info, position) => listMenuRef.current?.show(info, position)} />
+      <List onOpenList={onOpenList} onRemove={handleRemove} />
       {/* 列表下方的两个大按钮：新建歌单 / 导入外部歌单 */}
       <View style={styles.btns}>
         <Button
@@ -56,22 +46,6 @@ export default ({ onCreate, onRename, onImport }: {
           <Text size={15} color={theme['c-font']}>{t('songlist_import_btn')}</Text>
         </Button>
       </View>
-      <ListMusicSort ref={listMusicSortRef} />
-      <DuplicateMusic ref={duplicateMusicRef} />
-      <ListImportExport ref={listImportExportRef} />
-      <ListMenu
-        ref={listMenuRef}
-        onNew={index => { onCreate(index) }}
-        onRename={info => { onRename(info) }}
-        onSort={info => listMusicSortRef.current?.show(info)}
-        onDuplicateMusic={info => duplicateMusicRef.current?.show(info)}
-        onImport={(info, position) => listImportExportRef.current?.import(info, position)}
-        onExport={(info, position) => listImportExportRef.current?.export(info, position)}
-        onRemove={info => { handleRemove(info) }}
-        onSync={info => { handleSync(info) }}
-        onSelectLocalFile={(info, position) => listImportExportRef.current?.selectFile(info, position)}
-      />
-      {/* <ImportExport actionType={actionType} visible={isShowChoosePath} hide={() => setShowChoosePath(false)} selectedListRef={selectedListRef} /> */}
     </View>
   )
 }

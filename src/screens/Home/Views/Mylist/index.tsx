@@ -1,6 +1,5 @@
 import { useCallback, useRef, useState } from 'react'
 import { TouchableOpacity, View } from 'react-native'
-import { ArrowsDownUp, ListPlus } from 'phosphor-react-native'
 
 import MusicList from './MusicList'
 import MyList from './MyList'
@@ -10,17 +9,16 @@ import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import Text from '@/components/common/Text'
-import { PhIcon } from '@/components/common/PhIcon'
 import { BorderWidths } from '@/theme'
 import { scaleSizeH } from '@/utils/pixelRatio'
-import listState from '@/store/list/state'
+import { setActiveList } from '@/core/list'
 
 const TABS = ['music', 'list'] as const
 type TabType = typeof TABS[number]
 
 // 我的收藏：单曲 / 歌单 双 tab（等宽两列，对齐参考图）
 // - 独立页面（nav_love）与「我的」页内嵌都用它
-// - embedded 时由这里出「我的收藏」标题（右侧是新建歌单 / 导入外部歌单）
+// - 单曲 = 我的收藏的歌，歌单 = 收藏/导入/自建的歌单列表
 export default ({ embedded }: { embedded?: boolean }) => {
   const t = useI18n()
   const theme = useTheme()
@@ -32,32 +30,23 @@ export default ({ embedded }: { embedded?: boolean }) => {
     setTab(next)
   }, [])
 
-  // 新建 / 重命名 / 导入歌单都挂在这一层，歌单 tab 与标题行按钮共用
   const handleCreate = useCallback((position: number) => {
     listNameEditRef.current?.showCreate(position)
   }, [])
-  const handleRename = useCallback((listInfo: LX.List.UserListInfo) => {
-    listNameEditRef.current?.show(listInfo)
-  }, [])
   const handleImport = useCallback(() => {
     songlistImportRef.current?.show()
+  }, [])
+  // 点歌单：把当前列表切成该歌单，并切到单曲 tab 看它的歌
+  const handleOpenList = useCallback((item: LX.List.UserListInfo) => {
+    setActiveList(item.id)
+    setTab('music')
   }, [])
 
   return (
     <View style={styles.container}>
       {
         embedded
-          ? (
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle} size={17}>{t('list_name_love')}</Text>
-                <TouchableOpacity style={styles.headerBtn} onPress={handleImport}>
-                  <PhIcon Icon={ArrowsDownUp} size={20} color={theme['c-font']} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.headerBtn} onPress={() => { handleCreate(listState.userList.length) }}>
-                  <PhIcon Icon={ListPlus} size={22} color={theme['c-font']} />
-                </TouchableOpacity>
-              </View>
-            )
+          ? <Text style={styles.sectionTitle} size={17}>{t('list_name_love')}</Text>
           : null
       }
       <View style={{ ...styles.tabBar, borderBottomColor: theme['c-border-background'] }}>
@@ -77,11 +66,10 @@ export default ({ embedded }: { embedded?: boolean }) => {
         }
       </View>
       <View style={styles.content}>
-        {/* 两个列表都是自包含组件，内部各自管理菜单、弹窗与多选状态 */}
         {
           tab == 'music'
             ? <MusicList embedded={embedded} />
-            : <MyList onCreate={handleCreate} onRename={handleRename} onImport={handleImport} />
+            : <MyList onOpenList={handleOpenList} onCreate={handleCreate} onImport={handleImport} />
         }
       </View>
       <ListNameEdit ref={listNameEditRef} />
@@ -94,23 +82,13 @@ const styles = createStyle({
   container: {
     flex: 1,
   },
-  // 内嵌时「我的收藏」标题行，右侧是新建歌单 / 导入外部歌单两个按钮
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingLeft: 20,
-    paddingRight: 10,
-    paddingTop: 14,
-  },
+  // 内嵌时「我的收藏」标题行（标题右上方原来有两个入口图标，按参考图去掉了）
   sectionTitle: {
-    flex: 1,
     fontWeight: 'bold',
-  },
-  headerBtn: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
+    paddingLeft: 20,
+    paddingRight: 20,
+    paddingTop: 14,
+    paddingBottom: 2,
   },
   tabBar: {
     flexDirection: 'row',
