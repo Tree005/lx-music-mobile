@@ -3,6 +3,8 @@ import SongList from '../Views/SongList'
 import Leaderboard from '../Views/Leaderboard'
 import Mylist from '../Views/Mylist'
 import Setting from '../Views/Setting'
+import Download from '../Views/Download'
+import History from '../Views/History'
 import { type NAV_ID_Type } from '@/config/constant'
 
 // 底部 Tab 之外的子页面：由首页 / 我的页的入口进入，切换时重建
@@ -16,6 +18,10 @@ const SubPage = ({ id }: { id: NAV_ID_Type }) => {
       return <Leaderboard />
     case 'nav_love':
       return <Mylist />
+    case 'nav_download':
+      return <Download />
+    case 'nav_history':
+      return <History />
     case 'nav_setting':
       return <Setting />
     default:

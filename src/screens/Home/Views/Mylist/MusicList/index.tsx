@@ -15,9 +15,10 @@ import ListMusicSearch, { type ListMusicSearchType } from './ListMusicSearch'
 import MusicPositionModal, { type MusicPositionModalType } from './MusicPositionModal'
 import MetadataEditModal, { type MetadataEditType, type MetadataEditProps } from '@/components/MetadataEditModal'
 import MusicToggleModal, { type MusicToggleModalType } from './MusicToggleModal'
+import { scaleSizeH } from '@/utils/pixelRatio'
 
 
-export default () => {
+export default ({ embedded }: { embedded?: boolean }) => {
   // const t = useI18n()
   const activeListRef = useRef<ActiveListType>(null)
   const listMusicSearchRef = useRef<ListMusicSearchType>(null)
@@ -119,22 +120,34 @@ export default () => {
   }, [])
 
 
+  // 多选条在两种布局里都渲染（它自己是绝对定位的），只是挂的位置不同
+  const multipleModeBar = (
+    <MultipleModeBar
+      ref={multipleModeBarRef}
+      onSwitchMode={hancelSwitchSelectMode}
+      onSelectAll={isAll => listRef.current?.selectAll(isAll)}
+      onExitSelectMode={hancelExitSelect}
+    />
+  )
+
   return (
     <View style={styles.container}>
-      <View style={{ zIndex: 2 }}>
-        <ActiveList ref={activeListRef} onShowSearchBar={handleShowSearch} onScrollToTop={hancelScrollToTop} />
-        <MultipleModeBar
-          ref={multipleModeBarRef}
-          onSwitchMode={hancelSwitchSelectMode}
-          onSelectAll={isAll => listRef.current?.selectAll(isAll)}
-          onExitSelectMode={hancelExitSelect}
-        />
-        <ListSearchBar
-          ref={listSearchBarRef}
-          onSearch={keyword => listMusicSearchRef.current?.search(keyword, layoutHeightRef.current)}
-          onExitSearch={handleExitSearch}
-        />
-      </View>
+      {
+        // 内嵌在「我的」页时没有「当前列表」条（列表固定是收藏），多选条改成浮在列表顶部
+        embedded
+          ? null
+          : (
+              <View style={{ zIndex: 2 }}>
+                <ActiveList ref={activeListRef} onShowSearchBar={handleShowSearch} onScrollToTop={hancelScrollToTop} />
+                {multipleModeBar}
+                <ListSearchBar
+                  ref={listSearchBarRef}
+                  onSearch={keyword => listMusicSearchRef.current?.search(keyword, layoutHeightRef.current)}
+                  onExitSearch={handleExitSearch}
+                />
+              </View>
+            )
+      }
       <View style={{ flex: 1 }} onLayout={onLayout}>
         <List
           ref={listRef}
@@ -146,6 +159,7 @@ export default () => {
           ref={listMusicSearchRef}
           onScrollToInfo={handleScrollToInfo}
         />
+        {embedded ? <View style={styles.embeddedModeBar}>{multipleModeBar}</View> : null}
       </View>
       <ListMusicAdd ref={listMusicAddRef} onAdded={hancelExitSelect} />
       <ListMusicMultiAdd ref={listMusicMultiAddRef} onAdded={hancelExitSelect} />
@@ -180,5 +194,14 @@ const styles = createStyle({
   container: {
     flex: 1,
     flexDirection: 'column',
+  },
+  // 内嵌场景下多选条的容器：浮在列表顶部，高度与原来的「当前列表」条一致
+  embeddedModeBar: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    height: scaleSizeH(36),
+    zIndex: 2,
   },
 })

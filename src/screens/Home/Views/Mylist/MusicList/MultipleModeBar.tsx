@@ -60,7 +60,8 @@ export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({ onSelect
 
       Animated.parallel([
         Animated.timing(animFade, {
-          toValue: 0.92,
+          // 1 而不是 0.92：内嵌场景下多选条压在列表行上，半透明会透出下面的文字
+          toValue: 1,
           duration: 200,
           useNativeDriver: true,
         }),
@@ -98,7 +99,8 @@ export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({ onSelect
 
   const animaStyle = useMemo(() => ({
     ...styles.container,
-    // backgroundColor: theme['c-content-background'],
+    // 内嵌在「我的」页时多选条浮在列表上方，需要不透明底色遮住下面的行
+    backgroundColor: theme['c-content-background'],
     borderBottomColor: theme['c-border-background'],
     opacity: visibleBar ? animFade : 0, // Bind opacity to animated value
     transform: [

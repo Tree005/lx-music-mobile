@@ -1,6 +1,6 @@
 import { memo, type ComponentType } from 'react'
 import { ScrollView, TouchableOpacity, View } from 'react-native'
-import { ChartBar, Gear, Heart, House, MagnifyingGlass, MusicNotes, SignOut, VinylRecord, type IconProps } from 'phosphor-react-native'
+import { ChartBar, ClockCounterClockwise, CloudArrowDown, Gear, Heart, House, MagnifyingGlass, MusicNotes, SignOut, VinylRecord, type IconProps } from 'phosphor-react-native'
 import { useNavActiveId, useStatusbarHeight } from '@/store/common/hook'
 import { useTheme } from '@/store/theme/hook'
 import { PhIcon } from '@/components/common/PhIcon'
@@ -21,6 +21,8 @@ const ICON_MAP: Record<string, ComponentType<IconProps>> = {
   album: VinylRecord,
   leaderboard: ChartBar,
   love: Heart,
+  download: CloudArrowDown,
+  history: ClockCounterClockwise,
   setting: Gear,
   // 下面两个是 Aside 内硬编码的菜单图标名
   home: House,

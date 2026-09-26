@@ -1,5 +1,5 @@
 import { View } from 'react-native'
-import { CloudArrowDown } from 'phosphor-react-native'
+import { ClockCounterClockwise } from 'phosphor-react-native'
 
 import { PhIcon } from '@/components/common/PhIcon'
 import { useTheme } from '@/store/theme/hook'
@@ -19,15 +19,15 @@ const styles = createStyle({
   },
 })
 
-// 占位页，暂未实现下载管理
+// 占位页，暂未实现播放历史记录
 export default () => {
   const theme = useTheme()
   const t = useI18n()
 
   return (
     <View style={styles.container}>
-      <PhIcon Icon={CloudArrowDown} size={48} color={theme['c-font-label']} />
-      <Text style={styles.text} size={15} color={theme['c-font-label']}>{t('nav_download')}</Text>
+      <PhIcon Icon={ClockCounterClockwise} size={48} color={theme['c-font-label']} />
+      <Text style={styles.text} size={15} color={theme['c-font-label']}>{t('nav_history')}</Text>
     </View>
   )
 }

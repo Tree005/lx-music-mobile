@@ -11,16 +11,16 @@ import { BorderWidths } from '@/theme'
 const TABS = ['music', 'list'] as const
 type TabType = typeof TABS[number]
 
-// 「我的收藏」：单曲 / 歌单 双 tab（原来是「主区单曲 + 侧边抽屉歌单」的布局）
-export default () => {
+// 我的收藏：单曲 / 歌单 双 tab（等宽两列，对齐参考图）
+// - 独立页面（nav_love）与「我的」页内嵌都用它
+// - embedded 时由外层出「我的收藏」标题，单曲列表也不显示「当前列表」条
+export default ({ embedded }: { embedded?: boolean }) => {
   const t = useI18n()
   const theme = useTheme()
   const [tab, setTab] = useState<TabType>('music')
 
   const handleChange = useCallback((next: TabType) => {
     setTab(next)
-    // MyList 依赖 changeLoveListVisible 事件才会挂载，切到歌单 tab 时补一次
-    if (next == 'list') global.app_event.changeLoveListVisible(true)
   }, [])
 
   return (
@@ -30,8 +30,8 @@ export default () => {
           TABS.map(id => (
             <TouchableOpacity key={id} style={styles.tabItem} onPress={() => { handleChange(id) }}>
               <Text
-                size={15}
-                color={tab == id ? theme['c-primary-font-active'] : theme['c-font']}
+                size={16}
+                color={tab == id ? theme['c-primary-font-active'] : theme['c-font-label']}
                 style={{
                   ...styles.tabText,
                   borderBottomColor: tab == id ? theme['c-primary-background-active'] : 'transparent',
@@ -43,7 +43,7 @@ export default () => {
       </View>
       <View style={styles.content}>
         {/* 两个列表都是自包含组件，内部各自管理菜单、弹窗与多选状态 */}
-        {tab == 'music' ? <MusicList /> : <MyList />}
+        {tab == 'music' ? <MusicList embedded={embedded} /> : <MyList />}
       </View>
     </View>
   )
@@ -55,11 +55,11 @@ const styles = createStyle({
   },
   tabBar: {
     flexDirection: 'row',
-    paddingLeft: 20,
     borderBottomWidth: BorderWidths.normal,
   },
   tabItem: {
-    marginRight: 20,
+    flex: 1,
+    alignItems: 'center',
   },
   tabText: {
     paddingTop: 8,

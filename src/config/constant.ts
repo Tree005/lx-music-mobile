@@ -98,13 +98,14 @@ export const storageDataPrefixOld = {
 export const APP_PROVIDER_NAME = 'cn.toside.music.mobile.provider'
 
 
-// 横屏侧栏（Horizontal/Aside）菜单，改造后仅横屏使用，勿删
+// 横屏侧栏（Horizontal/Aside）菜单，也是所有「子页面」nav id 的来源
 export const NAV_MENUS = [
   { id: 'nav_search', icon: 'search-2' },
   { id: 'nav_songlist', icon: 'album' },
   { id: 'nav_top', icon: 'leaderboard' },
   { id: 'nav_love', icon: 'love' },
-  // { id: 'download', icon: 'download-2' },
+  { id: 'nav_download', icon: 'download' },
+  { id: 'nav_history', icon: 'history' },
   { id: 'nav_setting', icon: 'setting' },
 ] as const
 
@@ -127,6 +128,8 @@ export const TAB_OF_ID: Record<NAV_ID_Type, NAV_TAB_Type> = {
   nav_songlist: 'nav_home',
   nav_top: 'nav_home',
   nav_love: 'nav_mine',
+  nav_download: 'nav_mine',
+  nav_history: 'nav_mine',
   nav_setting: 'nav_mine',
 }
 
