@@ -80,8 +80,9 @@ export default forwardRef<HeaderType, HeaderProps>(({ componentId }: { component
       <View style={styles.info}>
         <Pic componentId={componentId} imgUrl={detailInfo.imgUrl} />
         <View style={styles.infoText} nativeID={NAV_SHEAR_NATIVE_IDS.songlistDetail_title}>
-          <Text style={styles.name} size={22} numberOfLines={2}>{detailInfo.name}</Text>
-          <Text style={styles.desc} size={14} color={theme['c-font-label']} numberOfLines={4}>{detailInfo.desc}</Text>
+          <Text style={styles.name} size={18} numberOfLines={2}>{detailInfo.name}</Text>
+          {/* 描述只留 3 行，多出来的用省略号（对齐参考图，也避免文字块比封面高太多） */}
+          <Text style={styles.desc} size={12} color={theme['c-font-label']} numberOfLines={3} ellipsizeMode="tail">{detailInfo.desc}</Text>
         </View>
       </View>
       <ButtonBar />
@@ -110,8 +111,8 @@ const styles = createStyle({
     flexDirection: 'row',
     paddingLeft: 20,
     paddingRight: 20,
-    paddingTop: 4,
-    paddingBottom: 20,
+    paddingTop: 2,
+    paddingBottom: 16,
   },
   picWrap: {
     flexGrow: 0,
@@ -130,8 +131,11 @@ const styles = createStyle({
   },
   name: {
     fontWeight: 'bold',
+    // 行距压紧：2 行标题 + 3 行描述的整块高度要和封面相当（对齐参考图比例）
+    lineHeight: 21,
   },
   desc: {
-    marginTop: 10,
+    marginTop: 6,
+    lineHeight: 16,
   },
 })

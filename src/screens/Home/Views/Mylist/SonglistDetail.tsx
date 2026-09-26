@@ -83,8 +83,8 @@ export default () => {
       <View style={styles.info}>
         <Image style={styles.pic} url={picUrl} />
         <View style={styles.infoText}>
-          <Text style={styles.name} size={22} numberOfLines={2}>{listInfo.name}</Text>
-          <Text style={styles.desc} size={14} color={theme['c-font-label']} numberOfLines={1}>
+          <Text style={styles.name} size={18} numberOfLines={2}>{listInfo.name}</Text>
+          <Text style={styles.desc} size={12} color={theme['c-font-label']} numberOfLines={1} ellipsizeMode="tail">
             {listInfo.source ? t(`source_alias_${listInfo.source}`) : t('songlist_type_user')}
           </Text>
         </View>
@@ -125,8 +125,8 @@ const styles = createStyle({
     flexDirection: 'row',
     paddingLeft: 20,
     paddingRight: 20,
-    paddingTop: 4,
-    paddingBottom: 20,
+    paddingTop: 2,
+    paddingBottom: 16,
   },
   pic: {
     width: scaleSizeW(100),
@@ -141,9 +141,12 @@ const styles = createStyle({
   },
   name: {
     fontWeight: 'bold',
+    // 行距压紧：2 行标题 + 副标题的整块高度要和封面相当（对齐参考图比例）
+    lineHeight: 21,
   },
   desc: {
-    marginTop: 10,
+    marginTop: 6,
+    lineHeight: 16,
   },
   actions: {
     flexDirection: 'row',
