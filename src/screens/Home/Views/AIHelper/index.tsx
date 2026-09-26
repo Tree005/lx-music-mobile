@@ -17,14 +17,15 @@ const styles = createStyle({
   },
 })
 
+// 占位页，不实现任何功能
 export default () => {
   const theme = useTheme()
   const t = useI18n()
 
   return (
     <View style={styles.container}>
-      <MciIcon name="robot-happy-outline" size={48} color={theme['c-font-label']} />
-      <Text style={styles.text} color={theme['c-font-label']}>{t('ai_helper_placeholder')}</Text>
+      <MciIcon name="heart-outline" size={48} color={theme['c-font-label']} />
+      <Text style={styles.text} size={15} color={theme['c-font-label']}>{t('nav_ai')}</Text>
     </View>
   )
 }

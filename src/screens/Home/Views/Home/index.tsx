@@ -2,10 +2,11 @@ import { ScrollView } from 'react-native'
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import SearchBar from './components/SearchBar'
-import BoardsSection from './components/BoardsSection'
 import SonglistsSection from './components/SonglistsSection'
+import HotSongsSection from './components/HotSongsSection'
+import BoardsSection from './components/BoardsSection'
 
-// 首页：顶部搜索框 + 排行榜区块 + 推荐歌单区块
+// 首页：顶部搜索框 + 推荐歌单（横滑大卡片）+ 热门歌曲（榜单歌曲列表）+ 排行榜
 // 本页由 PagerView 懒挂载，异步数据请求与卸载保护都在子区块内各自处理
 export default () => {
   const theme = useTheme()
@@ -17,8 +18,9 @@ export default () => {
       keyboardShouldPersistTaps="handled"
     >
       <SearchBar />
-      <BoardsSection />
       <SonglistsSection />
+      <HotSongsSection />
+      <BoardsSection />
     </ScrollView>
   )
 }

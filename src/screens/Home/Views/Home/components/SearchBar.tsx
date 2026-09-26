@@ -1,12 +1,14 @@
 import { TouchableOpacity } from 'react-native'
+import { MagnifyingGlass, QrCode } from 'phosphor-react-native'
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import { setNavActiveId } from '@/core/common'
 import Text from '@/components/common/Text'
+import { PhIcon } from '@/components/common/PhIcon'
 
-// 纯展示的搜索框，不复用 Views/Search/HeaderBar，避免把音源选择逻辑耦合到首页
-// 胶囊形白底 + 浅灰描边，文字水平居中，无图标
+// 顶部搜索框：浅灰胶囊 + 左侧放大镜 + 提示文字 + 右侧扫码图标
+// 整条可点，点击进入搜索页
 export default () => {
   const theme = useTheme()
   const t = useI18n()
@@ -18,29 +20,31 @@ export default () => {
   return (
     <TouchableOpacity
       activeOpacity={0.7}
-      style={{
-        ...styles.container,
-        backgroundColor: theme['c-content-background'],
-        borderColor: theme['c-border-background'],
-      }}
+      style={{ ...styles.container, backgroundColor: theme['c-200'] }}
       onPress={handlePress}
     >
+      <PhIcon Icon={MagnifyingGlass} size={18} color={theme['c-font-label']} />
       <Text style={styles.tip} size={14} color={theme['c-font-label']} numberOfLines={1}>{t('home_search_tip')}</Text>
+      <PhIcon Icon={QrCode} size={18} color={theme['c-font-label']} />
     </TouchableOpacity>
   )
 }
 
 const styles = createStyle({
   container: {
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
-    height: 48,
-    marginLeft: 20,
-    marginRight: 20,
-    borderRadius: 24,
-    borderWidth: 1,
+    height: 38,
+    marginTop: 8,
+    marginLeft: 16,
+    marginRight: 16,
+    paddingLeft: 12,
+    paddingRight: 12,
+    borderRadius: 19,
   },
   tip: {
-    maxWidth: '90%',
+    flex: 1,
+    marginLeft: 8,
+    marginRight: 8,
   },
 })

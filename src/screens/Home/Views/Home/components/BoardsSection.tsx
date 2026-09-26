@@ -1,19 +1,19 @@
 import { useEffect, useRef, useState } from 'react'
-import { TouchableOpacity, View } from 'react-native'
+import { ScrollView, TouchableOpacity, View } from 'react-native'
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import { setNavActiveId } from '@/core/common'
+import { scaleSizeW } from '@/utils/pixelRatio'
 import Text from '@/components/common/Text'
-import { Icon } from '@/components/common/Icon'
+import { CaretRight } from 'phosphor-react-native'
+import { PhIcon } from '@/components/common/PhIcon'
 import { getBoardsList } from '@/core/leaderboard'
 import { getLeaderboardSetting } from '@/utils/data'
 import leaderboardState, { type BoardItem } from '@/store/leaderboard/state'
 
-// 首页排行榜网格：3 列 2 行，共 6 个
+// 首页排行榜：横向滚动小卡片，最多取 6 个
 const MAX_BOARD_NUM = 6
-// 每行卡片数，用于计算末行补位
-const COLUMN_NUM = 3
 // 榜单数据没有封面图，卡片用纯色底占位，按索引循环取色
 const BOARD_CARD_COLORS = ['#7C6FE8', '#3FB980', '#4A9FE0', '#E0A24A', '#E86F8F', '#5DC5C0']
 
@@ -64,16 +64,13 @@ export default () => {
     setNavActiveId('nav_top')
   }
 
-  // 末行不足 3 个时补占位，避免最后两个卡片被 space-between 撑到两端
-  const placeholderNum = (COLUMN_NUM - (list.length % COLUMN_NUM)) % COLUMN_NUM
-
   return (
     <View>
       <View style={styles.header}>
         <Text size={18} style={styles.title}>{t('home_section_boards')}</Text>
         <TouchableOpacity style={styles.more} activeOpacity={0.7} onPress={handleMore}>
           <Text size={13} color={theme['c-primary']}>{t('home_more')}</Text>
-          <Icon name="chevron-right" size={13} color={theme['c-primary']} />
+          <PhIcon Icon={CaretRight} size={13} color={theme['c-primary']} />
         </TouchableOpacity>
       </View>
       {
@@ -84,27 +81,29 @@ export default () => {
           : status == 'loading'
             ? null
             : (
-                <View style={styles.grid}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.scrollContent}
+                >
                   {
                     list.map((item, index) => (
-                      <View key={item.id} style={styles.gridItem}>
-                        <TouchableOpacity
-                          activeOpacity={0.7}
+                      <TouchableOpacity
+                        key={item.id}
+                        activeOpacity={0.7}
+                        style={styles.card}
+                        onPress={handleBoardPress}
+                      >
+                        <View
                           style={{ ...styles.boardCard, backgroundColor: BOARD_CARD_COLORS[index % BOARD_CARD_COLORS.length] }}
-                          onPress={handleBoardPress}
                         >
                           <Text size={13} color="#fff" numberOfLines={2} style={styles.boardCardText}>{item.name}</Text>
-                        </TouchableOpacity>
+                        </View>
                         <Text size={13} numberOfLines={1} style={styles.boardName}>{item.name}</Text>
-                      </View>
+                      </TouchableOpacity>
                     ))
                   }
-                  {
-                    Array(placeholderNum).fill(0).map((_, index) => (
-                      <View key={`placeholder-${index}`} style={styles.gridItem} />
-                    ))
-                  }
-                </View>
+                </ScrollView>
               )
       }
     </View>
@@ -133,16 +132,13 @@ const styles = createStyle({
     paddingTop: 4,
     paddingBottom: 4,
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+  scrollContent: {
     paddingLeft: 20,
     paddingRight: 20,
+    gap: 12,
   },
-  gridItem: {
-    width: '31%',
-    marginBottom: 16,
+  card: {
+    width: scaleSizeW(100),
   },
   boardCard: {
     width: '100%',

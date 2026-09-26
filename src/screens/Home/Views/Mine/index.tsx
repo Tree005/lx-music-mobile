@@ -41,8 +41,6 @@ export default () => {
 
   return (
     <ScrollView style={{ ...styles.container, backgroundColor: theme['c-content-background'] }}>
-      {/* 页面大标题，替代原来的统一标题栏 */}
-      <Text size={24} style={styles.title}>{t('nav_mine')}</Text>
       <View style={styles.grid}>
         {
           NAV_ENTRIES.map(entry => (
@@ -68,17 +66,11 @@ const styles = createStyle({
   container: {
     flex: 1,
   },
-  title: {
-    fontWeight: 'bold',
-    paddingLeft: 20,
-    paddingRight: 20,
-    paddingTop: 12,
-    paddingBottom: 20,
-  },
   grid: {
     flexDirection: 'row',
     paddingLeft: 20,
     paddingRight: 20,
+    paddingTop: 20,
   },
   gridItem: {
     flex: 1,

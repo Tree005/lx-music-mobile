@@ -1,20 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
-import { TouchableOpacity, View } from 'react-native'
+import { ScrollView, TouchableOpacity, View } from 'react-native'
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import { setNavActiveId } from '@/core/common'
+import { scaleSizeW, setSpText } from '@/utils/pixelRatio'
 import Text from '@/components/common/Text'
-import { Icon } from '@/components/common/Icon'
+import { CaretRight, Play } from 'phosphor-react-native'
+import { PhIcon } from '@/components/common/PhIcon'
 import Image from '@/components/common/Image'
 import { getList } from '@/core/songlist'
 import { getSongListSetting } from '@/utils/data'
 import songlistState, { type ListInfoItem } from '@/store/songlist/state'
 
-// 首页推荐歌单网格：3 列 2 行，共 6 个
-const MAX_SONGLIST_NUM = 6
-// 每行卡片数，用于计算末行补位
-const COLUMN_NUM = 3
+// 首页推荐歌单：横向滚动大卡片，最多取 10 个
+const MAX_SONGLIST_NUM = 10
 
 export default () => {
   const theme = useTheme()
@@ -64,16 +64,13 @@ export default () => {
     setNavActiveId('nav_songlist')
   }
 
-  // 末行不足 3 个时补占位，避免最后两个卡片被 space-between 撑到两端
-  const placeholderNum = (COLUMN_NUM - (list.length % COLUMN_NUM)) % COLUMN_NUM
-
   return (
     <View>
       <View style={styles.header}>
         <Text size={18} style={styles.title}>{t('home_section_songlists')}</Text>
         <TouchableOpacity style={styles.more} activeOpacity={0.7} onPress={handleMore}>
           <Text size={13} color={theme['c-primary']}>{t('home_more')}</Text>
-          <Icon name="chevron-right" size={13} color={theme['c-primary']} />
+          <PhIcon Icon={CaretRight} size={13} color={theme['c-primary']} />
         </TouchableOpacity>
       </View>
       {
@@ -84,21 +81,26 @@ export default () => {
           : status == 'loading'
             ? null
             : (
-                <View style={styles.grid}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.scrollContent}
+                >
                   {
                     list.map(item => (
-                      <TouchableOpacity key={item.id} activeOpacity={0.7} style={styles.gridItem} onPress={handleSonglistPress}>
-                        <Image url={item.img} style={styles.songlistImg} />
-                        <Text style={styles.songlistName} numberOfLines={2} size={12}>{item.name}</Text>
+                      <TouchableOpacity key={item.id} activeOpacity={0.7} style={styles.card} onPress={handleSonglistPress}>
+                        <View style={styles.coverWrap}>
+                          <Image url={item.img} style={styles.cover} />
+                          {/* 封面右下角播放按钮：仅作视觉提示，点击整卡进入歌单页 */}
+                          <View style={styles.playBtn}>
+                            <PhIcon Icon={Play} size={18} weight="fill" color="#fff" />
+                          </View>
+                        </View>
+                        <Text style={styles.cardName} numberOfLines={2} size={13}>{item.name}</Text>
                       </TouchableOpacity>
                     ))
                   }
-                  {
-                    Array(placeholderNum).fill(0).map((_, index) => (
-                      <View key={`placeholder-${index}`} style={styles.gridItem} />
-                    ))
-                  }
-                </View>
+                </ScrollView>
               )
       }
     </View>
@@ -127,23 +129,38 @@ const styles = createStyle({
     paddingTop: 4,
     paddingBottom: 4,
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+  scrollContent: {
     paddingLeft: 20,
     paddingRight: 20,
+    gap: 12,
   },
-  gridItem: {
-    width: '31%',
-    marginBottom: 16,
+  card: {
+    width: scaleSizeW(150),
   },
-  songlistImg: {
+  coverWrap: {
     width: '100%',
     aspectRatio: 1,
     borderRadius: 8,
+    overflow: 'hidden',
   },
-  songlistName: {
-    marginTop: 7,
+  cover: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
+  },
+  playBtn: {
+    position: 'absolute',
+    right: 6,
+    bottom: 6,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardName: {
+    marginTop: 8,
+    lineHeight: setSpText(18),
   },
 })
