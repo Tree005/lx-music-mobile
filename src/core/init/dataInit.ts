@@ -4,6 +4,7 @@ import { init as musicSdkInit } from '@/utils/musicSdk'
 import { getUserLists, setUserList } from '@/core/list'
 import { setNavActiveId } from '../common'
 import { getViewPrevState } from '@/utils/data'
+import { BOTTOM_TABS } from '@/config/constant'
 import { bootLog } from '@/utils/bootLog'
 import { getDislikeInfo, setDislikeInfo } from '@/core/dislikeList'
 import { unlink } from '@/utils/fs'
@@ -31,7 +32,9 @@ export default async(appSetting: LX.AppSetting) => {
   setUserList(await getUserLists()) // 获取用户列表
   setDislikeInfo(await getDislikeInfo()) // 获取不喜欢列表
   bootLog('User list inited.')
-  setNavActiveId((await getViewPrevState()).id)
+  // 归一化历史记录：旧版持久化的是 nav_search 等子页面 id，改造后需回落到对应底部 Tab
+  const prevNavId = (await getViewPrevState()).id
+  setNavActiveId(BOTTOM_TABS.some(tab => tab.id === prevNavId) ? prevNavId : 'nav_home')
   void unlink(TEMP_FILE_PATH)
   // await initPrevPlayInfo(appSetting).catch(err => log.error(err)) // 初始化上次的歌曲播放信息
 }

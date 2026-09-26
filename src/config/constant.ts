@@ -98,6 +98,7 @@ export const storageDataPrefixOld = {
 export const APP_PROVIDER_NAME = 'cn.toside.music.mobile.provider'
 
 
+// 横屏侧栏（Horizontal/Aside）菜单，改造后仅横屏使用，勿删
 export const NAV_MENUS = [
   { id: 'nav_search', icon: 'search-2' },
   { id: 'nav_songlist', icon: 'album' },
@@ -107,7 +108,27 @@ export const NAV_MENUS = [
   { id: 'nav_setting', icon: 'setting' },
 ] as const
 
-export type NAV_ID_Type = typeof NAV_MENUS[number]['id']
+// 竖屏底部三 Tab（顺序即显示顺序），icon 使用 MaterialCommunityIcons 图标名
+export const BOTTOM_TABS = [
+  { id: 'nav_home', icon: 'home' },
+  { id: 'nav_ai', icon: 'robot-happy-outline' },
+  { id: 'nav_mine', icon: 'account' },
+] as const
+
+export type NAV_ID_Type = typeof NAV_MENUS[number]['id'] | typeof BOTTOM_TABS[number]['id']
+export type NAV_TAB_Type = typeof BOTTOM_TABS[number]['id']
+
+// 每个导航 id 归属的底部 Tab（用于 TabBar 高亮、返回键回退）
+export const TAB_OF_ID: Record<NAV_ID_Type, NAV_TAB_Type> = {
+  nav_home: 'nav_home',
+  nav_ai: 'nav_ai',
+  nav_mine: 'nav_mine',
+  nav_search: 'nav_home',
+  nav_songlist: 'nav_home',
+  nav_top: 'nav_home',
+  nav_love: 'nav_mine',
+  nav_setting: 'nav_mine',
+}
 
 export const LXM_FILE_EXT_RXP = ['json', 'lxmc', 'bin']
 export const USER_API_SOURCE_FILE_EXT_RXP = ['js']
@@ -148,7 +169,7 @@ export const DEFAULT_SETTING = {
   },
 
   viewPrevState: {
-    id: 'nav_search' as NAV_ID_Type,
+    id: 'nav_home' as NAV_ID_Type,
     // query: {},
   },
 }

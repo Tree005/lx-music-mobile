@@ -19,12 +19,15 @@ export default memo(({ title, children }: {
 
 const styles = createStyle({
   container: {
-    paddingLeft: 25,
-    marginBottom: 18,
+    // FlatList 已提供 15 的左内边距，这里补 5，与分组标题、设置项左对齐
+    paddingLeft: 5,
+    // 子分组之间的留白
+    marginBottom: 20,
   },
   title: {
-    marginLeft: -10,
-    marginBottom: 10,
+    // 子分组标题沿用分组标题的普通粗体风格，仅字号更小以区分层级
+    fontWeight: 'bold',
+    marginBottom: 8,
     // lineHeight: 16,
   },
 })

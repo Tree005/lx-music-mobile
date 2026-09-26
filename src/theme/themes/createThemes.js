@@ -295,6 +295,24 @@ const defaultThemes = [
       'c-badge-tertiary': 'var(c-primary-light-100)',
     },
   },
+  {
+    id: 'mint',
+    name: '薄荷青绿',
+    isDark: false,
+    config: {
+      primary: 'rgb(76, 205, 196)',
+      font: 'rgb(33, 33, 33)',
+      'c-app-background': 'var(c-primary-light-600-alpha-700)',
+      'c-main-background': 'rgba(255, 255, 255, 1)',
+      'bg-image': '',
+      'bg-image-position': 'center',
+      'bg-image-size': 'cover',
+
+      'c-badge-primary': 'var(c-primary)',
+      'c-badge-secondary': '#5cbf9b',
+      'c-badge-tertiary': '#5cbf9b',
+    },
+  },
 ]
 
 const themes = defaultThemes.map(({ config: { primary, font, ...extInfo }, ...themeInfo }) => {

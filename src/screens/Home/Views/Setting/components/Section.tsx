@@ -1,7 +1,6 @@
 import { View } from 'react-native'
 
 import { createStyle } from '@/utils/tools'
-import { useTheme } from '@/store/theme/hook'
 import Text from '@/components/common/Text'
 
 
@@ -11,11 +10,9 @@ interface Props {
 }
 
 export default ({ title, children }: Props) => {
-  const theme = useTheme()
-
   return (
     <View style={styles.container}>
-      <Text style={{ ...styles.title, borderLeftColor: theme['c-primary'] }} size={16} >{title}</Text>
+      <Text style={styles.title} size={17}>{title}</Text>
       <View>
         {children}
       </View>
@@ -26,13 +23,16 @@ export default ({ title, children }: Props) => {
 
 const styles = createStyle({
   container: {
-    // paddingLeft: 10,
-    // backgroundColor: 'rgba(0,0,0,0.2)',
+    // 分组之间的留白由标题的 marginTop 提供
   },
   title: {
-    borderLeftWidth: 5,
-    paddingLeft: 12,
-    marginBottom: 10,
+    // 去掉原来的左侧竖线，改为普通粗体标题
+    fontWeight: 'bold',
+    // FlatList 已提供 15 的左内边距，这里补 5，让标题左边缘与设置项对齐在约 20 处
+    paddingLeft: 5,
+    // 上方 24 留白用于区分分组，下方 8 留白用于分隔标题与选项
+    marginTop: 24,
+    marginBottom: 8,
     // lineHeight: 16,
   },
 })

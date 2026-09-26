@@ -1,60 +1,45 @@
-import { useEffect, useRef } from 'react'
-// import { getWindowSise, onDimensionChange } from '@/utils/tools'
-import DrawerNav from './DrawerNav'
+import { useCallback } from 'react'
 import Header from './Header'
 import Main from './Main'
-import { useSettingValue } from '@/store/setting/hook'
-import { COMPONENT_IDS } from '@/config/constant'
-import DrawerLayoutFixed, { type DrawerLayoutFixedType } from '@/components/common/DrawerLayoutFixed'
-import { scaleSizeW } from '@/utils/pixelRatio'
-
-const MAX_WIDTH = scaleSizeW(300)
+import SubPage from './SubPage'
+import SubPageHeader from './SubPageHeader'
+import { BOTTOM_TABS, TAB_OF_ID } from '@/config/constant'
+import { useNavActiveId } from '@/store/common/hook'
+import { setNavActiveId } from '@/core/common'
+import { useBackHandler } from '@/utils/hooks/useBackHandler'
 
 const Content = () => {
-  const drawer = useRef<DrawerLayoutFixedType>(null)
-  const drawerLayoutPosition = useSettingValue('common.drawerLayoutPosition')
+  const id = useNavActiveId()
+  // 当前是底部 Tab 页本身，还是 Tab 下的子页面
+  const isTab = BOTTOM_TABS.some(tab => tab.id === id)
 
-  useEffect(() => {
-    const changeVisible = (visible: boolean) => {
-      if (visible) {
-        drawer.current?.openDrawer()
-      } else {
-        drawer.current?.closeDrawer()
-      }
-    }
+  // 子页面下按返回键回退到所属的 Tab
+  useBackHandler(useCallback(() => {
+    if (isTab) return false
+    setNavActiveId(TAB_OF_ID[id])
+    return true
+  }, [id, isTab]))
 
-    global.app_event.on('changeMenuVisible', changeVisible)
-
-    return () => {
-      global.app_event.off('changeMenuVisible', changeVisible)
-    }
-  }, [])
-
-  const navigationView = () => <DrawerNav />
-  // console.log('render drawer content')
+  // Tab 页渲染 PagerView，子页面渲染页面本体（返回栏见下方，搜索页除外）
+  let content
+  if (isTab) {
+    content = <Main />
+  } else {
+    content = (
+      <>
+        {/* 搜索页自带「取消」按钮，不再需要返回栏；其他子页面保留返回栏 */}
+        {id == 'nav_search' ? null : <SubPageHeader id={id} />}
+        <SubPage id={id} />
+      </>
+    )
+  }
 
   return (
-    <DrawerLayoutFixed
-      ref={drawer}
-      widthPercentage={0.7}
-      widthPercentageMax={MAX_WIDTH}
-      visibleNavNames={[COMPONENT_IDS.home]}
-      // drawerWidth={width}
-      drawerPosition={drawerLayoutPosition}
-      renderNavigationView={navigationView}
-    >
+    <>
       <Header />
-      <Main />
-      {/* <View style={styles.container}>
-      </View> */}
-    </DrawerLayoutFixed>
+      {content}
+    </>
   )
 }
-
-// const styles = createStyle({
-//   container: {
-//     flex: 1,
-//   },
-// })
 
 export default Content

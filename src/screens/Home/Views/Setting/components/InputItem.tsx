@@ -1,10 +1,11 @@
 import { memo, useState, useEffect, useRef } from 'react'
 
-import { StyleSheet, View, Keyboard } from 'react-native'
+import { View, Keyboard } from 'react-native'
 import type { InputType, InputProps } from '@/components/common/Input'
 import Input from '@/components/common/Input'
 import { useTheme } from '@/store/theme/hook'
 import Text from '@/components/common/Text'
+import { createStyle } from '@/utils/tools'
 
 
 export interface InputItemProps extends InputProps {
@@ -63,7 +64,7 @@ export default memo(({ value, label, onChanged, ...props }: InputItemProps) => {
   }
   return (
     <View style={styles.container}>
-      <Text style={styles.label} size={14}>{label}</Text>
+      <Text style={styles.label} size={15}>{label}</Text>
       <Input
         value={text}
         ref={inputRef}
@@ -76,13 +77,14 @@ export default memo(({ value, label, onChanged, ...props }: InputItemProps) => {
   )
 })
 
-const styles = StyleSheet.create({
+const styles = createStyle({
   container: {
-    paddingLeft: 25,
-    marginBottom: 15,
+    // FlatList 已提供 15 的左内边距，这里补 5，与设置项左对齐
+    paddingLeft: 5,
+    marginBottom: 16,
   },
   label: {
-    marginBottom: 2,
+    marginBottom: 4,
   },
   input: {
     backgroundColor: 'rgba(0,0,0,0.2)',
