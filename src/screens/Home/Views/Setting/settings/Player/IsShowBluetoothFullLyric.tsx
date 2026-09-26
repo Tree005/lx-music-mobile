@@ -7,7 +7,6 @@ import { useSettingValue } from '@/store/setting/hook'
 
 
 import CheckBoxItem from '../../components/CheckBoxItem'
-import { Bluetooth } from 'phosphor-react-native'
 import { updateNowPlayingTitles } from '@/plugins/player/utils'
 import playerState from '@/store/player/state'
 
@@ -26,7 +25,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem icon={Bluetooth} check={isShowBluetoothFullLyric} onChange={setShowBluetoothFullLyric} label={t('setting_play_show_bluetooth_full_lyric')} />
+      <CheckBoxItem check={isShowBluetoothFullLyric} onChange={setShowBluetoothFullLyric} label={t('setting_play_show_bluetooth_full_lyric')} />
     </View>
   )
 })

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ComponentType } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { View, TouchableOpacity } from 'react-native'
 import CheckBox from './Checkbox'
 
@@ -6,7 +6,7 @@ import { createStyle, tipDialog } from '@/utils/tools'
 import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
 import { useTheme } from '@/store/theme/hook'
 import Text from '../Text'
-import { Question, type IconProps } from 'phosphor-react-native'
+import { Question } from 'phosphor-react-native'
 import { PhIcon } from '../PhIcon'
 
 export interface CheckBoxProps {
@@ -19,14 +19,12 @@ export interface CheckBoxProps {
   size?: number
   marginRight?: number
   marginBottom?: number
-  /** 设置项左侧的功能图标（可选），显示在勾选框与文字之间 */
-  icon?: ComponentType<IconProps>
 
   helpTitle?: string
   helpDesc?: string
 }
 
-export default ({ check, label, children, onChange, helpTitle, helpDesc, icon, disabled = false, need = false, marginRight = 0, marginBottom = 0, size = 1 }: CheckBoxProps) => {
+export default ({ check, label, children, onChange, helpTitle, helpDesc, disabled = false, need = false, marginRight = 0, marginBottom = 0, size = 1 }: CheckBoxProps) => {
   const theme = useTheme()
   const [isDisabled, setDisabled] = useState(false)
   const tintColors = {
@@ -71,13 +69,6 @@ export default ({ check, label, children, onChange, helpTitle, helpDesc, icon, d
   }, [helpTitle, helpDesc, size])
 
 
-  // 设置项左侧的功能图标（参考图的样式：主色线性图标）
-  const iconComponent = useMemo(() => {
-    return icon
-      ? <PhIcon Icon={icon} size={20} color={theme['c-primary']} style={styles.itemIcon} />
-      : null
-  }, [icon, theme])
-
   const contentStyle = { ...styles.content, marginBottom: scaleSizeH(marginBottom) }
   const labelStyle = { ...styles.label, marginRight: scaleSizeW(marginRight) }
 
@@ -86,7 +77,6 @@ export default ({ check, label, children, onChange, helpTitle, helpDesc, icon, d
       ? (
           <View style={contentStyle}>
             <CheckBox status={check ? 'checked' : 'unchecked'} disabled={true} tintColors={disabledTintColors} size={size} />
-            {iconComponent}
             <View style={labelStyle}>{label ? <Text style={styles.name} color={theme['c-500']} size={15 * size}>{label}</Text> : children}</View>
             {helpComponent}
           </View>
@@ -94,7 +84,6 @@ export default ({ check, label, children, onChange, helpTitle, helpDesc, icon, d
       : (
           <View style={contentStyle}>
             <CheckBox status={check ? 'checked' : 'unchecked'} disabled={isDisabled} onPress={handleLabelPress} tintColors={tintColors} size={size} />
-            {iconComponent}
             <TouchableOpacity style={labelStyle} activeOpacity={0.3} onPress={handleLabelPress}>
               {label ? <Text style={styles.name} size={15 * size}>{label}</Text> : children}
             </TouchableOpacity>
@@ -132,9 +121,6 @@ const styles = createStyle({
     // backgroundColor: 'rgba(0, 0, 0, 0.2)',
     paddingHorizontal: 8,
     paddingVertical: 3,
-  },
-  itemIcon: {
-    marginRight: 10,
   },
 })
 

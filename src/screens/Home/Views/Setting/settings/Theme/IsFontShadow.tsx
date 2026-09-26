@@ -1,7 +1,6 @@
 import { memo } from 'react'
 import { View } from 'react-native'
 
-import { TextAa } from 'phosphor-react-native'
 
 import CheckBoxItem from '../../components/CheckBoxItem'
 import { createStyle } from '@/utils/tools'
@@ -18,7 +17,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem icon={TextAa} check={isFontShadow} label={t('setting_basic_theme_font_shadow')} onChange={setIsFontShadow} />
+      <CheckBoxItem check={isFontShadow} label={t('setting_basic_theme_font_shadow')} onChange={setIsFontShadow} />
     </View>
   )
 })

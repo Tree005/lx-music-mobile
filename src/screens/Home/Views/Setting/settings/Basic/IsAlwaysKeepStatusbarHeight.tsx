@@ -6,8 +6,6 @@ import { View } from 'react-native'
 import { useSettingValue } from '@/store/setting/hook'
 
 
-import { DeviceMobile } from 'phosphor-react-native'
-
 import CheckBoxItem from '../../components/CheckBoxItem'
 
 export default memo(() => {
@@ -20,7 +18,6 @@ export default memo(() => {
   return (
     <View style={styles.content}>
       <CheckBoxItem
-        icon={DeviceMobile}
         check={val}
         label={t('setting_basic_always_keep_statusbar_height')}
         helpDesc={t('setting_basic_always_keep_statusbar_height_tip')}

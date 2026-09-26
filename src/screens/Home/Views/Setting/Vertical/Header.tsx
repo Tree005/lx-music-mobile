@@ -1,63 +1,58 @@
-import { forwardRef, useImperativeHandle, useState } from 'react'
-import { TouchableOpacity, View } from 'react-native'
+import { View, TouchableOpacity } from 'react-native'
+import { CaretLeft } from 'phosphor-react-native'
 
-import { CaretRight } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
-import { BorderWidths } from '@/theme'
-import { useTheme } from '@/store/theme/hook'
-import { createStyle } from '@/utils/tools'
 import Text from '@/components/common/Text'
-import { useI18n } from '@/lang'
-import { type SettingScreenIds } from '../Main'
+import { useTheme } from '@/store/theme/hook'
+import { useStatusbarHeight } from '@/store/common/hook'
+import { createStyle } from '@/utils/tools'
+import { scaleSizeH } from '@/utils/pixelRatio'
+import { HEADER_HEIGHT } from '@/config/constant'
 
-export interface HeaderProps {
-  onShowNavBar: () => void
-}
-export interface HeaderType {
-  setActiveId: (id: SettingScreenIds) => void
-}
+// 返回栏高度（不含状态栏）
+const HEADER_HEIGHT_SIZE = scaleSizeH(HEADER_HEIGHT)
 
-export default forwardRef<HeaderType, HeaderProps>(({ onShowNavBar }, ref) => {
-  const [activeId, setActiveId] = useState(global.lx.settingActiveId)
+// 设置页自己的返回栏（设置主页 / 二级页两级都要用，所以不走通用的 SubPageHeader）
+export default ({ title, onBack }: {
+  title: string
+  onBack: () => void
+}) => {
   const theme = useTheme()
-  const t = useI18n()
-
-  useImperativeHandle(ref, () => ({
-    setActiveId(id) {
-      setActiveId(id)
-    },
-  }))
+  const statusBarHeight = useStatusbarHeight()
 
   return (
-    <TouchableOpacity onPress={onShowNavBar} style={{ ...styles.currentList, borderBottomColor: theme['c-border-background'] }}>
-      <View style={styles.currentListIcon}><PhIcon Icon={CaretRight} size={12} color={theme['c-button-font']} /></View>
-      <Text numberOfLines={1} size={16} style={styles.currentListText} color={theme['c-button-font']}>{t(`setting_${activeId}`)}</Text>
-    </TouchableOpacity>
+    <View style={{
+      ...styles.container,
+      // 高度叠加状态栏，并将内容下推避免被状态栏遮挡
+      height: HEADER_HEIGHT_SIZE + statusBarHeight,
+      paddingTop: statusBarHeight,
+      backgroundColor: theme['c-content-background'],
+    }}>
+      <TouchableOpacity style={styles.btn} onPress={onBack}>
+        <PhIcon Icon={CaretLeft} size={20} color={theme['c-font']} />
+      </TouchableOpacity>
+      <Text style={styles.title} size={18} numberOfLines={1}>{title}</Text>
+      {/* 右侧等宽占位，保证标题居中 */}
+      <View style={styles.btn} />
+    </View>
   )
-})
-
+}
 
 const styles = createStyle({
-  currentList: {
+  container: {
     flexDirection: 'row',
-    paddingRight: 2,
-    height: 40,
     alignItems: 'center',
-    borderBottomWidth: BorderWidths.normal,
-    // backgroundColor: 'rgba(0,0,0,0.2)',
+    zIndex: 10,
   },
-  currentListIcon: {
-    paddingLeft: 15,
-    paddingRight: 10,
-    // paddingTop: 10,
-    // paddingBottom: 0,
+  btn: {
+    width: HEADER_HEIGHT_SIZE,
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  currentListText: {
+  title: {
     flex: 1,
-    // minWidth: 70,
-    // paddingLeft: 10,
-    paddingRight: 10,
-    // paddingTop: 10,
-    // paddingBottom: 10,
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
 })

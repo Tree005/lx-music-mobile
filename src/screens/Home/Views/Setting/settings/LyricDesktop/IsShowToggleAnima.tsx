@@ -6,7 +6,6 @@ import { createStyle } from '@/utils/tools'
 
 
 import CheckBoxItem from '../../components/CheckBoxItem'
-import { Sparkle } from 'phosphor-react-native'
 import { setShowDesktopLyricToggleAnima } from '@/core/desktopLyric'
 import { updateSetting } from '@/core/common'
 
@@ -21,7 +20,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem icon={Sparkle} check={showToggleAnima} onChange={update} label={t('setting_lyric_desktop_toggle_anima')} />
+      <CheckBoxItem check={showToggleAnima} onChange={update} label={t('setting_lyric_desktop_toggle_anima')} />
     </View>
   )
 })

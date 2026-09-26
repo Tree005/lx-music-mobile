@@ -1,7 +1,6 @@
 import { memo } from 'react'
 import { View } from 'react-native'
 
-import { EyeSlash } from 'phosphor-react-native'
 
 import CheckBoxItem from '../../components/CheckBoxItem'
 import { createStyle } from '@/utils/tools'
@@ -26,7 +25,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem icon={EyeSlash} check={isHideBgDark} label={t('setting_basic_theme_hide_bg_dark')} onChange={setIsAutoTheme} />
+      <CheckBoxItem check={isHideBgDark} label={t('setting_basic_theme_hide_bg_dark')} onChange={setIsAutoTheme} />
     </View>
   )
 })

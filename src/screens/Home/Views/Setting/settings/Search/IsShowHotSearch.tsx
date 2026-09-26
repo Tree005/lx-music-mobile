@@ -6,8 +6,6 @@ import { View } from 'react-native'
 import { useSettingValue } from '@/store/setting/hook'
 
 
-import { MagnifyingGlass } from 'phosphor-react-native'
-
 import CheckBoxItem from '../../components/CheckBoxItem'
 
 export default memo(() => {
@@ -19,7 +17,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem icon={MagnifyingGlass} check={isShowHotSearch} onChange={handleUpdate} label={t('setting_search_show_hot_search')} />
+      <CheckBoxItem check={isShowHotSearch} onChange={handleUpdate} label={t('setting_search_show_hot_search')} />
     </View>
   )
 })

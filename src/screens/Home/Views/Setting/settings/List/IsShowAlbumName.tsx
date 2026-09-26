@@ -7,7 +7,6 @@ import { useSettingValue } from '@/store/setting/hook'
 
 
 import CheckBoxItem from '../../components/CheckBoxItem'
-import { Disc } from 'phosphor-react-native'
 
 export default memo(() => {
   const t = useI18n()
@@ -20,7 +19,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem icon={Disc} check={isShowAlbumName} onChange={setShowAlbumName} label={t('setting_list_show_album_name')} />
+      <CheckBoxItem check={isShowAlbumName} onChange={setShowAlbumName} label={t('setting_list_show_album_name')} />
     </View>
   )
 })

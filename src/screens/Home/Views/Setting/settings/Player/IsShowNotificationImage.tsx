@@ -7,7 +7,6 @@ import { useSettingValue } from '@/store/setting/hook'
 
 
 import CheckBoxItem from '../../components/CheckBoxItem'
-import { Bell } from 'phosphor-react-native'
 
 export default memo(() => {
   const t = useI18n()
@@ -18,7 +17,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem icon={Bell} check={isShowNotificationImage} onChange={setShowNotificationImage} label={t('setting_play_show_notification_image')} />
+      <CheckBoxItem check={isShowNotificationImage} onChange={setShowNotificationImage} label={t('setting_play_show_notification_image')} />
     </View>
   )
 })

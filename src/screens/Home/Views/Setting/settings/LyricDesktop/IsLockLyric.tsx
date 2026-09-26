@@ -6,7 +6,6 @@ import { createStyle } from '@/utils/tools'
 
 
 import CheckBoxItem from '../../components/CheckBoxItem'
-import { Lock } from 'phosphor-react-native'
 import { toggleDesktopLyricLock } from '@/core/desktopLyric'
 import { updateSetting } from '@/core/common'
 
@@ -21,7 +20,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem icon={Lock} check={isLock} onChange={setLock} label={t('setting_lyric_desktop_lock')} />
+      <CheckBoxItem check={isLock} onChange={setLock} label={t('setting_lyric_desktop_lock')} />
     </View>
   )
 })

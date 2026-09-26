@@ -6,8 +6,6 @@ import { View } from 'react-native'
 import { useSettingValue } from '@/store/setting/hook'
 
 
-import { CursorClick } from 'phosphor-react-native'
-
 import CheckBoxItem from '../../components/CheckBoxItem'
 
 export default memo(() => {
@@ -19,7 +17,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem icon={CursorClick} check={showBackBtn} label={t('setting_basic_show_back_btn')} onChange={setShowBackBtn} />
+      <CheckBoxItem check={showBackBtn} label={t('setting_basic_show_back_btn')} onChange={setShowBackBtn} />
     </View>
   )
 })

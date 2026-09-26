@@ -7,7 +7,6 @@ import { useSettingValue } from '@/store/setting/hook'
 
 
 import CheckBoxItem from '../../components/CheckBoxItem'
-import { Broom } from 'phosphor-react-native'
 
 export default memo(() => {
   const t = useI18n()
@@ -19,7 +18,6 @@ export default memo(() => {
   return (
     <View style={styles.content}>
       <CheckBoxItem
-        icon={Broom}
         check={isAutoCleanPlayedList}
         onChange={setAutoCleanPlayedList}
         helpDesc={t('setting_play_auto_clean_played_list_tip')}

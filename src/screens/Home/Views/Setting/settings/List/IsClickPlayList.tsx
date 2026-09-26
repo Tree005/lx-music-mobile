@@ -7,7 +7,6 @@ import { useSettingValue } from '@/store/setting/hook'
 
 
 import CheckBoxItem from '../../components/CheckBoxItem'
-import { ListDashes } from 'phosphor-react-native'
 
 export default memo(() => {
   const t = useI18n()
@@ -18,7 +17,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem icon={ListDashes} check={isClickPlayList} onChange={setClickPlayList} label={t('setting_list_click_action')} />
+      <CheckBoxItem check={isClickPlayList} onChange={setClickPlayList} label={t('setting_list_click_action')} />
     </View>
   )
 })

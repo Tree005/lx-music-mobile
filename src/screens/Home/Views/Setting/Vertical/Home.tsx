@@ -1,6 +1,6 @@
-import { memo, type ComponentType } from 'react'
+import { memo } from 'react'
 import { TouchableOpacity, View } from 'react-native'
-import { ArrowsClockwise, Broom, CaretRight, CloudArrowUp, Gear, MusicNotes, type IconProps } from 'phosphor-react-native'
+import { CaretRight } from 'phosphor-react-native'
 
 import Section from '../components/Section'
 import { useTheme } from '@/store/theme/hook'
@@ -9,11 +9,10 @@ import { createStyle } from '@/utils/tools'
 import Text from '@/components/common/Text'
 import { PhIcon } from '@/components/common/PhIcon'
 import { scaleSizeH } from '@/utils/pixelRatio'
-import { type SettingScreenIds } from '../Main'
+import { type SettingPageIds } from './index'
 
-// 主页入口行：图标 + 标题 +（可选副值）+ 右箭头
-const Row = memo(({ icon, label, value, onPress }: {
-  icon: ComponentType<IconProps>
+// 主页入口行：标题 +（可选副值）+ 右箭头，纯文字不带图标
+const Row = memo(({ label, value, onPress }: {
   label: string
   value?: string
   onPress: () => void
@@ -22,7 +21,6 @@ const Row = memo(({ icon, label, value, onPress }: {
 
   return (
     <TouchableOpacity style={styles.row} activeOpacity={0.7} onPress={onPress}>
-      <PhIcon Icon={icon} size={20} color={theme['c-primary']} style={styles.rowIcon} />
       <Text style={styles.rowLabel} size={15}>{label}</Text>
       {value ? <Text size={13} color={theme['c-font-label']} style={styles.rowValue}>{value}</Text> : null}
       <PhIcon Icon={CaretRight} size={14} color={theme['c-font-label']} />
@@ -30,25 +28,23 @@ const Row = memo(({ icon, label, value, onPress }: {
   )
 })
 
-// 设置主页：仿参考图的两级结构，这里只放入口
-export default ({ onOpenScreen, onOpenAppSettings }: {
-  /** 打开某个设置分区 */
-  onOpenScreen: (id: SettingScreenIds) => void
-  /** 进入「应用设置」子页 */
-  onOpenAppSettings: () => void
+// 设置主页：只放入口，点进去是各个二级页
+export default ({ onOpenPage }: {
+  /** 打开某个入口对应的二级页 */
+  onOpenPage: (id: SettingPageIds) => void
 }) => {
   const t = useI18n()
 
   return (
     <View style={styles.container}>
       <Section title={t('setting_basic')}>
-        <Row icon={CloudArrowUp} label={t('setting_sync')} onPress={() => { onOpenScreen('sync') }} />
-        <Row icon={Gear} label={t('setting_app')} onPress={onOpenAppSettings} />
-        <Row icon={MusicNotes} label={t('setting_basic_source')} onPress={() => { onOpenScreen('basic') }} />
+        <Row label={t('setting_sync')} onPress={() => { onOpenPage('sync') }} />
+        <Row label={t('setting_app')} onPress={() => { onOpenPage('app') }} />
+        <Row label={t('setting_basic_source')} onPress={() => { onOpenPage('source') }} />
       </Section>
       <Section title={t('setting_about')}>
-        <Row icon={ArrowsClockwise} label={t('setting_version')} onPress={() => { onOpenScreen('version') }} />
-        <Row icon={Broom} label={t('setting_cache')} onPress={() => { onOpenScreen('other') }} />
+        <Row label={t('setting_version')} onPress={() => { onOpenPage('version') }} />
+        <Row label={t('setting_cache')} onPress={() => { onOpenPage('cache') }} />
       </Section>
     </View>
   )
@@ -65,9 +61,6 @@ const styles = createStyle({
     height: scaleSizeH(56),
     paddingLeft: 20,
     paddingRight: 20,
-  },
-  rowIcon: {
-    marginRight: 12,
   },
   rowLabel: {
     flex: 1,

@@ -1,7 +1,6 @@
 import { memo } from 'react'
 import { View } from 'react-native'
 
-import { MoonStars } from 'phosphor-react-native'
 
 import CheckBoxItem from '../../components/CheckBoxItem'
 import { createStyle, getIsSupportedAutoTheme } from '@/utils/tools'
@@ -30,7 +29,7 @@ export default memo(() => {
     isSupportedAutoTheme
       ? (
           <View style={styles.content}>
-            <CheckBoxItem icon={MoonStars} check={isAutoTheme} label={t('setting_basic_theme_auto_theme')} onChange={setIsAutoTheme} />
+            <CheckBoxItem check={isAutoTheme} label={t('setting_basic_theme_auto_theme')} onChange={setIsAutoTheme} />
           </View>
         )
       : null

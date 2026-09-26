@@ -6,8 +6,6 @@ import { View } from 'react-native'
 import { useSettingValue } from '@/store/setting/hook'
 
 
-import { ArrowsInSimple } from 'phosphor-react-native'
-
 import CheckBoxItem from '../../components/CheckBoxItem'
 
 export default memo(() => {
@@ -19,7 +17,7 @@ export default memo(() => {
 
   return (
     <View style={styles.content}>
-      <CheckBoxItem icon={ArrowsInSimple} check={autoHidePlayBar} label={t('setting_basic_auto_hide_play_bar')} onChange={setAutoHidePlayBar} />
+      <CheckBoxItem check={autoHidePlayBar} label={t('setting_basic_auto_hide_play_bar')} onChange={setAutoHidePlayBar} />
     </View>
   )
 })

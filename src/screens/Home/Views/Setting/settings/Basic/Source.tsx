@@ -1,7 +1,6 @@
 import { memo, useCallback, useMemo, useRef } from 'react'
 
 import { View } from 'react-native'
-import { MusicNotes } from 'phosphor-react-native'
 
 import SubTitle from '../../components/SubTitle'
 import CheckBox from '@/components/common/CheckBox'
@@ -97,7 +96,7 @@ export default memo(() => {
   }
 
   return (
-    <SubTitle title={t('setting_basic_source')} icon={MusicNotes}>
+    <SubTitle title={t('setting_basic_source')}>
       <View style={styles.list}>
         {
           list.map(({ id, name }) => <Item name={name} id={id} key={id} change={setApiSourceId} />)
