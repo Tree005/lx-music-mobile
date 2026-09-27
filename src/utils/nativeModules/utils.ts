@@ -69,12 +69,26 @@ export const getWindowSize = async(): Promise<{ width: number, height: number }>
 }
 
 // 让页面内容延伸到系统栏（状态栏/导航栏）后面（不改变系统栏可见性）
+// 注意：旧版本原生包里没有这个方法，热更 JS 时不能让它抛错崩掉
 export const setEdgeToEdge = (edgeToEdge: boolean) => {
-  UtilsModule.setEdgeToEdge(edgeToEdge)
+  if (typeof UtilsModule.setEdgeToEdge !== 'function') return
+  try {
+    UtilsModule.setEdgeToEdge(edgeToEdge)
+  } catch (err) {
+    console.log('setEdgeToEdge failed', err)
+  }
 }
 
-// 获取底部系统导航栏高度（dp）
-export const getNavigationBarHeight = UtilsModule.getNavigationBarHeight as () => Promise<number>
+// 获取底部系统导航栏高度（dp）；旧版本原生包没有该方法时返回 0
+export const getNavigationBarHeight = async(): Promise<number> => {
+  if (typeof UtilsModule.getNavigationBarHeight !== 'function') return 0
+  try {
+    return await (UtilsModule.getNavigationBarHeight as () => Promise<number>)()
+  } catch (err) {
+    console.log('getNavigationBarHeight failed', err)
+    return 0
+  }
+}
 
 export const onWindowSizeChange = (handler: (size: { width: number, height: number }) => void): () => void => {
   UtilsModule.listenWindowSizeChanged()
