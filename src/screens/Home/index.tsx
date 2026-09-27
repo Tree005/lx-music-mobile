@@ -24,18 +24,26 @@ export default ({ componentId }: Props) => {
   const isEnableHorizontal = useSettingValue('common.isEnableHorizontal')
 
   // 全应用沉浸式：窗口内容延伸到系统栏后面 + 系统导航栏透明
-  // （RNN 在应用页面 options 时会重置窗口状态，所以出现播放页等页面返回时要重新设置；
-  //   willAppear 在转场动画开始前触发，提前恢复可以避免动画期间"底部栏被系统顶起再落下"的抖动）
+  // ⚠️ RNN 应用页面 options（navigationBar.visible 默认 true）时会把窗口设回「非沉浸」，
+  //    且 mergeOptions 本身也会触发一次 options 应用——所以这里只做 setEdgeToEdge，
+  //    导航栏透明色由页面 options 自带（navigation.ts）
   const applyEdgeToEdgeWindowStyle = useCallback(() => {
-    Navigation.mergeOptions(componentId, {
-      navigationBar: {
-        backgroundColor: 'transparent',
-      },
-    })
     setEdgeToEdge(true)
-  }, [componentId])
+  }, [])
   useNavigationComponentWillAppear(componentId, applyEdgeToEdgeWindowStyle)
   useNavigationComponentDidAppear(componentId, applyEdgeToEdgeWindowStyle)
+
+  // 命令完成后补刀：RNN 每次应用 options 都会把窗口设回非沉浸（SystemUiUtils.showNavigationBar），
+  // 启动阶段会连续应用多次（setRoot/页面挂载……），晚于手动恢复的调用会把沉浸式覆盖掉，
+  // 导致「首次进播放页前」底部栏被系统顶起，要等一次导航之后才恢复。这里在每条命令结束时补一次。
+  useEffect(() => {
+    const listener = Navigation.events().registerCommandCompletedListener(() => {
+      setEdgeToEdge(true)
+    })
+    return () => {
+      listener.remove()
+    }
+  }, [])
 
   // 「启用横屏」关闭时锁定竖屏方向（开启时恢复系统默认、跟随设备旋转）
   useEffect(() => {

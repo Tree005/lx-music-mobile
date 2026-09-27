@@ -1,6 +1,5 @@
 import { useCallback, useEffect } from 'react'
 // import { View, StyleSheet } from 'react-native'
-import { Navigation } from 'react-native-navigation'
 import { useHorizontalMode } from '@/utils/hooks'
 
 import Vertical from './Vertical'
@@ -20,16 +19,12 @@ export default ({ componentId }: { componentId: string }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // 播放页要铺满到屏幕最底部：导航栏透明 + 内容延伸到系统栏后面
-  // （RNN 在应用页面 options 时会把窗口状态重置，willAppear/didAppear 都要重新设置一遍）
+  // 播放页要铺满到屏幕最底部：内容延伸到系统栏后面
+  // （RNN 应用页面 options 时会把窗口设回非沉浸，willAppear/didAppear 都补一遍；
+  //   导航栏透明色由页面 options 自带，不要再 mergeOptions——它反而会触发一次 options 应用把沉浸覆盖掉）
   const applyPlayDetailWindowStyle = useCallback(() => {
-    Navigation.mergeOptions(componentId, {
-      navigationBar: {
-        backgroundColor: 'transparent',
-      },
-    })
     setEdgeToEdge(true)
-  }, [componentId])
+  }, [])
   useNavigationComponentWillAppear(componentId, applyPlayDetailWindowStyle)
   useNavigationComponentDidAppear(componentId, applyPlayDetailWindowStyle)
   useEffect(() => {
