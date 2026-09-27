@@ -17,6 +17,8 @@ export default () => {
     // console.log('start load timeout')
     clearLoadingTimeout()
     loadingTimeout = BackgroundTimer.setTimeout(() => {
+      // TODO(dbg): 排查连环跳歌用，定位后删
+      console.log('[dbg] loadingTimeout fired', playerState.musicInfo.id, prevTimeoutId == playerState.musicInfo.id ? '-> playNext' : '-> refresh url')
       // if (global.lx.isPlayedStop) {
       //   prevTimeoutId = null
       //   setStatusText('')
@@ -49,6 +51,8 @@ export default () => {
   const addDelayNextTimeout = () => {
     clearDelayNextTimeout()
     delayNextTimeout = BackgroundTimer.setTimeout(() => {
+      // TODO(dbg): 排查连环跳歌用，定位后删
+      console.log('[dbg] delayNext fired -> playNext', playerState.musicInfo.id)
       if (global.lx.isPlayedStop) {
         setStatusText('')
         return
@@ -87,6 +91,8 @@ export default () => {
   }
 
   const handleError = () => {
+    // TODO(dbg): 排查连环跳歌用，定位后删
+    console.log('[dbg] handleError', playerState.musicInfo.id, 'retryNum=', retryNum, 'active=', isActive())
     if (!playerState.musicInfo.id) return
     clearLoadingTimeout()
     if (global.lx.isPlayedStop) return
@@ -109,6 +115,8 @@ export default () => {
       setStatusText(global.i18n.t('player__error'))
       setTimeout(addDelayNextTimeout)
     } else {
+      // TODO(dbg): 排查连环跳歌用，定位后删
+      console.log('[dbg] error skip to next (background)')
       console.warn('error skip to next')
       void playNext(true)
     }

@@ -84,7 +84,7 @@ export default ({ embedded }: { embedded?: boolean }) => {
       <View style={styles.content}>
         {
           tab == 'music'
-            ? <MusicList embedded={embedded} />
+            ? <MusicList embedded={embedded} ignoreJump={embedded} />
             : <MyList onOpenList={handleOpenList} onCreate={handleCreate} onImport={handleImport} />
         }
       </View>

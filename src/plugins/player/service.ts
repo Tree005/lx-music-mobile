@@ -120,6 +120,8 @@ const registerPlaybackService = async() => {
 
     // console.log('global.lx.playerTrackId====>', global.lx.playerTrackId)
     if (isEmpty()) {
+      // TODO(dbg): 排查连环跳歌用，定位后删
+      console.log('[dbg] trackChanged->empty', global.lx.playerTrackId, 'gettingUrl=', global.lx.gettingUrlId)
       // console.log('====TEMP PAUSE====')
       await TrackPlayer.pause()
       global.app_event.playerPause()

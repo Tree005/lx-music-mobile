@@ -21,12 +21,14 @@ import MusicToggleModal, { type MusicToggleModalType } from './MusicToggleModal'
 import { scaleSizeH } from '@/utils/pixelRatio'
 
 
-export default ({ embedded, detailMode = false, canRemoveMusic = false }: {
+export default ({ embedded, detailMode = false, canRemoveMusic = false, ignoreJump = false }: {
   embedded?: boolean
   /** 歌单详情页样式：行带封面、收藏与移除按钮 */
   detailMode?: boolean
   /** 详情页里是否允许把歌从歌单里移除（只有自建歌单可以） */
   canRemoveMusic?: boolean
+  /** 忽略「跳转到正在播放歌曲所在列表」的待处理标记（内嵌在固定列表的页面里用） */
+  ignoreJump?: boolean
 }) => {
   // const t = useI18n()
   const activeListRef = useRef<ActiveListType>(null)
@@ -175,12 +177,14 @@ export default ({ embedded, detailMode = false, canRemoveMusic = false }: {
           showRemove={detailMode && canRemoveMusic}
           onRemoveItem={handleRemoveMusic}
           onToggleLove={handleToggleLove}
+          ignoreJump={ignoreJump}
         />
         <ListMusicSearch
           ref={listMusicSearchRef}
           onScrollToInfo={handleScrollToInfo}
         />
-        {embedded ? <View style={styles.embeddedModeBar}>{multipleModeBar}</View> : null}
+        {/* 多选条浮层：box-none 让点击穿透到列表，否则会挡住第一首歌的点击区域 */}
+        {embedded ? <View style={styles.embeddedModeBar} pointerEvents="box-none">{multipleModeBar}</View> : null}
       </View>
       <ListMusicAdd ref={listMusicAddRef} onAdded={hancelExitSelect} />
       <ListMusicMultiAdd ref={listMusicMultiAddRef} onAdded={hancelExitSelect} />

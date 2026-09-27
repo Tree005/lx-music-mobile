@@ -18,6 +18,8 @@ export default async(setting: LX.AppSetting) => {
   }
 
   const handleEnded = () => {
+    // TODO(dbg): 排查连环跳歌用，定位后删
+    console.log('[dbg] playerEnded', playerState.progress.nowPlayTime, playerState.progress.maxPlayTime, 'playedStop=', global.lx.isPlayedStop)
     // setTimeout(() => {
     if (global.lx.isPlayedStop) {
       setStatusText(global.i18n.t('player__end'))

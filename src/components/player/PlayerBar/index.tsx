@@ -8,7 +8,7 @@ import ControlBtn from './components/ControlBtn'
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { useSettingValue } from '@/store/setting/hook'
-import { usePlayerMusicInfo } from '@/store/player/hook'
+import { usePlayMusicInfo } from '@/store/player/hook'
 import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
 
 // 胶囊条高度（圆角取高度的一半）
@@ -17,7 +17,7 @@ const BAR_HEIGHT = scaleSizeH(42)
 export default memo(({ isHome = false }: { isHome?: boolean }) => {
   const { keyboardShown } = useKeyboard()
   const theme = useTheme()
-  const musicInfo = usePlayerMusicInfo()
+  const playMusicInfo = usePlayMusicInfo()
   const autoHidePlayBar = useSettingValue('common.autoHidePlayBar')
 
   const playerComponent = useMemo(() => (
@@ -32,8 +32,8 @@ export default memo(({ isHome = false }: { isHome?: boolean }) => {
     </View>
   ), [theme, isHome])
 
-  // 没有歌曲时不显示播放条（避免出现空壳 / 兜底图）
-  if (!musicInfo.id) return null
+  // 没有歌曲时不显示播放条（用「当前播放的歌曲」判断，切歌瞬间 musicInfo.id 会被临时清空）
+  if (!playMusicInfo.musicInfo) return null
   return autoHidePlayBar && keyboardShown ? null : playerComponent
 })
 

@@ -27,6 +27,8 @@ export interface ListProps {
   showRemove?: boolean
   onRemoveItem?: (musicInfo: LX.Music.MusicInfo, index: number) => void
   onToggleLove?: (musicInfo: LX.Music.MusicInfo, isLoved: boolean) => void
+  /** 忽略「跳转到正在播放歌曲所在列表」的待处理标记（内嵌在固定列表的页面里用） */
+  ignoreJump?: boolean
 }
 export interface ListType {
   setIsMultiSelectMode: (isMultiSelectMode: boolean) => void
@@ -50,7 +52,7 @@ const usePlayIndex = () => {
 }
 
 
-const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, onSelectAll, showPic, showRemove, onRemoveItem, onToggleLove }, ref) => {
+const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, onSelectAll, showPic, showRemove, onRemoveItem, onToggleLove, ignoreJump }, ref) => {
   // const t = useI18n()
   const flatListRef = useRef<FlatList>(null)
   const [currentList, setList] = useState<LX.List.ListMusics>([])
@@ -164,7 +166,9 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
         }
       })
     }
-    if (global.lx.jumpMyListPosition) {
+    // 内嵌在固定列表的页面（我的收藏 / 歌单详情）里时不吃「跳到播放列表」的标记，
+    // 否则会把显示切到正在播放的列表、和当前列表脱节
+    if (!ignoreJump && global.lx.jumpMyListPosition) {
       global.lx.jumpMyListPosition = false
       if (playerState.playMusicInfo.listId) {
         waitJumpListPositionRef.current = true
@@ -181,7 +185,7 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
       global.app_event.off('myListMusicUpdate', handleChange)
       global.app_event.off('jumpListPosition', handleJumpPosition)
     }
-  }, [])
+  }, [ignoreJump])
 
   const activeIndex = usePlayIndex()
   const handlePlay = (index: number) => {

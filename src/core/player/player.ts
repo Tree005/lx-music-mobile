@@ -409,6 +409,8 @@ const handlePlayNext = async(playMusicInfo: LX.Player.PlayMusicInfo) => {
  * @returns
  */
 export const playNext = async(isAutoToggle = false): Promise<void> => {
+  // TODO(dbg): 排查连环跳歌用，定位后删
+  console.log('[dbg] playNext', isAutoToggle ? 'auto' : 'manual', new Date().toISOString().substring(17, 23))
   if (playerState.tempPlayList.length) { // 如果稍后播放列表存在歌曲则直接播放改列表的歌曲
     const playMusicInfo = playerState.tempPlayList[0]
     removeTempPlayList(0)
