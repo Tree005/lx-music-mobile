@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
+import { AppState } from 'react-native'
 import TrackPlayer, { State as TPState, Event as TPEvent } from 'react-native-track-player'
 // import { store } from '@/store'
 // import { action as playerAction, STATUS } from '@/store/modules/player'
@@ -9,6 +10,19 @@ import { getCurrentTrackId } from './playList'
 import { pause, play, playNext, playPrev } from '@/core/player/player'
 
 let isInitialized = false
+
+// App 回到前台的时刻：魅族等系统会在切回前台时重放媒体命令
+// （实测切回后 ~100ms 起、每 0.2~0.9 秒触发一次「上一首」，连发约 8 秒 → 连环跳歌），
+// 这段时间内到达的媒体命令忽略（用户在 App 前台时切歌走界面按钮，不受影响）
+let appActiveAt = Date.now()
+AppState.addEventListener('change', (state) => {
+  if (state == 'active') appActiveAt = Date.now()
+})
+const isMediaCommandReplay = () => Date.now() - appActiveAt < 8000
+
+// 「上一首/下一首」命令去抖：重放风暴里的命令间隔可短至 ~200ms
+let lastRemotePrevAt = 0
+let lastRemoteNextAt = 0
 
 // let retryTrack: LX.Player.Track | null = null
 // let retryGetUrlId: string | null = null
@@ -39,12 +53,22 @@ const registerPlaybackService = async() => {
   })
 
   TrackPlayer.addEventListener(TPEvent.RemoteNext, () => {
-    // console.log('remote-next')
+    // TODO(dbg): 排查连环跳歌用，定位后删
+    console.log('[dbg] RemoteNext evt, sinceActive=', Date.now() - appActiveAt)
+    if (isMediaCommandReplay()) return
+    const now = Date.now()
+    if (now - lastRemoteNextAt < 800) return
+    lastRemoteNextAt = now
     void playNext()
   })
 
   TrackPlayer.addEventListener(TPEvent.RemotePrevious, () => {
-    // console.log('remote-previous')
+    // TODO(dbg): 排查连环跳歌用，定位后删
+    console.log('[dbg] RemotePrevious evt, sinceActive=', Date.now() - appActiveAt)
+    if (isMediaCommandReplay()) return
+    const now = Date.now()
+    if (now - lastRemotePrevAt < 800) return
+    lastRemotePrevAt = now
     void playPrev()
   })
 
