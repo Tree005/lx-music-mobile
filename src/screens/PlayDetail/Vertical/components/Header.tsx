@@ -1,14 +1,13 @@
-import { memo, useRef } from 'react'
+import { memo } from 'react'
 
 import { StatusBar as RNStatusBar, View } from 'react-native'
 
-import { CaretLeft, SlidersHorizontal } from 'phosphor-react-native'
+import { CaretLeft } from 'phosphor-react-native'
 import { pop } from '@/navigation'
 import StatusBar from '@/components/common/StatusBar'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import { HEADER_HEIGHT as _HEADER_HEIGHT, NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
 import commonState from '@/store/common/state'
-import SettingPopup, { type SettingPopupType } from '../../components/SettingPopup'
 import { useStatusbarHeight } from '@/store/common/hook'
 import Btn from './Btn'
 import { createStyle } from '@/utils/tools'
@@ -20,14 +19,10 @@ const ICON_COLOR = '#fff'
 
 
 export default memo(() => {
-  const popupRef = useRef<SettingPopupType>(null)
   const statusBarHeight = useStatusbarHeight()
 
   const back = () => {
     void pop(commonState.componentIds.playDetail!)
-  }
-  const showSetting = () => {
-    popupRef.current?.show()
   }
 
   return (
@@ -37,10 +32,7 @@ export default memo(() => {
       <RNStatusBar barStyle="light-content" />
       <View style={styles.container}>
         <Btn icon={CaretLeft} color={ICON_COLOR} onPress={back} />
-        <View style={styles.space} />
-        <Btn icon={SlidersHorizontal} color={ICON_COLOR} onPress={showSetting} />
       </View>
-      <SettingPopup ref={popupRef} direction="vertical" />
     </View>
   )
 })
@@ -51,8 +43,5 @@ const styles = createStyle({
     flexDirection: 'row',
     // justifyContent: 'center',
     height: '100%',
-  },
-  space: {
-    flex: 1,
   },
 })

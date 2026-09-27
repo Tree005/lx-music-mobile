@@ -2,6 +2,7 @@ import { memo, useState, useRef, useEffect, useCallback } from 'react'
 import { View, AppState, Pressable } from 'react-native'
 
 import Header from './components/Header'
+import ToolsBar from './components/ToolsBar'
 // import Aside from './components/Aside'
 // import Main from './components/Main'
 import Player from './Player'
@@ -83,6 +84,7 @@ export default memo(({ componentId }: { componentId: string }) => {
               )
         }
         <Player />
+        <ToolsBar />
       </View>
     </View>
   )

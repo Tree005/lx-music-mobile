@@ -37,14 +37,16 @@ const styles = createStyle({
     alignItems: 'flex-start',
     justifyContent: 'center',
     paddingHorizontal: 20,
-    // 与封面底边的间距（参考图：封面 → 歌词约 10dp）
-    paddingTop: 10,
+    // 与封面底边的间距（参考汽水：约封面高度的 0.068）
+    paddingTop: 14,
     paddingBottom: 0,
   },
   currentLine: {
     lineHeight: setSpText(15) * 1.5,
   },
   nextLine: {
+    // 两行之间留出行距（参考汽水：约封面高度的 0.091）
+    marginTop: 6,
     lineHeight: setSpText(13) * 1.5,
   },
 })

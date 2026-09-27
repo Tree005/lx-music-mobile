@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from 'react'
 import { TouchableOpacity, View } from 'react-native'
 
-import { Heart } from 'phosphor-react-native'
+import { ChatCircle, Heart } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
 import Text from '@/components/common/Text'
 import { useTheme } from '@/store/theme/hook'
@@ -9,6 +9,8 @@ import { usePlayerMusicInfo } from '@/store/player/hook'
 import { collectMusic, uncollectMusic } from '@/core/player/player'
 import { getListMusics } from '@/core/list'
 import { LIST_IDS } from '@/config/constant'
+import { navigations } from '@/navigation'
+import commonState from '@/store/common/state'
 import { createStyle } from '@/utils/tools'
 
 // 整页是暗色模糊底，信息行文字统一用白色
@@ -52,14 +54,21 @@ export default memo(() => {
     else collectMusic()
   }
 
+  const handleShowComment = () => {
+    navigations.pushCommentScreen(commonState.componentIds.playDetail!)
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.info}>
-        <Text numberOfLines={1} size={16} color={TITLE_COLOR} style={styles.name}>{musicInfo.name}</Text>
+        <Text numberOfLines={1} size={18} color={TITLE_COLOR} style={styles.name}>{musicInfo.name}</Text>
         <Text numberOfLines={1} size={12} color={SINGER_COLOR} style={styles.singer}>{musicInfo.singer}</Text>
       </View>
-      <TouchableOpacity style={styles.loveBtn} activeOpacity={0.6} onPress={handleToggleLove}>
+      <TouchableOpacity style={styles.actionBtn} activeOpacity={0.6} onPress={handleToggleLove}>
         <PhIcon Icon={Heart} size={22} weight={loved ? 'fill' : 'regular'} color={loved ? theme['c-primary'] : TITLE_COLOR} />
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.actionBtn} activeOpacity={0.6} onPress={handleShowComment}>
+        <PhIcon Icon={ChatCircle} size={21} color={TITLE_COLOR} />
       </TouchableOpacity>
     </View>
   )
@@ -70,8 +79,8 @@ const styles = createStyle({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    // 与上方歌词行的间距（参考图：歌词 → 信息行约 12dp）
-    paddingTop: 12,
+    // 与上方歌词块的间距（参考汽水：约封面高度的 0.184，明显大于其他间距）
+    paddingTop: 24,
     paddingBottom: 0,
   },
   info: {
@@ -83,9 +92,9 @@ const styles = createStyle({
     fontWeight: '600',
   },
   singer: {
-    marginTop: 2,
+    marginTop: 4,
   },
-  loveBtn: {
+  actionBtn: {
     padding: 6,
   },
 })

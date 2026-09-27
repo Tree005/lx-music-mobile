@@ -207,6 +207,8 @@
   "play_detail_setting_lrc_align_right": "居右",
   "play_detail_setting_lrc_font_size": "歌词字体大小",
   "play_detail_no_lrc": "纯音乐，请欣赏",
+  "play_detail_more_title": "更多",
+  "play_detail_more_empty": "暂时没有其他功能",
   "play_detail_setting_playback_rate": "播放速率",
   "play_detail_setting_playback_rate_reset": "重置",
   "play_detail_setting_show_lyric_progress_setting": "允许通过拖拽歌词调整播放进度",
