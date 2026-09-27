@@ -29,6 +29,8 @@ export interface ListProps {
   onToggleLove?: (musicInfo: LX.Music.MusicInfo, isLoved: boolean) => void
   /** 忽略「跳转到正在播放歌曲所在列表」的待处理标记（内嵌在固定列表的页面里用） */
   ignoreJump?: boolean
+  /** 固定展示的列表 id（如收藏页钉住 LOVE）：不读「上次列表」、不跟随全局列表切换 */
+  listId?: string
 }
 export interface ListType {
   setIsMultiSelectMode: (isMultiSelectMode: boolean) => void
@@ -39,20 +41,20 @@ export interface ListType {
   scrollToTop: () => void
 }
 
-const usePlayIndex = () => {
+const usePlayIndex = (listId?: string) => {
   const activeListId = useActiveListId()
   const playMusicInfo = usePlayMusicInfo()
   const playInfo = usePlayInfo()
 
   const playIndex = useMemo(() => {
-    return playMusicInfo.listId == activeListId ? playInfo.playIndex : -1
-  }, [activeListId, playInfo.playIndex, playMusicInfo.listId])
+    return playMusicInfo.listId == (listId ?? activeListId) ? playInfo.playIndex : -1
+  }, [activeListId, listId, playInfo.playIndex, playMusicInfo.listId])
 
   return playIndex
 }
 
 
-const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, onSelectAll, showPic, showRemove, onRemoveItem, onToggleLove, ignoreJump }, ref) => {
+const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, onSelectAll, showPic, showRemove, onRemoveItem, onToggleLove, ignoreJump, listId }, ref) => {
   // const t = useI18n()
   const flatListRef = useRef<FlatList>(null)
   const [currentList, setList] = useState<LX.List.ListMusics>([])
@@ -94,7 +96,7 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
       return selectedListRef.current
     },
     scrollToInfo(info) {
-      void getListMusics(listState.activeListId).then((list) => {
+      void getListMusics(listId ?? listState.activeListId).then((list) => {
         const index = list.findIndex(m => m.id == info.id)
         if (index < 0) return
         flatListRef.current?.scrollToIndex({ index: Math.floor(index / (rowInfo.current.rowNum ?? 1)), viewPosition: 0.3, animated: true })
@@ -139,8 +141,8 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
       })
     }
     const handleChange = (ids: string[]) => {
-      if (!ids.includes(listState.activeListId)) return
-      const id = listState.activeListId
+      if (!ids.includes(listId ?? listState.activeListId)) return
+      const id = listId ?? listState.activeListId
       void getListMusics(id).then((list) => {
         if (currentListIdRef.current != id) return
         selectedListRef.current = []
@@ -150,6 +152,8 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
     }
 
     const handleJumpPosition = () => {
+      // 固定列表不跟随「跳到播放列表」
+      if (listId) return
       requestAnimationFrame(() => {
         const listId = playerState.playMusicInfo.listId
         if (!listId) return
@@ -168,7 +172,10 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
     }
     // 内嵌在固定列表的页面（我的收藏 / 歌单详情）里时不吃「跳到播放列表」的标记，
     // 否则会把显示切到正在播放的列表、和当前列表脱节
-    if (!ignoreJump && global.lx.jumpMyListPosition) {
+    if (listId) {
+      // 固定展示指定列表：不读「上次列表」、不跟随全局列表切换
+      updateList(listId)
+    } else if (!ignoreJump && global.lx.jumpMyListPosition) {
       global.lx.jumpMyListPosition = false
       if (playerState.playMusicInfo.listId) {
         waitJumpListPositionRef.current = true
@@ -176,20 +183,25 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
       } else void getListPrevSelectId().then(updateList)
     } else void getListPrevSelectId().then(updateList)
 
-    global.state_event.on('mylistToggled', updateList)
+    const handleMylistToggled = (id: string) => {
+      if (listId) return
+      updateList(id)
+    }
+
+    global.state_event.on('mylistToggled', handleMylistToggled)
     global.app_event.on('myListMusicUpdate', handleChange)
     global.app_event.on('jumpListPosition', handleJumpPosition)
 
     return () => {
-      global.state_event.off('mylistToggled', updateList)
+      global.state_event.off('mylistToggled', handleMylistToggled)
       global.app_event.off('myListMusicUpdate', handleChange)
       global.app_event.off('jumpListPosition', handleJumpPosition)
     }
-  }, [ignoreJump])
+  }, [ignoreJump, listId])
 
-  const activeIndex = usePlayIndex()
+  const activeIndex = usePlayIndex(listId)
   const handlePlay = (index: number) => {
-    void playList(listState.activeListId, index)
+    void playList(listId ?? listState.activeListId, index)
   }
 
   const handleUpdateSelectedList = (newList: LX.List.ListMusics) => {
@@ -255,7 +267,7 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
       listFirstScrollRef.current = false
       return
     }
-    void saveListPosition(listState.activeListId, nativeEvent.contentOffset.y)
+    void saveListPosition(listId ?? listState.activeListId, nativeEvent.contentOffset.y)
   }
 
 

@@ -51,7 +51,11 @@ export default ({ embedded }: { embedded?: boolean }) => {
   useEffect(() => {
     if (!embedded || tab != 'music') return
     setActiveList(LIST_IDS.LOVE)
-    const handleListToggle = () => { setActiveList(LIST_IDS.LOVE) }
+    // 监听回调带 id：LOVE 自身触发的不再回调，避免 setActiveList 自触发循环
+    const handleListToggle = (id: string) => {
+      if (id == LIST_IDS.LOVE) return
+      setActiveList(LIST_IDS.LOVE)
+    }
     global.state_event.on('mylistToggled', handleListToggle)
     return () => {
       global.state_event.off('mylistToggled', handleListToggle)
@@ -84,7 +88,9 @@ export default ({ embedded }: { embedded?: boolean }) => {
       <View style={styles.content}>
         {
           tab == 'music'
-            ? <MusicList embedded={embedded} ignoreJump={embedded} />
+            // detailMode：带封面 + 红心（点击取消收藏），与歌单详情页行样式一致
+            // listId：钉死收藏列表，不受全局「当前列表」切换影响
+            ? <MusicList embedded={embedded} ignoreJump={embedded} detailMode listId={LIST_IDS.LOVE} />
             : <MyList onOpenList={handleOpenList} onCreate={handleCreate} onImport={handleImport} />
         }
       </View>

@@ -77,6 +77,8 @@ const registerPlaybackService = async() => {
   })
 
   TrackPlayer.addEventListener(TPEvent.PlaybackState, async info => {
+    // TODO(dbg): 排查连环跳歌用，定位后删
+    console.log('[dbg] state evt', info.state, 'gettingUrl=', global.lx.gettingUrlId)
     if (global.lx.gettingUrlId || isTempId()) return
     // let currentIsPlaying = false
 
@@ -113,6 +115,8 @@ const registerPlaybackService = async() => {
   TrackPlayer.addEventListener(TPEvent.PlaybackTrackChanged, async info => {
     // console.log('PlaybackTrackChanged====>', info)
     global.lx.playerTrackId = await getCurrentTrackId()
+    // TODO(dbg): 排查连环跳歌用，定位后删（放在所有 return 之前，被守卫拦截的也要看到）
+    console.log('[dbg] trackChanged evt', info.track, '->', global.lx.playerTrackId, 'gettingUrl=', global.lx.gettingUrlId, 'playedStop=', global.lx.isPlayedStop)
     if (info.track == null) return
     if (global.lx.isPlayedStop) return handleExitApp('Timeout Exit')
     // 正在取播放链接：此时占位轨道可能短暂成为当前曲目，不能当成「播放结束」（否则会连环跳歌）

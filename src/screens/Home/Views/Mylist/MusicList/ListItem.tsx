@@ -17,6 +17,8 @@ import { useMusicPic } from '@/utils/hooks/useMusicPic'
 export const ITEM_HEIGHT = scaleSizeH(LIST_ITEM_HEIGHT)
 /** 歌单详情页的行：带封面，比列表模式高一些 */
 export const PIC_ITEM_HEIGHT = scaleSizeH(68)
+/** 已收藏的红心颜色（不跟随主题，参考图效果） */
+const LOVED_HEART_COLOR = '#F04A5A'
 
 
 export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPress, selectedList, rowInfo, isShowAlbumName, isShowInterval, showPic = false, showRemove = false, onRemoveItem, onToggleLove }: {
@@ -132,7 +134,7 @@ export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPres
                   <PhIcon
                     Icon={Heart}
                     size={20}
-                    color={loved ? theme['c-primary'] : theme['c-350']}
+                    color={loved ? LOVED_HEART_COLOR : theme['c-350']}
                     weight={loved ? 'fill' : 'regular'}
                   />
                 </TouchableOpacity>

@@ -21,7 +21,7 @@ import MusicToggleModal, { type MusicToggleModalType } from './MusicToggleModal'
 import { scaleSizeH } from '@/utils/pixelRatio'
 
 
-export default ({ embedded, detailMode = false, canRemoveMusic = false, ignoreJump = false }: {
+export default ({ embedded, detailMode = false, canRemoveMusic = false, ignoreJump = false, listId }: {
   embedded?: boolean
   /** 歌单详情页样式：行带封面、收藏与移除按钮 */
   detailMode?: boolean
@@ -29,6 +29,8 @@ export default ({ embedded, detailMode = false, canRemoveMusic = false, ignoreJu
   canRemoveMusic?: boolean
   /** 忽略「跳转到正在播放歌曲所在列表」的待处理标记（内嵌在固定列表的页面里用） */
   ignoreJump?: boolean
+  /** 固定展示的列表 id（如收藏页钉住 LOVE）：不读「上次列表」、不跟随全局列表切换 */
+  listId?: string
 }) => {
   // const t = useI18n()
   const activeListRef = useRef<ActiveListType>(null)
@@ -77,11 +79,11 @@ export default ({ embedded, detailMode = false, canRemoveMusic = false, ignoreJu
     listMenuRef.current?.show({
       musicInfo,
       index,
-      listId: listState.activeListId,
+      listId: listId ?? listState.activeListId,
       single: false,
       selectedList: listRef.current!.getSelectedList(),
     }, position)
-  }, [])
+  }, [listId])
   const handleShowSearch = useCallback(() => {
     isShowSearchBarModeBar.current = true
     if (isShowMultipleModeBar.current) {
@@ -107,8 +109,8 @@ export default ({ embedded, detailMode = false, canRemoveMusic = false, ignoreJu
   }, [])
 
   const handleRemoveMusic = useCallback((musicInfo: LX.Music.MusicInfo) => {
-    void removeListMusics(listState.activeListId, [musicInfo.id])
-  }, [])
+    void removeListMusics(listId ?? listState.activeListId, [musicInfo.id])
+  }, [listId])
   const handleToggleLove = useCallback((musicInfo: LX.Music.MusicInfo, isLoved: boolean) => {
     if (isLoved) void removeListMusics(LIST_IDS.LOVE, [musicInfo.id])
     else void addListMusics(LIST_IDS.LOVE, [musicInfo], settingState.setting['list.addMusicLocationType'])
@@ -178,6 +180,7 @@ export default ({ embedded, detailMode = false, canRemoveMusic = false, ignoreJu
           onRemoveItem={handleRemoveMusic}
           onToggleLove={handleToggleLove}
           ignoreJump={ignoreJump}
+          listId={listId}
         />
         <ListMusicSearch
           ref={listMusicSearchRef}

@@ -72,8 +72,8 @@ export async function pushHomeScreen() {
                 backgroundColor: 'transparent',
               },
               navigationBar: {
-                // visible: false,
-                backgroundColor: theme['c-content-background'],
+                // 全应用沉浸式：系统导航栏透明，内容延伸到屏幕底边
+                backgroundColor: 'transparent',
               },
               layout: {
                 componentBackgroundColor: theme['c-content-background'],

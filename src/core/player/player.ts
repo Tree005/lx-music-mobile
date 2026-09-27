@@ -133,6 +133,8 @@ const getMusicPlayUrl = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListIt
 }
 
 export const setMusicUrl = (musicInfo: LX.Music.MusicInfo | LX.Download.ListItem, isRefresh?: boolean) => {
+  // TODO(dbg): 排查连环跳歌用，定位后删
+  console.log('[dbg] setMusicUrl', musicInfo.id, 'refresh=', !!isRefresh, 'gettingUrl=', global.lx.gettingUrlId)
   // addLoadTimeout()
   if (!diffCurrentMusicInfo(musicInfo)) return
   if (cancelDelayRetry) cancelDelayRetry()
@@ -197,6 +199,8 @@ const handleRestorePlay = async(restorePlayInfo: LX.Player.SavedPlayInfo) => {
 
 
 const debouncePlay = debounceBackgroundTimer((musicInfo: LX.Player.PlayMusic) => {
+  // TODO(dbg): 排查连环跳歌用，定位后删
+  console.log('[dbg] debouncePlay run', musicInfo.id)
   setMusicUrl(musicInfo)
 
   void getPicPath({ musicInfo, listId: playerState.playMusicInfo.listId }).then((url: string) => {
@@ -227,6 +231,8 @@ const debouncePlay = debounceBackgroundTimer((musicInfo: LX.Player.PlayMusic) =>
 
 // 处理音乐播放
 const handlePlay = async() => {
+  // TODO(dbg): 排查连环跳歌用，定位后删
+  console.log('[dbg] handlePlay', playerState.playMusicInfo.musicInfo?.id, 'restore=', !!global.lx.restorePlayInfo)
   if (!isInitialized()) {
     await checkNotificationPermission()
     void checkIgnoringBatteryOptimization()
@@ -271,6 +277,8 @@ const handlePlay = async() => {
  * @param id 歌曲id
  */
 export const playListById = async(listId: string, id: string) => {
+  // TODO(dbg): 排查连环跳歌用，定位后删
+  console.log('[dbg] playListById caller', listId, id)
   const prevListId = playerState.playInfo.playerListId
   setPlayListId(listId)
   const musicInfo = getList(listId).find(m => m.id == id)
@@ -287,6 +295,8 @@ export const playListById = async(listId: string, id: string) => {
  * @param index 播放的歌曲位置
  */
 export const playList = async(listId: string, index: number) => {
+  // TODO(dbg): 排查连环跳歌用，定位后删
+  console.log('[dbg] playList caller', listId, index)
   const prevListId = playerState.playInfo.playerListId
   setPlayListId(listId)
   setPlayMusicInfo(listId, getList(listId)[index])
@@ -403,6 +413,9 @@ const handlePlayNext = async(playMusicInfo: LX.Player.PlayMusicInfo) => {
   setPlayMusicInfo(playMusicInfo.listId, playMusicInfo.musicInfo, playMusicInfo.isTempPlay)
   await handlePlay()
 }
+// 兜底：掐断连环跳歌。任何链路的「自动下一曲」在 2 秒内重复触发都忽略
+// （正常歌曲时长必然远大于 2 秒，自动跳歌间隔不会这么短；手动切歌不受限制）
+let lastAutoPlayNextAt = 0
 /**
  * 下一曲
  * @param isAutoToggle 是否自动切换
@@ -411,6 +424,15 @@ const handlePlayNext = async(playMusicInfo: LX.Player.PlayMusicInfo) => {
 export const playNext = async(isAutoToggle = false): Promise<void> => {
   // TODO(dbg): 排查连环跳歌用，定位后删
   console.log('[dbg] playNext', isAutoToggle ? 'auto' : 'manual', new Date().toISOString().substring(17, 23))
+  if (isAutoToggle) {
+    const now = Date.now()
+    if (now - lastAutoPlayNextAt < 2000) {
+      // TODO(dbg): 排查连环跳歌用，定位后删
+      console.log('[dbg] auto playNext throttled, delta=', now - lastAutoPlayNextAt)
+      return
+    }
+    lastAutoPlayNextAt = now
+  }
   if (playerState.tempPlayList.length) { // 如果稍后播放列表存在歌曲则直接播放改列表的歌曲
     const playMusicInfo = playerState.tempPlayList[0]
     removeTempPlayList(0)
@@ -510,6 +532,8 @@ export const playNext = async(isAutoToggle = false): Promise<void> => {
  * 上一曲
  */
 export const playPrev = async(isAutoToggle = false): Promise<void> => {
+  // TODO(dbg): 排查连环跳歌用，定位后删
+  console.log('[dbg] playPrev', isAutoToggle ? 'auto' : 'manual')
   const playMusicInfo = playerState.playMusicInfo
   if (playMusicInfo.musicInfo == null) return handleToggleStop()
   const playInfo = playerState.playInfo

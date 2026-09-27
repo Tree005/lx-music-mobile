@@ -1,7 +1,6 @@
 import { useRef, useImperativeHandle, forwardRef, useState } from 'react'
 import { useI18n } from '@/lang'
 import Menu, { type Menus, type MenuType, type Position } from '@/components/common/Menu'
-import { hasDislike } from '@/core/dislikeList'
 import { hasMusicUrlByMusic } from '@/utils/data'
 
 export interface SelectInfo {
@@ -55,15 +54,16 @@ export default forwardRef<ListMenuType, ListMenuProps>((props: ListMenuProps, re
 
   const handleSetMenu = (musicInfo: LX.Music.MusicInfo) => {
     let has_url_cache = false
+    // 播放/不喜欢已按需求隐藏（需要时取消注释即可恢复）
     const menu = [
-      { action: 'play', label: t('play') },
+      // { action: 'play', label: t('play') },
       { action: 'playLater', label: t('play_later') },
       // { action: 'download', label: '下载' },
       { action: 'add', label: t('add_to') },
       { action: 'copyName', label: t('copy_name') },
       { action: 'musicSourceDetail', label: t('music_source_detail') },
       { action: 'removeCache', disabled: !has_url_cache, label: t('list_remove_cache') },
-      { action: 'dislike', label: t('dislike'), disabled: hasDislike(musicInfo) },
+      // { action: 'dislike', label: t('dislike'), disabled: hasDislike(musicInfo) },
     ]
     setMenus(menu)
     void hasUrlCache(musicInfo).then((_has_url_cache) => {

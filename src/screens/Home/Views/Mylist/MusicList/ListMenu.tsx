@@ -1,7 +1,6 @@
 import { useRef, useImperativeHandle, forwardRef, useState } from 'react'
 import { useI18n } from '@/lang'
 import Menu, { type Menus, type MenuType, type Position } from '@/components/common/Menu'
-import { hasDislike } from '@/core/dislikeList'
 import { existsFile } from '@/utils/fs'
 import { hasMusicUrlByMusic } from '@/utils/data'
 
@@ -68,8 +67,9 @@ export default forwardRef<ListMenuType, ListMenuProps>((props, ref) => {
     let edit_metadata = false
     let has_url_cache = false
     const isLocal = musicInfo.source == 'local'
-    const menu = [
-      { action: 'play', label: t('play') },
+    // 只保留常用项：播放/不喜欢/移除已按需求隐藏（需要时取消注释即可恢复）
+    const menu: Array<{ action: string, label: string, disabled?: boolean }> = [
+      // { action: 'play', label: t('play') },
       { action: 'playLater', label: t('play_later') },
       // { action: 'download', label: '下载' },
       { action: 'add', label: t('add_to') },
@@ -81,26 +81,27 @@ export default forwardRef<ListMenuType, ListMenuProps>((props, ref) => {
       // { action: 'musicSourceDetail', disabled: isLocal, label: t('music_source_detail') },
       // { action: 'removeCache', disabled: !has_url_cache, label: t('list_remove_cache') },
       // { action: 'musicSearch', label: t('music_search') },
-      { action: 'dislike', disabled: hasDislike(musicInfo), label: t('dislike') },
-      { action: 'remove', label: t('delete') },
+      // { action: 'dislike', disabled: hasDislike(musicInfo), label: t('dislike') },
+      // { action: 'remove', label: t('delete') },
     ]
     if (isLocal) {
-      // 插到「不喜欢」前面（不要用写死的下标，菜单项会增删）
-      const idx = menu.findIndex(m => m.action == 'dislike')
-      menu.splice(idx < 0 ? menu.length : idx, 0, { action: 'editMetadata', disabled: !edit_metadata, label: t('edit_metadata') })
+      menu.push({ action: 'editMetadata', disabled: true, label: t('edit_metadata') })
     }
     setMenus(menu)
     void Promise.all([isLocal ? hasEditMetadata(musicInfo) : Promise.resolve(false), hasUrlCache(musicInfo)]).then(([_edit_metadata, _has_url_cache]) => {
       // console.log(_edit_metadata)
       let isUpdated = false
-      if (edit_metadata != _edit_metadata) {
+      // 隐藏的菜单项不在菜单里（findIndex 为 -1），加守卫避免访问 undefined
+      const editIdx = menu.findIndex(m => m.action == 'editMetadata')
+      if (editIdx > -1 && edit_metadata != _edit_metadata) {
         edit_metadata = _edit_metadata
-        menu[menu.findIndex(m => m.action == 'editMetadata')].disabled = !edit_metadata
+        menu[editIdx].disabled = !edit_metadata
         isUpdated ||= true
       }
-      if (has_url_cache != _has_url_cache) {
+      const cacheIdx = menu.findIndex(m => m.action == 'removeCache')
+      if (cacheIdx > -1 && has_url_cache != _has_url_cache) {
         has_url_cache = _has_url_cache
-        menu[menu.findIndex(m => m.action == 'removeCache')].disabled = !has_url_cache
+        menu[cacheIdx].disabled = !has_url_cache
         isUpdated ||= true
       }
 

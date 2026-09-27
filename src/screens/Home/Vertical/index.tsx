@@ -1,8 +1,11 @@
 import { useCallback, useState } from 'react'
+import { View } from 'react-native'
 import { BOTTOM_TABS, type NAV_ID_Type } from '@/config/constant'
 import Content from './Content'
 import PlayerBar from '@/components/player/PlayerBar'
 import TabBar from './TabBar'
+import { useNavigationBarHeight } from '@/utils/hooks'
+import { useTheme } from '@/store/theme/hook'
 
 // 播放条在这些子页面里保留显示（歌单详情页可以边听边看歌单）
 const PLAYER_BAR_VISIBLE_SUB_PAGES: Partial<Record<NAV_ID_Type, true>> = {
@@ -14,6 +17,8 @@ export default () => {
   // 底栏只在 Tab 页显示；播放条在 Tab 页 + 白名单子页面显示
   const [playerBarVisible, setPlayerBarVisible] = useState(true)
   const [tabBarVisible, setTabBarVisible] = useState(true)
+  const navigationBarHeight = useNavigationBarHeight()
+  const theme = useTheme()
 
   const handleNavIdChange = useCallback((id: NAV_ID_Type) => {
     const isTab = BOTTOM_TABS.some(tab => tab.id === id)
@@ -25,7 +30,10 @@ export default () => {
     <>
       <Content onNavIdChange={handleNavIdChange} />
       {playerBarVisible ? <PlayerBar isHome /> : null}
-      {tabBarVisible ? <TabBar /> : null}
+      {tabBarVisible
+        ? <TabBar />
+        // 无底栏时（子页面）用背景色补上系统导航栏安全区，避免内容被手势条压住
+        : <View style={{ height: navigationBarHeight, backgroundColor: theme['c-content-background'] }} />}
     </>
   )
 }

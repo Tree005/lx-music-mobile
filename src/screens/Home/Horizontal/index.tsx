@@ -5,6 +5,8 @@ import StatusBar from '@/components/common/StatusBar'
 import Header from './Header'
 import Main from './Main'
 import { createStyle } from '@/utils/tools'
+import { useNavigationBarHeight } from '@/utils/hooks'
+import { useTheme } from '@/store/theme/hook'
 
 const styles = createStyle({
   container: {
@@ -18,6 +20,9 @@ const styles = createStyle({
 })
 
 export default () => {
+  const navigationBarHeight = useNavigationBarHeight()
+  const theme = useTheme()
+
   return (
     <>
       <StatusBar />
@@ -27,6 +32,10 @@ export default () => {
           <Header />
           <Main />
           <PlayerBar isHome />
+          {/* 沉浸式：播放条下方补系统导航栏安全区 */}
+          {navigationBarHeight > 0
+            ? <View style={{ height: navigationBarHeight, backgroundColor: theme['c-content-background'] }} />
+            : null}
         </View>
       </View>
     </>

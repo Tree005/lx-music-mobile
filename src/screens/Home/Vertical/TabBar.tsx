@@ -8,13 +8,15 @@ import { BOTTOM_TABS, TAB_OF_ID } from '@/config/constant'
 import { setNavActiveId } from '@/core/common'
 import Text from '@/components/common/Text'
 import { scaleSizeH } from '@/utils/pixelRatio'
+import { useNavigationBarHeight } from '@/utils/hooks'
+
+// 底栏内容区高度（不含系统导航栏安全区）
+const TAB_BAR_HEIGHT = scaleSizeH(44)
 
 const styles = createStyle({
   container: {
     flexDirection: 'row',
-    height: scaleSizeH(44),
     borderTopWidth: 1,
-    paddingBottom: scaleSizeH(2),
   },
   item: {
     flex: 1,
@@ -44,13 +46,23 @@ const TabItem = ({ id, onPress }: {
 
 export default memo(() => {
   const theme = useTheme()
+  const navigationBarHeight = useNavigationBarHeight()
 
   const handlePress = (id: (typeof BOTTOM_TABS)[number]['id']) => {
     setNavActiveId(id)
   }
 
   return (
-    <View style={{ ...styles.container, backgroundColor: theme['c-content-background'], borderTopColor: theme['c-border-background'] }}>
+    // 沉浸式：高度加上系统导航栏高度，背景色延伸到屏幕最底部
+    <View
+      style={{
+        ...styles.container,
+        height: TAB_BAR_HEIGHT + navigationBarHeight,
+        paddingBottom: navigationBarHeight,
+        backgroundColor: theme['c-content-background'],
+        borderTopColor: theme['c-border-background'],
+      }}
+    >
       {BOTTOM_TABS.map(item => <TabItem key={item.id} id={item.id} onPress={handlePress} />)}
     </View>
   )

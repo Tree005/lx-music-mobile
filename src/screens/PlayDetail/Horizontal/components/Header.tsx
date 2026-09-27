@@ -10,7 +10,6 @@ import Text from '@/components/common/Text'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import { HEADER_HEIGHT as _HEADER_HEIGHT, NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
 import commonState from '@/store/common/state'
-import CommentBtn from './CommentBtn'
 import Btn from './Btn'
 import SettingPopup, { type SettingPopupType } from '../../components/SettingPopup'
 import DesktopLyricBtn from './DesktopLyricBtn'
@@ -52,7 +51,6 @@ export default memo(() => {
         </TouchableOpacity>
         <Title />
         <DesktopLyricBtn />
-        <CommentBtn />
         <Btn icon={SlidersHorizontal} onPress={showSetting} />
       </View>
       <SettingPopup ref={popupRef} position="left" direction="horizontal" />
