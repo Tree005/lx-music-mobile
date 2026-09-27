@@ -27,6 +27,14 @@ const Action = ({ Icon, label, color, weight, onPress }: {
   )
 }
 
+// 从存储的歌单来源标识里取出歌单 id：
+// 收藏/导入时 sourceListId 存的是分享链接（如 https://www.kuwo.cn/playlist_detail/3677105457
+// 或 https://y.music.163.com/m/playlist?id=5381722575&userid=...），也可能是纯 id
+const pickSourceListId = (raw: string): string => {
+  const matched = /[?&]id=([^&#]+)/.exec(raw) ?? /\/([^/?#]+)\/?(?:[?#]|$)/.exec(raw)
+  return matched ? matched[1] : raw
+}
+
 // 三个操作：收藏歌单（已收藏则显示已收藏）/ 播放全部 / 全部下载
 // 「全部下载」还没实现，先只摆出来
 export default memo(() => {
@@ -34,9 +42,12 @@ export default memo(() => {
   const t = useI18n()
   const info = useListInfo()
 
-  // 收藏过这个歌单的话，userList 里会有对应记录
-  const listId = `${info.source}__${info.id}`
-  const isCollected = listState.userList.some(l => l.sourceListId === info.id || l.sourceListId === listId)
+  // 收藏过这个歌单的话，userList 里会有对应记录（同一平台 + 歌单 id 一致）
+  const isCollected = listState.userList.some(l =>
+    l.source === info.source &&
+    l.sourceListId != null &&
+    pickSourceListId(l.sourceListId) === String(info.id),
+  )
 
   const handlePlayAll = () => {
     if (!songlistState.listDetailInfo.info.name) return
