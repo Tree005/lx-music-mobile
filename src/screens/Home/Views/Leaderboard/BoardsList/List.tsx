@@ -41,7 +41,7 @@ export default forwardRef<ListType, ListProps>(({ onBoundChange, onShowMenu }, r
   }
 
   return (
-    <ScrollView style={styles.scrollView} keyboardShouldPersistTaps={'always'}>
+    <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps={'always'}>
       <View>
         {
           list.map((item, index) => {

@@ -313,6 +313,7 @@ export default memo(({ visible, onClose }: PlayQueuePopupProps) => {
                 : list.length
                   ? <FlatList
                       style={[styles.list, { maxHeight: windowSize.height * 0.7 }]}
+                      showsVerticalScrollIndicator={false}
                       data={list}
                       keyExtractor={(item, index) => `${item.id}_${index}`}
                       renderItem={renderItem}

@@ -13,9 +13,11 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.util.Log;
 import android.view.Window;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 
 import androidx.core.app.LocaleManagerCompat;
+import androidx.core.view.WindowCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.os.LocaleListCompat;
 
@@ -354,6 +356,48 @@ public class UtilsModule extends ReactContextBaseJavaModule {
     params.putInt("width", rect.width());
     params.putInt("height", rect.height());
     promise.resolve(params);
+  }
+
+  // 让页面内容延伸到系统栏（状态栏/导航栏）后面，用于全屏播放页；不改变系统栏的可见性
+  @ReactMethod
+  public void setEdgeToEdge(boolean edgeToEdge) {
+    Activity currentActivity = reactContext.getCurrentActivity();
+    if (currentActivity == null) return;
+    currentActivity.runOnUiThread(() -> {
+      Window window = currentActivity.getWindow();
+      WindowCompat.setDecorFitsSystemWindows(window, !edgeToEdge);
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        // 关闭系统给导航栏加的对比度遮罩，否则透明导航栏上会多一层灰底
+        window.setNavigationBarContrastEnforced(!edgeToEdge);
+      }
+    });
+  }
+
+  // 获取底部系统导航栏高度（dp）
+  @SuppressWarnings("deprecation")
+  @ReactMethod
+  public void getNavigationBarHeight(Promise promise) {
+    Activity currentActivity = reactContext.getCurrentActivity();
+    if (currentActivity == null) {
+      promise.resolve(0d);
+      return;
+    }
+    currentActivity.runOnUiThread(() -> {
+      WindowInsets insets = null;
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        insets = currentActivity.getWindow().getDecorView().getRootWindowInsets();
+      }
+      int bottom = 0;
+      if (insets != null) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+          bottom = insets.getInsets(WindowInsets.Type.navigationBars()).bottom;
+        } else {
+          bottom = insets.getSystemWindowInsetBottom();
+        }
+      }
+      float density = currentActivity.getResources().getDisplayMetrics().density;
+      promise.resolve((double) bottom / density);
+    });
   }
 
   @ReactMethod

@@ -115,6 +115,8 @@ const registerPlaybackService = async() => {
     global.lx.playerTrackId = await getCurrentTrackId()
     if (info.track == null) return
     if (global.lx.isPlayedStop) return handleExitApp('Timeout Exit')
+    // 正在取播放链接：此时占位轨道可能短暂成为当前曲目，不能当成「播放结束」（否则会连环跳歌）
+    if (global.lx.gettingUrlId) return
 
     // console.log('global.lx.playerTrackId====>', global.lx.playerTrackId)
     if (isEmpty()) {

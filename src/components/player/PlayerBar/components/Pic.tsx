@@ -11,7 +11,7 @@ import { setLoadErrorPicUrl, setMusicInfo } from '@/core/player/playInfo'
 import { createStyle } from '@/utils/tools'
 
 // 圆形封面，直径与胶囊条高度（index.tsx 的 BAR_HEIGHT）一致，贴在条内
-const PIC_SIZE = scaleSizeH(46)
+const PIC_SIZE = scaleSizeH(42)
 
 const styles = createStyle({
   touch: {

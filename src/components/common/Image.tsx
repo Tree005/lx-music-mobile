@@ -3,8 +3,9 @@ import { BorderRadius } from '@/theme'
 import { createStyle } from '@/utils/tools'
 import { type ComponentProps, memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { View, type ViewProps, StyleSheet, Image as FastImage } from 'react-native'
+import { MusicNote } from 'phosphor-react-native'
+import { PhIcon } from './PhIcon'
 // import FastImage, { type FastImageProps } from 'react-native-fast-image'
-import Text from './Text'
 import { useLayout } from '@/utils/hooks'
 // export type { OnLoadEvent } from 'react-native-fast-image'
 
@@ -24,12 +25,11 @@ export const defaultHeaders = {
 const EmptyPic = memo(({ style, nativeID }: { style: ImageProps['style'], nativeID: ImageProps['nativeID'] }) => {
   const theme = useTheme()
   const { onLayout, width } = useLayout()
-  const size = width * 0.36
+  const size = width * 0.42
 
   return (
-    <View style={StyleSheet.compose({ ...styles.emptyPic, backgroundColor: theme['c-primary-light-900-alpha-200'], gap: size * 0.1 }, style)} onLayout={onLayout} nativeID={nativeID}>
-      <Text size={size} color={theme['c-primary-light-400-alpha-200']}>L</Text>
-      <Text size={size} color={theme['c-primary-light-400-alpha-200']} style={styles.text}>X</Text>
+    <View style={StyleSheet.compose({ ...styles.emptyPic, backgroundColor: theme['c-primary-light-900-alpha-200'] }, style)} onLayout={onLayout} nativeID={nativeID}>
+      <PhIcon Icon={MusicNote} size={size} color={theme['c-primary-light-400-alpha-200']} />
     </View>
   )
 })
@@ -84,11 +84,7 @@ export default Image
 const styles = createStyle({
   emptyPic: {
     borderRadius: BorderRadius.normal,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  text: {
-    paddingLeft: 2,
   },
 })

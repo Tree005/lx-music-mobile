@@ -1,5 +1,5 @@
 import { memo, useMemo, useEffect, useRef, useCallback } from 'react'
-import { View, FlatList, type FlatListProps, type LayoutChangeEvent, type NativeSyntheticEvent, type NativeScrollEvent } from 'react-native'
+import { View, FlatList, type FlatListProps, type GestureResponderEvent, type LayoutChangeEvent, type NativeSyntheticEvent, type NativeScrollEvent } from 'react-native'
 // import { useLayout } from '@/utils/hooks'
 import { type Line, useLrcPlay, useLrcSet } from '@/plugins/lyric'
 import { createStyle } from '@/utils/tools'
@@ -113,11 +113,13 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
 })
 const wait = async() => new Promise(resolve => setTimeout(resolve, 100))
 
-export default () => {
+export default ({ onPress }: { onPress?: () => void } = {}) => {
   const lyricLines = useLrcSet()
   const { line } = useLrcPlay()
   const flatListRef = useRef<FlatList>(null)
   const playLineRef = useRef<PlayLineType>(null)
+  // 轻点返回用的触摸记录（不用 Pressable 包列表，否则会抢手势导致歌词滑不动）
+  const tapRef = useRef({ x: 0, y: 0, time: 0 })
   const isPauseScrollRef = useRef(true)
   const scrollTimoutRef = useRef<NodeJS.Timeout | null>(null)
   const delayScrollTimeout = useRef<NodeJS.Timeout | null>(null)
@@ -307,8 +309,20 @@ export default () => {
     <View style={styles.space} onLayout={handleSpaceLayout}></View>
   ), [handleSpaceLayout])
 
+  // 轻点（位移很小、时间很短）才当作「点击返回」，滑动/长按不触发
+  const handleTouchStart = (e: GestureResponderEvent) => {
+    tapRef.current = { x: e.nativeEvent.pageX, y: e.nativeEvent.pageY, time: Date.now() }
+  }
+  const handleTouchEnd = (e: GestureResponderEvent) => {
+    if (!onPress) return
+    const { x, y, time } = tapRef.current
+    if (Math.abs(e.nativeEvent.pageX - x) > 8 || Math.abs(e.nativeEvent.pageY - y) > 8) return
+    if (Date.now() - time > 300) return
+    onPress()
+  }
+
   return (
-    <>
+    <View style={styles.wrapper} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       <FlatList
         data={lyricLines}
         renderItem={renderItem}
@@ -326,11 +340,14 @@ export default () => {
         onScroll={handleScroll}
       />
       { isShowLyricProgressSetting ? <PlayLine ref={playLineRef} onPlayLine={handlePlayLine} /> : null }
-    </>
+    </View>
   )
 }
 
 const styles = createStyle({
+  wrapper: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     paddingLeft: 20,

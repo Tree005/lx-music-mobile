@@ -86,6 +86,8 @@ const Main = () => {
       onPageSelected={onPageSelected}
       onPageScrollStateChanged={onPageScrollStateChanged}
       scrollEnabled={settingState.setting['common.homePageScroll']}
+      // 关掉滑到首尾时的过度滚动拉伸效果（安卓 12+ 会看到页面被拖拽变形）
+      overScrollMode="never"
       style={styles.pagerView}
     >
       {

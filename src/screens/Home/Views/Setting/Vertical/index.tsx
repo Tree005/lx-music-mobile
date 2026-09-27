@@ -106,6 +106,7 @@ export default forwardRef<SettingVerticalType, {}>((props, ref) => {
                 key={page}
                 data={PAGE_SECTIONS[page] as readonly SectionId[]}
                 keyboardShouldPersistTaps={'always'}
+                showsVerticalScrollIndicator={false}
                 renderItem={renderItem}
                 keyExtractor={getkey}
                 contentContainerStyle={styles.content}

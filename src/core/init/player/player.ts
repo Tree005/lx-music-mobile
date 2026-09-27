@@ -23,6 +23,10 @@ export default async(setting: LX.AppSetting) => {
       setStatusText(global.i18n.t('player__end'))
       return
     }
+    // 兜底：切歌/切前后台时 RNTP 偶尔会把「占位轨道」当成当前曲目而误报播放结束，
+    // 已知时长且明显没播完就忽略这次结束事件，避免连环跳歌
+    const { nowPlayTime, maxPlayTime } = playerState.progress
+    if (maxPlayTime > 30 && nowPlayTime < maxPlayTime * 0.5) return
     // resetPlayerMusicInfo()
     // global.app_event.stop()
     global.app_event.setProgress(0)

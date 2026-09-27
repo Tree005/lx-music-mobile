@@ -123,6 +123,7 @@ export default ({ onOpenList, onRemove }: {
     <FlatList
       ref={flatListRef}
       onScroll={handleScroll}
+      showsVerticalScrollIndicator={false}
       style={styles.container}
       data={list}
       maxToRenderPerBatch={9}

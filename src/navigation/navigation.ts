@@ -136,9 +136,9 @@ export function pushPlayDetailScreen(componentId: string, skipAnimation = false)
             style: getStatusBarStyle(theme.isDark),
             backgroundColor: 'transparent',
           },
+          // 内容铺满到屏幕最底部，导航栏区域透明（页内用 padding 给底部工具栏留出安全区）
           navigationBar: {
-            // visible: false,
-            backgroundColor: theme['c-content-background'],
+            backgroundColor: 'transparent',
           },
           layout: {
             componentBackgroundColor: theme['c-content-background'],

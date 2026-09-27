@@ -26,7 +26,7 @@ export default memo(({ onPress }: { onPress: () => void }) => {
   return (
     <TouchableOpacity style={styles.container} activeOpacity={0.6} onPress={onPress}>
       <Text numberOfLines={1} size={15} color={CURRENT_COLOR} style={styles.currentLine}>{currentText}</Text>
-      <Text numberOfLines={1} size={13} color={NEXT_COLOR} style={styles.nextLine}>{nextText || ' '}</Text>
+      <Text numberOfLines={1} size={14} color={NEXT_COLOR} style={styles.nextLine}>{nextText || ' '}</Text>
     </TouchableOpacity>
   )
 })
@@ -37,16 +37,16 @@ const styles = createStyle({
     alignItems: 'flex-start',
     justifyContent: 'center',
     paddingHorizontal: 20,
-    // 与封面底边的间距（参考汽水：约封面高度的 0.068）
-    paddingTop: 14,
+    // 与封面底边的间距（参考汽水：约封面高度的 0.159，比原先明显更松）
+    paddingTop: 22,
     paddingBottom: 0,
   },
   currentLine: {
     lineHeight: setSpText(15) * 1.5,
   },
   nextLine: {
-    // 两行之间留出行距（参考汽水：约封面高度的 0.091）
-    marginTop: 6,
-    lineHeight: setSpText(13) * 1.5,
+    // 两行之间留出行距（参考汽水：约封面高度的 0.093）
+    marginTop: 8,
+    lineHeight: setSpText(14) * 1.5,
   },
 })

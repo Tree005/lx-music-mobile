@@ -16,9 +16,9 @@ import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
 const WIDTH_RATIO = 0.88
 // 封面圆角（参考图实测约 3dp，近直角）
 const BORDER_RADIUS = scaleSizeW(3)
-// 封面以下的固定内容高度预算（歌词两行 + 信息行 + 进度条/时间 + 控制行 + 底部工具栏 + 底部留白 ≈ 304dp），
+// 封面以下的固定内容高度预算（歌词两行 + 信息行 + 进度条/时间 + 控制行 + 底部工具栏 + 底部留白 ≈ 322dp），
 // 只在屏高不足时用来收缩封面，避免整页被撑出屏幕；正常屏宽下封面以 88% 屏宽为准
-const BELOW_COVER_HEIGHT = scaleSizeH(306)
+const BELOW_COVER_HEIGHT = scaleSizeH(322)
 
 export default ({ componentId, onPress }: { componentId: string, onPress: () => void }) => {
   const musicInfo = usePlayerMusicInfo()

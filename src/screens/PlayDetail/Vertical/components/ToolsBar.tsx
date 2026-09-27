@@ -10,6 +10,7 @@ import { toggleDesktopLyricLock } from '@/core/desktopLyric'
 import { updateSetting } from '@/core/common'
 import { useSettingValue } from '@/store/setting/hook'
 import settingState from '@/store/setting/state'
+import { useNavigationBarHeight } from '@/utils/hooks'
 import { createStyle } from '@/utils/tools'
 
 // 桌面歌词开关：点按开关悬浮歌词，长按切换锁定
@@ -39,9 +40,11 @@ const DesktopLyricBtn = () => {
 export default memo(() => {
   const popupRef = useRef<SettingPopupType>(null)
   const morePopupRef = useRef<MorePopupType>(null)
+  // 播放页内容铺满到屏幕最底部（延伸到系统导航栏后面），工具栏要上移，给手势条留出安全区
+  const navigationBarHeight = useNavigationBarHeight()
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { height: HEADER_HEIGHT + navigationBarHeight, paddingBottom: navigationBarHeight }]}>
       <DesktopLyricBtn />
       <TimeoutExitBtn />
       <Btn icon={SlidersHorizontal} color={ICON_ON} onPress={() => { popupRef.current?.show() }} />

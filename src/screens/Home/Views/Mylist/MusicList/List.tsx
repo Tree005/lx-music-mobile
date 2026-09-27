@@ -283,6 +283,7 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
     <FlatList
       ref={flatListRef}
       onScroll={handleScroll}
+      showsVerticalScrollIndicator={false}
       style={styles.list}
       data={currentList}
       maxToRenderPerBatch={4}

@@ -68,6 +68,14 @@ export const getWindowSize = async(): Promise<{ width: number, height: number }>
   return UtilsModule.getWindowSize()
 }
 
+// 让页面内容延伸到系统栏（状态栏/导航栏）后面（不改变系统栏可见性）
+export const setEdgeToEdge = (edgeToEdge: boolean) => {
+  UtilsModule.setEdgeToEdge(edgeToEdge)
+}
+
+// 获取底部系统导航栏高度（dp）
+export const getNavigationBarHeight = UtilsModule.getNavigationBarHeight as () => Promise<number>
+
 export const onWindowSizeChange = (handler: (size: { width: number, height: number }) => void): () => void => {
   UtilsModule.listenWindowSizeChanged()
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument

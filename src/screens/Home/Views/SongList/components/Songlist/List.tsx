@@ -153,6 +153,7 @@ export default forwardRef<ListType, ListProps>(({ onRefresh, onLoadMore, onOpenD
                 key={String(rowInfo.num)}
                 ref={flatListRef}
                 style={styles.list}
+                showsVerticalScrollIndicator={false}
                 columnWrapperStyle={{ justifyContent: 'space-evenly' }}
                 numColumns={rowInfo.num}
                 data={list}

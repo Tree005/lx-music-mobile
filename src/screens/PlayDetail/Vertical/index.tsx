@@ -1,5 +1,6 @@
-import { memo, useState, useRef, useEffect, useCallback } from 'react'
-import { View, AppState, Pressable } from 'react-native'
+import { memo, useRef, useEffect, useCallback } from 'react'
+import { View, AppState } from 'react-native'
+import PagerView, { type PagerViewOnPageSelectedEvent } from 'react-native-pager-view'
 
 import Header from './components/Header'
 import ToolsBar from './components/ToolsBar'
@@ -19,21 +20,23 @@ import { createStyle } from '@/utils/tools'
 // global.iskeep = false
 export default memo(({ componentId }: { componentId: string }) => {
   // const theme = useTheme()
-  // 封面视图 ⇄ 全屏歌词视图（点封面或嵌入歌词进入，点歌词区域返回）
-  const [showLyric, setShowLyric] = useState(false)
+  // 竖向两页：封面页（封面 + 两行歌词 + 歌曲信息）与全屏歌词页
+  // 上滑看歌词、下滑回封面；也支持点封面/嵌入歌词进、点歌词页回
   const showLyricRef = useRef(false)
+  const pagerRef = useRef<PagerView>(null)
 
   const showFullLyric = useCallback(() => {
-    showLyricRef.current = true
-    setShowLyric(true)
-    screenkeepAwake()
+    pagerRef.current?.setPage(1)
+  }, [])
+  const hideFullLyric = useCallback(() => {
+    pagerRef.current?.setPage(0)
   }, [])
 
-  const hideFullLyric = useCallback(() => {
-    showLyricRef.current = false
-    setShowLyric(false)
-    screenUnkeepAwake()
-  }, [])
+  const onPageSelected = ({ nativeEvent }: PagerViewOnPageSelectedEvent) => {
+    showLyricRef.current = nativeEvent.position == 1
+    if (showLyricRef.current) screenkeepAwake()
+    else screenUnkeepAwake()
+  }
 
   useEffect(() => {
     let appstateListener = AppState.addEventListener('change', (state) => {
@@ -67,22 +70,23 @@ export default memo(({ componentId }: { componentId: string }) => {
       <Background />
       <Header />
       <View style={styles.container}>
-        {
-          showLyric
-            ? (
-                // 全屏歌词占满上半区，点歌词区域返回封面视图
-                <Pressable style={styles.lyricArea} onPress={hideFullLyric}>
-                  <Lyric />
-                </Pressable>
-              )
-            : (
-                <>
-                  <Pic componentId={componentId} onPress={showFullLyric} />
-                  <LyricInline onPress={showFullLyric} />
-                  <SongInfo />
-                </>
-              )
-        }
+        <PagerView
+          ref={pagerRef}
+          orientation="vertical"
+          onPageSelected={onPageSelected}
+          // 关掉滑到首尾时的过度滚动拉伸效果（安卓 12+ 会看到页面被拖拽变形）
+          overScrollMode="never"
+          style={styles.pagerView}
+        >
+          <View collapsable={false}>
+            <Pic componentId={componentId} onPress={showFullLyric} />
+            <LyricInline onPress={showFullLyric} />
+            <SongInfo />
+          </View>
+          <View collapsable={false}>
+            <Lyric onPress={hideFullLyric} />
+          </View>
+        </PagerView>
         <Player />
         <ToolsBar />
       </View>
@@ -98,8 +102,7 @@ const styles = createStyle({
     flex: 1,
     flexDirection: 'column',
   },
-  lyricArea: {
+  pagerView: {
     flex: 1,
-    flexShrink: 1,
   },
 })

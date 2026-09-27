@@ -11,8 +11,8 @@ import { scaleSizeW } from '@/utils/pixelRatio'
 import PlayQueuePopup from '@/components/player/PlayQueuePopup'
 
 // 播放键外套的圆形进度环尺寸
-const RING_SIZE = scaleSizeW(34)
-const RING_STROKE = 2.5
+const RING_SIZE = scaleSizeW(31)
+const RING_STROKE = 2.2
 const RING_RADIUS = (RING_SIZE - RING_STROKE) / 2
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS
 
@@ -50,7 +50,7 @@ const TogglePlayBtn = () => {
         />
       </Svg>
       <View style={styles.playIcon} pointerEvents="none">
-        <PhIcon Icon={isPlay ? Pause : Play} weight="fill" color={theme['c-font']} size={15} />
+        <PhIcon Icon={isPlay ? Pause : Play} weight="fill" color={theme['c-font']} size={14} />
       </View>
     </TouchableOpacity>
   )
@@ -64,7 +64,7 @@ export default () => {
     <>
       <TogglePlayBtn />
       <TouchableOpacity style={styles.controlBtn} activeOpacity={0.5} onPress={() => { setQueueVisible(true) }}>
-        <PhIcon Icon={Playlist} color={theme['c-font']} size={22} />
+        <PhIcon Icon={Playlist} color={theme['c-font']} size={20} />
       </TouchableOpacity>
       <PlayQueuePopup visible={queueVisible} onClose={() => { setQueueVisible(false) }} />
     </>
@@ -74,8 +74,8 @@ export default () => {
 
 const styles = createStyle({
   controlBtn: {
-    width: 42,
-    height: 42,
+    width: 38,
+    height: 38,
     justifyContent: 'center',
     alignItems: 'center',
   },

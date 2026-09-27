@@ -62,7 +62,7 @@ export default memo(() => {
     <View style={styles.container}>
       <View style={styles.info}>
         <Text numberOfLines={1} size={18} color={TITLE_COLOR} style={styles.name}>{musicInfo.name}</Text>
-        <Text numberOfLines={1} size={12} color={SINGER_COLOR} style={styles.singer}>{musicInfo.singer}</Text>
+        <Text numberOfLines={1} size={13} color={SINGER_COLOR} style={styles.singer}>{musicInfo.singer}</Text>
       </View>
       <TouchableOpacity style={styles.actionBtn} activeOpacity={0.6} onPress={handleToggleLove}>
         <PhIcon Icon={Heart} size={22} weight={loved ? 'fill' : 'regular'} color={loved ? theme['c-primary'] : TITLE_COLOR} />
@@ -79,8 +79,8 @@ const styles = createStyle({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    // 与上方歌词块的间距（参考汽水：约封面高度的 0.184，明显大于其他间距）
-    paddingTop: 24,
+    // 与上方歌词块的间距（参考汽水：约封面高度的 0.121，明显大于其他间距）
+    paddingTop: 28,
     paddingBottom: 0,
   },
   info: {

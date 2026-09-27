@@ -14,6 +14,7 @@ export default () => {
   return (
     <ScrollView
       style={{ ...styles.container, backgroundColor: theme['c-content-background'] }}
+      showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
