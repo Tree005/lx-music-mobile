@@ -47,7 +47,8 @@ const styles = createStyle({
     borderRadius: BAR_HEIGHT / 2,
     flexDirection: 'row',
     alignItems: 'center',
-    elevation: 10,
+    // 很浅的阴影：页面是纯白底，给「条」一点可辨识度（比原来重阴影轻很多）
+    elevation: 3,
   },
   center: {
     flexGrow: 1,

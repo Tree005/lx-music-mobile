@@ -1,12 +1,13 @@
-import { TouchableOpacity } from 'react-native'
+import { Animated, TouchableOpacity } from 'react-native'
 import { navigations } from '@/navigation'
-import { usePlayerMusicInfo } from '@/store/player/hook'
+import { useIsPlay, usePlayerMusicInfo } from '@/store/player/hook'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import commonState from '@/store/common/state'
 import playerState from '@/store/player/state'
 import { LIST_IDS, NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
 import Image from '@/components/common/Image'
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
+import { useSpinOnPlay } from '@/utils/hooks'
 import { setLoadErrorPicUrl, setMusicInfo } from '@/core/player/playInfo'
 import { createStyle } from '@/utils/tools'
 
@@ -29,6 +30,18 @@ const styles = createStyle({
 
 export default ({ isHome }: { isHome: boolean }) => {
   const musicInfo = usePlayerMusicInfo()
+  const isPlay = useIsPlay()
+  // 播放时封面旋转（仿网易云黑胶，约 10 秒一圈），暂停停在当前角度
+  const spin = useSpinOnPlay(isPlay)
+  const spinStyle = useMemo(() => ({
+    transform: [{
+      rotate: spin.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['0deg', '360deg'],
+      }),
+    }],
+  }), [spin])
+
   const handlePress = () => {
     if (!musicInfo.id) return
     navigations.pushPlayDetailScreen(commonState.componentIds.home!)
@@ -50,7 +63,9 @@ export default ({ isHome }: { isHome: boolean }) => {
 
   return (
     <TouchableOpacity style={styles.touch} onLongPress={handleLongPress} onPress={handlePress} activeOpacity={0.7} >
-      <Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={styles.image} onError={handleError} />
+      <Animated.View style={spinStyle}>
+        <Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={styles.image} onError={handleError} />
+      </Animated.View>
     </TouchableOpacity>
   )
 }
