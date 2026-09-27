@@ -4,7 +4,8 @@ import Section from '../../components/Section'
 import ResourceCache from './ResourceCache'
 import MetaCache from './MetaCache'
 import DislikeList from './DislikeList'
-import Log from './Log'
+// 「日志」是开发向入口，先隐藏；需要时连同下方 JSX 一起取消注释
+// import Log from './Log'
 // import MaxCache from './MaxCache'
 import { useI18n } from '@/lang'
 
@@ -16,7 +17,8 @@ export default memo(() => {
       <ResourceCache />
       <MetaCache />
       <DislikeList />
-      <Log />
+      {/* 「日志」开发向入口先隐藏 */}
+      {/* <Log /> */}
       {/* <MaxCache /> */}
     </Section>
   )
