@@ -14,6 +14,7 @@ import { LIST_IDS, LIST_SCROLL_POSITION_KEY } from '@/config/constant'
 import { getListPosition, saveListPosition } from '@/utils/data'
 import { getListMusics } from '@/core/list'
 import { useMusicPic } from '@/utils/hooks/useMusicPic'
+import { useSonglistOnlineInfo } from '@/utils/hooks/useSonglistOnlineInfo'
 import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
 import { BorderWidths } from '@/theme'
 
@@ -28,10 +29,12 @@ const ListItem = memo(({ item, onPress, onRemove }: {
 }) => {
   const t = useI18n()
   const theme = useTheme()
-  // 封面取歌单里第一首歌的图（没有就交给 Image 的占位图）
+  // 封面：收藏/导入的歌单用源歌单自己的封面，自建歌单用里面第一首歌的封面（没有就交给 Image 的占位图）
   const [firstMusic, setFirstMusic] = useState<LX.Music.MusicInfo | undefined>()
   const [musicCount, setMusicCount] = useState<number | null>(null)
-  const picUrl = useMusicPic(firstMusic)
+  const onlineInfo = useSonglistOnlineInfo(item)
+  const firstSongPic = useMusicPic(onlineInfo?.img ? undefined : firstMusic)
+  const picUrl = onlineInfo?.img ?? firstSongPic
 
   useEffect(() => {
     let isUnmounted = false

@@ -7,8 +7,11 @@ import { setNavActiveId } from '@/core/common'
 import Text from '@/components/common/Text'
 import { PhIcon } from '@/components/common/PhIcon'
 
-// 顶部搜索框：浅灰胶囊 + 左侧放大镜 + 提示文字
+// 顶部搜索框：固定浅色胶囊 + 左侧放大镜 + 提示文字
 // 整条可点，点击进入搜索页
+// 胶囊底色固定不跟随主题（切主题时保持同一个浅色底）
+const BACKGROUND_COLOR = 'rgba(0, 0, 0, 0.05)'
+
 export default () => {
   const theme = useTheme()
   const t = useI18n()
@@ -20,7 +23,7 @@ export default () => {
   return (
     <TouchableOpacity
       activeOpacity={0.7}
-      style={{ ...styles.container, backgroundColor: theme['c-200'] }}
+      style={{ ...styles.container, backgroundColor: BACKGROUND_COLOR }}
       onPress={handlePress}
     >
       <PhIcon Icon={MagnifyingGlass} size={18} color={theme['c-font-label']} />

@@ -15,6 +15,7 @@ import { playList } from '@/core/player/player'
 import { setNavActiveId } from '@/core/common'
 import { useHorizontalMode } from '@/utils/hooks'
 import { useMusicPic } from '@/utils/hooks/useMusicPic'
+import { useSonglistOnlineInfo } from '@/utils/hooks/useSonglistOnlineInfo'
 import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
 import listState from '@/store/list/state'
 
@@ -43,8 +44,10 @@ export default () => {
   const isHorizontalMode = useHorizontalMode()
   const listInfo = listState.userList.find(l => l.id === global.lx.songlistDetailListId)
   const [firstMusic, setFirstMusic] = useState<LX.Music.MusicInfo | undefined>()
-  // 歌单封面用里面第一首歌的封面（歌单本身没有封面字段）
-  const picUrl = useMusicPic(firstMusic)
+  // 收藏/导入的歌单用源歌单的封面与描述（本地只存了歌曲）；自建歌单没有源，用里面第一首歌的封面
+  const onlineInfo = useSonglistOnlineInfo(listInfo)
+  const firstSongPic = useMusicPic(onlineInfo?.img ? undefined : firstMusic)
+  const picUrl = onlineInfo?.img ?? firstSongPic
 
   useEffect(() => {
     if (!listInfo) return
@@ -84,8 +87,8 @@ export default () => {
         <Image style={styles.pic} url={picUrl} />
         <View style={styles.infoText}>
           <Text style={styles.name} size={18} numberOfLines={2}>{listInfo.name}</Text>
-          <Text style={styles.desc} size={12} color={theme['c-font-label']} numberOfLines={1} ellipsizeMode="tail">
-            {listInfo.source ? t(`source_alias_${listInfo.source}`) : t('songlist_type_user')}
+          <Text style={styles.desc} size={12} color={theme['c-font-label']} numberOfLines={3} ellipsizeMode="tail">
+            {onlineInfo?.desc ?? (listInfo.source ? t(`source_alias_${listInfo.source}`) : t('songlist_type_user'))}
           </Text>
         </View>
       </View>
