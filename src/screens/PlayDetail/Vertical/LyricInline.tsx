@@ -25,8 +25,8 @@ export default memo(({ onPress }: { onPress: () => void }) => {
 
   return (
     <TouchableOpacity style={styles.container} activeOpacity={0.6} onPress={onPress}>
-      <Text numberOfLines={1} size={15} color={CURRENT_COLOR} style={styles.currentLine}>{currentText}</Text>
-      <Text numberOfLines={1} size={14} color={NEXT_COLOR} style={styles.nextLine}>{nextText || ' '}</Text>
+      <Text numberOfLines={1} size={16} color={CURRENT_COLOR} style={styles.currentLine}>{currentText}</Text>
+      <Text numberOfLines={1} size={15} color={NEXT_COLOR} style={styles.nextLine}>{nextText || ' '}</Text>
     </TouchableOpacity>
   )
 })
@@ -42,11 +42,11 @@ const styles = createStyle({
     paddingBottom: 0,
   },
   currentLine: {
-    lineHeight: setSpText(15) * 1.5,
+    lineHeight: setSpText(16) * 1.5,
   },
   nextLine: {
     // 两行之间留出行距（参考汽水：约封面高度的 0.093）
     marginTop: 8,
-    lineHeight: setSpText(14) * 1.5,
+    lineHeight: setSpText(15) * 1.5,
   },
 })

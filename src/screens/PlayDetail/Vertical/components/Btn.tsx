@@ -17,7 +17,7 @@ export default ({ icon, color, onPress, onLongPress }: {
 }) => {
   return (
     <TouchableOpacity onPress={onPress} onLongPress={onLongPress} style={{ ...styles.button, width: HEADER_HEIGHT }}>
-      <PhIcon Icon={icon} color={color} size={18} />
+      <PhIcon Icon={icon} color={color} size={20} />
     </TouchableOpacity>
   )
 }

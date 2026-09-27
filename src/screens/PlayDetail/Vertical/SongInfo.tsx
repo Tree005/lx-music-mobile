@@ -61,14 +61,14 @@ export default memo(() => {
   return (
     <View style={styles.container}>
       <View style={styles.info}>
-        <Text numberOfLines={1} size={18} color={TITLE_COLOR} style={styles.name}>{musicInfo.name}</Text>
-        <Text numberOfLines={1} size={13} color={SINGER_COLOR} style={styles.singer}>{musicInfo.singer}</Text>
+        <Text numberOfLines={1} size={20} color={TITLE_COLOR} style={styles.name}>{musicInfo.name}</Text>
+        <Text numberOfLines={1} size={14} color={SINGER_COLOR} style={styles.singer}>{musicInfo.singer}</Text>
       </View>
       <TouchableOpacity style={styles.actionBtn} activeOpacity={0.6} onPress={handleToggleLove}>
-        <PhIcon Icon={Heart} size={22} weight={loved ? 'fill' : 'regular'} color={loved ? theme['c-primary'] : TITLE_COLOR} />
+        <PhIcon Icon={Heart} size={24} weight={loved ? 'fill' : 'regular'} color={loved ? theme['c-primary'] : TITLE_COLOR} />
       </TouchableOpacity>
       <TouchableOpacity style={styles.actionBtn} activeOpacity={0.6} onPress={handleShowComment}>
-        <PhIcon Icon={ChatCircle} size={21} color={TITLE_COLOR} />
+        <PhIcon Icon={ChatCircle} size={23} color={TITLE_COLOR} />
       </TouchableOpacity>
     </View>
   )

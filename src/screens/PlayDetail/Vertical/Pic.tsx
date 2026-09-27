@@ -68,5 +68,7 @@ const styles = createStyle({
     // elevation: 3,
     backgroundColor: 'rgba(0,0,0,0)',
     borderRadius: BORDER_RADIUS,
+    // 与下方歌词的间距，让封面整体上移一点
+    marginBottom: scaleSizeH(16),
   },
 })
