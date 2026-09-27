@@ -38,19 +38,29 @@ const ListItem = memo(({ item, onPress, onRemove }: {
 
   useEffect(() => {
     let isUnmounted = false
-    void getListMusics(item.id).then(musics => {
-      if (isUnmounted) return
-      setFirstMusic(musics[0])
-      setMusicCount(musics.length)
-    })
+    const load = () => {
+      void getListMusics(item.id).then(musics => {
+        if (isUnmounted) return
+        setFirstMusic(musics[0])
+        setMusicCount(musics.length)
+      })
+    }
+    load()
+    // 歌单是先建出来、再往里塞歌曲的（导入/收藏），歌曲变了要刷新封面与数量
+    const handleChange = (ids: string[]) => {
+      if (!ids.includes(item.id)) return
+      load()
+    }
+    global.app_event.on('myListMusicUpdate', handleChange)
     return () => {
       isUnmounted = true
+      global.app_event.off('myListMusicUpdate', handleChange)
     }
   }, [item.id])
 
   const source = item.source
     ? t(`source_alias_${item.source}`)
-    : t('songlist_source_user')
+    : t('songlist_type_user')
 
   return (
     <TouchableOpacity
