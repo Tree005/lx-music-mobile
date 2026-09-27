@@ -1,3 +1,5 @@
+> **本仓库说明**：这里是对 [lyswhut/lx-music-mobile](https://github.com/lyswhut/lx-music-mobile) v1.9.1 的**个人修改版**（自用），修改内容见本仓库的提交记录。原项目版权归原作者所有，本仓库遵循 Apache-2.0 协议。
+
 <p align="center"><a href="https://github.com/lyswhut/lx-music-mobile"><img width="200" src="https://github.com/lyswhut/lx-music-mobile/blob/master/doc/images/icon.png" alt="lx-music logo"></a></p>
 
 <h1 align="center">LX Music 移动版</h1>
