@@ -92,22 +92,44 @@ const QueueBtn = () => {
   )
 }
 
+// 幽灵点击防御：系统层偶发「无触摸的 click」（不经过 onPressIn 直接触发 onPress，
+// 实测切回前台时会连环重放这类 click，把上一首按钮反复触发造成连环跳歌）。
+// 真实操作必然先经过 onPressIn，用时间戳判定：没有近期触摸的 onPress 直接忽略
+const REAL_TOUCH_WINDOW = 3000
+let prevTouchAt = 0
+let nextTouchAt = 0
+let playTouchAt = 0
+
 const PrevBtn = ({ size }: { size: number }) => {
   const handlePlayPrev = () => {
+    if (Date.now() - prevTouchAt > REAL_TOUCH_WINDOW) return
+    prevTouchAt = 0
     void playPrev()
   }
   return (
-    <TouchableOpacity style={{ ...styles.cotrolBtn, width: size, height: size }} activeOpacity={0.5} onPress={handlePlayPrev}>
+    <TouchableOpacity
+      style={{ ...styles.cotrolBtn, width: size, height: size }}
+      activeOpacity={0.5}
+      onPress={handlePlayPrev}
+      onPressIn={() => { prevTouchAt = Date.now() }}
+    >
       <PhIcon Icon={SkipBack} color={ICON_COLOR} size={size * SKIP_ICON_RATIO} weight="fill" />
     </TouchableOpacity>
   )
 }
 const NextBtn = ({ size }: { size: number }) => {
   const handlePlayNext = () => {
+    if (Date.now() - nextTouchAt > REAL_TOUCH_WINDOW) return
+    nextTouchAt = 0
     void playNext()
   }
   return (
-    <TouchableOpacity style={{ ...styles.cotrolBtn, width: size, height: size }} activeOpacity={0.5} onPress={handlePlayNext}>
+    <TouchableOpacity
+      style={{ ...styles.cotrolBtn, width: size, height: size }}
+      activeOpacity={0.5}
+      onPress={handlePlayNext}
+      onPressIn={() => { nextTouchAt = Date.now() }}
+    >
       <PhIcon Icon={SkipForward} color={ICON_COLOR} size={size * SKIP_ICON_RATIO} weight="fill" />
     </TouchableOpacity>
   )
@@ -115,8 +137,18 @@ const NextBtn = ({ size }: { size: number }) => {
 
 const TogglePlayBtn = ({ size }: { size: number }) => {
   const isPlay = useIsPlay()
+  const handleTogglePlay = () => {
+    if (Date.now() - playTouchAt > REAL_TOUCH_WINDOW) return
+    playTouchAt = 0
+    togglePlay()
+  }
   return (
-    <TouchableOpacity style={{ ...styles.cotrolBtn, width: size, height: size }} activeOpacity={0.5} onPress={togglePlay}>
+    <TouchableOpacity
+      style={{ ...styles.cotrolBtn, width: size, height: size }}
+      activeOpacity={0.5}
+      onPress={handleTogglePlay}
+      onPressIn={() => { playTouchAt = Date.now() }}
+    >
       <PhIcon Icon={isPlay ? Pause : Play} color={ICON_COLOR} size={size * PLAY_ICON_RATIO} weight="fill" />
     </TouchableOpacity>
   )

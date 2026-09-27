@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { AppState } from 'react-native'
 import TrackPlayer, { State as TPState, Event as TPEvent } from 'react-native-track-player'
 // import { store } from '@/store'
 // import { action as playerAction, STATUS } from '@/store/modules/player'
@@ -10,19 +9,6 @@ import { getCurrentTrackId } from './playList'
 import { pause, play, playNext, playPrev } from '@/core/player/player'
 
 let isInitialized = false
-
-// App 回到前台的时刻：魅族等系统会在切回前台时重放媒体命令
-// （实测切回后 ~100ms 起、每 0.2~0.9 秒触发一次「上一首」，连发约 8 秒 → 连环跳歌），
-// 这段时间内到达的媒体命令忽略（用户在 App 前台时切歌走界面按钮，不受影响）
-let appActiveAt = Date.now()
-AppState.addEventListener('change', (state) => {
-  if (state == 'active') appActiveAt = Date.now()
-})
-const isMediaCommandReplay = () => Date.now() - appActiveAt < 8000
-
-// 「上一首/下一首」命令去抖：重放风暴里的命令间隔可短至 ~200ms
-let lastRemotePrevAt = 0
-let lastRemoteNextAt = 0
 
 // let retryTrack: LX.Player.Track | null = null
 // let retryGetUrlId: string | null = null
@@ -53,22 +39,12 @@ const registerPlaybackService = async() => {
   })
 
   TrackPlayer.addEventListener(TPEvent.RemoteNext, () => {
-    // TODO(dbg): 排查连环跳歌用，定位后删
-    console.log('[dbg] RemoteNext evt, sinceActive=', Date.now() - appActiveAt)
-    if (isMediaCommandReplay()) return
-    const now = Date.now()
-    if (now - lastRemoteNextAt < 800) return
-    lastRemoteNextAt = now
+    // console.log('remote-next')
     void playNext()
   })
 
   TrackPlayer.addEventListener(TPEvent.RemotePrevious, () => {
-    // TODO(dbg): 排查连环跳歌用，定位后删
-    console.log('[dbg] RemotePrevious evt, sinceActive=', Date.now() - appActiveAt)
-    if (isMediaCommandReplay()) return
-    const now = Date.now()
-    if (now - lastRemotePrevAt < 800) return
-    lastRemotePrevAt = now
+    // console.log('remote-previous')
     void playPrev()
   })
 
@@ -101,8 +77,6 @@ const registerPlaybackService = async() => {
   })
 
   TrackPlayer.addEventListener(TPEvent.PlaybackState, async info => {
-    // TODO(dbg): 排查连环跳歌用，定位后删
-    console.log('[dbg] state evt', info.state, 'gettingUrl=', global.lx.gettingUrlId)
     if (global.lx.gettingUrlId || isTempId()) return
     // let currentIsPlaying = false
 
@@ -139,8 +113,6 @@ const registerPlaybackService = async() => {
   TrackPlayer.addEventListener(TPEvent.PlaybackTrackChanged, async info => {
     // console.log('PlaybackTrackChanged====>', info)
     global.lx.playerTrackId = await getCurrentTrackId()
-    // TODO(dbg): 排查连环跳歌用，定位后删（放在所有 return 之前，被守卫拦截的也要看到）
-    console.log('[dbg] trackChanged evt', info.track, '->', global.lx.playerTrackId, 'gettingUrl=', global.lx.gettingUrlId, 'playedStop=', global.lx.isPlayedStop)
     if (info.track == null) return
     if (global.lx.isPlayedStop) return handleExitApp('Timeout Exit')
     // 正在取播放链接：此时占位轨道可能短暂成为当前曲目，不能当成「播放结束」（否则会连环跳歌）
@@ -148,10 +120,6 @@ const registerPlaybackService = async() => {
 
     // console.log('global.lx.playerTrackId====>', global.lx.playerTrackId)
     if (isEmpty()) {
-      // TODO(dbg): 排查连环跳歌用，定位后删
-      console.log('[dbg] trackChanged->empty', global.lx.playerTrackId, 'gettingUrl=', global.lx.gettingUrlId, 'guard=', Date.now() < global.lx.switchMusicGuardUntil)
-      // 切歌保护窗口内（setStop 跳到占位轨引发的事件）：不是播放结束，忽略
-      if (Date.now() < global.lx.switchMusicGuardUntil) return
       // console.log('====TEMP PAUSE====')
       await TrackPlayer.pause()
       global.app_event.playerPause()

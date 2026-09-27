@@ -34,12 +34,6 @@ interface GlobalData {
   isEnableUserApiLog: boolean
   playerTrackId: string
 
-  /**
-   * 切歌保护窗口截止时间戳（毫秒）：从切歌开始到新曲目开始加载期间，
-   * 播放器的占位轨事件不当作「播放结束」的兜底守卫
-   */
-  switchMusicGuardUntil: number
-
   qualityList: LX.QualityList
   apis: Partial<LX.UserApi.UserApiSources>
   apiInitPromise: [Promise<boolean>, boolean, (success: boolean) => void]
