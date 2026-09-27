@@ -51,6 +51,10 @@ global.lx = {
 
   gettingUrlId: '',
 
+  // 切歌保护窗口截止时间戳（毫秒）：从切歌开始到新曲目开始加载期间，
+  // 播放器的占位轨事件不当作「播放结束」，避免连环跳歌
+  switchMusicGuardUntil: 0,
+
   qualityList: {},
   apis: {},
   apiInitPromise: [Promise.resolve(false), true, () => {}],

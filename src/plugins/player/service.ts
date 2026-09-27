@@ -125,7 +125,9 @@ const registerPlaybackService = async() => {
     // console.log('global.lx.playerTrackId====>', global.lx.playerTrackId)
     if (isEmpty()) {
       // TODO(dbg): 排查连环跳歌用，定位后删
-      console.log('[dbg] trackChanged->empty', global.lx.playerTrackId, 'gettingUrl=', global.lx.gettingUrlId)
+      console.log('[dbg] trackChanged->empty', global.lx.playerTrackId, 'gettingUrl=', global.lx.gettingUrlId, 'guard=', Date.now() < global.lx.switchMusicGuardUntil)
+      // 切歌保护窗口内（setStop 跳到占位轨引发的事件）：不是播放结束，忽略
+      if (Date.now() < global.lx.switchMusicGuardUntil) return
       // console.log('====TEMP PAUSE====')
       await TrackPlayer.pause()
       global.app_event.playerPause()

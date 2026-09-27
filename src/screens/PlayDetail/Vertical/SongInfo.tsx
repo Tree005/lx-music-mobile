@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from 'react'
 import { TouchableOpacity, View } from 'react-native'
 
-import { Heart } from 'phosphor-react-native'
+import { ChatCircle, Heart } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
 import Text from '@/components/common/Text'
 import { useTheme } from '@/store/theme/hook'
@@ -9,6 +9,8 @@ import { usePlayerMusicInfo } from '@/store/player/hook'
 import { collectMusic, uncollectMusic } from '@/core/player/player'
 import { getListMusics } from '@/core/list'
 import { LIST_IDS } from '@/config/constant'
+import { navigations } from '@/navigation'
+import commonState from '@/store/common/state'
 import { createStyle } from '@/utils/tools'
 
 // 整页是暗色模糊底，信息行文字统一用白色
@@ -52,6 +54,10 @@ export default memo(() => {
     else collectMusic()
   }
 
+  const handleShowComment = () => {
+    navigations.pushCommentScreen(commonState.componentIds.playDetail!)
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.info}>
@@ -60,6 +66,9 @@ export default memo(() => {
       </View>
       <TouchableOpacity style={styles.actionBtn} activeOpacity={0.6} onPress={handleToggleLove}>
         <PhIcon Icon={Heart} size={22} weight={loved ? 'fill' : 'regular'} color={loved ? theme['c-primary'] : TITLE_COLOR} />
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.actionBtn} activeOpacity={0.6} onPress={handleShowComment}>
+        <PhIcon Icon={ChatCircle} size={21} color={TITLE_COLOR} />
       </TouchableOpacity>
     </View>
   )

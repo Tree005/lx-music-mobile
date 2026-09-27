@@ -233,6 +233,9 @@ const debouncePlay = debounceBackgroundTimer((musicInfo: LX.Player.PlayMusic) =>
 const handlePlay = async() => {
   // TODO(dbg): 排查连环跳歌用，定位后删
   console.log('[dbg] handlePlay', playerState.playMusicInfo.musicInfo?.id, 'restore=', !!global.lx.restorePlayInfo)
+  // 开启切歌保护窗口：setStop 会跳到占位轨并触发 trackChanged，
+  // 拿到新链接前的这段窗口内不能把占位轨事件当成「播放结束」（否则连环跳歌）
+  global.lx.switchMusicGuardUntil = Date.now() + 8000
   if (!isInitialized()) {
     await checkNotificationPermission()
     void checkIgnoringBatteryOptimization()
@@ -429,6 +432,12 @@ export const playNext = async(isAutoToggle = false): Promise<void> => {
     if (now - lastAutoPlayNextAt < 2000) {
       // TODO(dbg): 排查连环跳歌用，定位后删
       console.log('[dbg] auto playNext throttled, delta=', now - lastAutoPlayNextAt)
+      return
+    }
+    // 切歌保护窗口内不再自动切歌（正常播完时窗口早已过期，不受影响）
+    if (now < global.lx.switchMusicGuardUntil) {
+      // TODO(dbg): 排查连环跳歌用，定位后删
+      console.log('[dbg] auto playNext blocked by switch guard')
       return
     }
     lastAutoPlayNextAt = now

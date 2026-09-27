@@ -29,6 +29,8 @@ export default async(setting: LX.AppSetting) => {
     // 已知时长且明显没播完就忽略这次结束事件，避免连环跳歌
     const { nowPlayTime, maxPlayTime } = playerState.progress
     if (maxPlayTime > 30 && nowPlayTime < maxPlayTime * 0.5) return
+    // 切歌保护窗口内（正在切歌/取链接）的结束事件也忽略，且不清进度避免闪回 0
+    if (Date.now() < global.lx.switchMusicGuardUntil) return
     // resetPlayerMusicInfo()
     // global.app_event.stop()
     global.app_event.setProgress(0)
