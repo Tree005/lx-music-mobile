@@ -1,7 +1,6 @@
 import { StyleSheet, TouchableOpacity, View } from 'react-native'
 import { Pause, Play, SkipBack, SkipForward } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
-import { useTheme } from '@/store/theme/hook'
 // import { useIsPlay } from '@/store/player/hook'
 import { playNext, playPrev, togglePlay } from '@/core/player/player'
 // import { scaleSizeW } from '@/utils/pixelRatio'
@@ -11,36 +10,35 @@ import { marginLeft } from '../constant'
 import { BTN_WIDTH } from '../MoreBtn/Btn'
 
 // const WIDTH = scaleSizeW(48)
+// 整页是暗色模糊底，播放控制图标统一白色
+const ICON_COLOR = '#fff'
 
 const PrevBtn = ({ size }: { size: number }) => {
-  const theme = useTheme()
   const handlePlayPrev = () => {
     void playPrev()
   }
   return (
     <TouchableOpacity style={{ ...styles.cotrolBtn, width: size, height: size }} activeOpacity={0.5} onPress={handlePlayPrev}>
-      <PhIcon Icon={SkipBack} color={theme['c-button-font']} size={size * 0.7} weight="fill" />
+      <PhIcon Icon={SkipBack} color={ICON_COLOR} size={size * 0.7} weight="fill" />
     </TouchableOpacity>
   )
 }
 const NextBtn = ({ size }: { size: number }) => {
-  const theme = useTheme()
   const handlePlayNext = () => {
     void playNext()
   }
   return (
     <TouchableOpacity style={{ ...styles.cotrolBtn, width: size, height: size }} activeOpacity={0.5} onPress={handlePlayNext}>
-      <PhIcon Icon={SkipForward} color={theme['c-button-font']} size={size * 0.7} weight="fill" />
+      <PhIcon Icon={SkipForward} color={ICON_COLOR} size={size * 0.7} weight="fill" />
     </TouchableOpacity>
   )
 }
 
 const TogglePlayBtn = ({ size }: { size: number }) => {
-  const theme = useTheme()
   const isPlay = useIsPlay()
   return (
     <TouchableOpacity style={{ ...styles.cotrolBtn, width: size, height: size }} activeOpacity={0.5} onPress={togglePlay}>
-      <PhIcon Icon={isPlay ? Pause : Play} color={theme['c-button-font']} size={size * 0.7} weight="fill" />
+      <PhIcon Icon={isPlay ? Pause : Play} color={ICON_COLOR} size={size * 0.7} weight="fill" />
     </TouchableOpacity>
   )
 }

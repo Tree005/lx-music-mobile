@@ -8,7 +8,7 @@ import commonState from '@/store/common/state'
 import playerState from '@/store/player/state'
 import Text from '@/components/common/Text'
 import { LIST_IDS } from '@/config/constant'
-import { createStyle, formatMusicName } from '@/utils/tools'
+import { createStyle } from '@/utils/tools'
 
 
 export default ({ isHome }: { isHome: boolean }) => {
@@ -32,15 +32,19 @@ export default ({ isHome }: { isHome: boolean }) => {
   }
   // console.log('render title')
 
-  const title = musicInfo.id
-    ? musicInfo.singer
-      ? formatMusicName(downloadFileName, musicInfo.name, musicInfo.singer)
-      : musicInfo.name
-    : ''
+  // 歌名与歌手拆开渲染以分别设样式；顺序/是否显示歌手跟随「下载文件名格式」设置
+  const name = musicInfo.id ? musicInfo.name : ''
+  const singer = musicInfo.singer ?? ''
+  const singerFirst = downloadFileName == '歌手 - 歌名'
+  const showSinger = !!singer && downloadFileName != '歌名'
   // console.log(playMusicInfo)
   return (
     <TouchableOpacity style={styles.container} onLongPress={handleLongPress} onPress={handlePress} activeOpacity={0.7} >
-      <Text color={theme['c-font-label']} numberOfLines={1}>{title}</Text>
+      <Text color={theme['c-font']} numberOfLines={1}>
+        {showSinger && singerFirst ? <Text color={theme['c-font-label']}>{singer} - </Text> : null}
+        <Text style={styles.name}>{name}</Text>
+        {showSinger && !singerFirst ? <Text color={theme['c-font-label']}> - {singer}</Text> : null}
+      </Text>
     </TouchableOpacity>
   )
 }
@@ -72,5 +76,9 @@ const styles = createStyle({
     // paddingBottom: 4,
     // height: '50%',
     // backgroundColor: 'rgba(0, 0, 0, .1)',
+  },
+  // 歌名加粗，歌手用灰色（在外层 Text 上单独设置）
+  name: {
+    fontWeight: '600',
   },
 })

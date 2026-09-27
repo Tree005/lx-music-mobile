@@ -5,7 +5,6 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native'
 import { CaretLeft, SlidersHorizontal } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
 import { pop } from '@/navigation'
-import { useTheme } from '@/store/theme/hook'
 import { usePlayerMusicInfo } from '@/store/player/hook'
 import Text from '@/components/common/Text'
 import { scaleSizeH } from '@/utils/pixelRatio'
@@ -18,15 +17,19 @@ import DesktopLyricBtn from './DesktopLyricBtn'
 
 export const HEADER_HEIGHT = scaleSizeH(_HEADER_HEIGHT)
 
+// 整页是暗色模糊底，标题与图标统一用白色系
+const TITLE_COLOR = '#fff'
+const SINGER_COLOR = 'rgba(255, 255, 255, 0.7)'
+const ICON_COLOR = '#fff'
+
 const Title = () => {
-  const theme = useTheme()
   const musicInfo = usePlayerMusicInfo()
 
 
   return (
     <View style={styles.titleContent}>
-      <Text numberOfLines={1} style={styles.title} size={14}>{musicInfo.name}</Text>
-      <Text numberOfLines={1} style={styles.title} size={12} color={theme['c-font-label']}>{musicInfo.singer}</Text>
+      <Text numberOfLines={1} style={styles.title} size={14} color={TITLE_COLOR}>{musicInfo.name}</Text>
+      <Text numberOfLines={1} style={styles.title} size={12} color={SINGER_COLOR}>{musicInfo.singer}</Text>
     </View>
   )
 }
@@ -45,7 +48,7 @@ export default memo(() => {
     <View style={{ height: HEADER_HEIGHT }} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_header}>
       <View style={styles.container}>
         <TouchableOpacity onPress={back} style={{ ...styles.button, width: HEADER_HEIGHT }}>
-          <PhIcon Icon={CaretLeft} size={18} />
+          <PhIcon Icon={CaretLeft} size={18} color={ICON_COLOR} />
         </TouchableOpacity>
         <Title />
         <DesktopLyricBtn />

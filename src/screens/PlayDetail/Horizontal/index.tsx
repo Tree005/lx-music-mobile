@@ -1,5 +1,5 @@
 import { memo, useEffect } from 'react'
-import { View, AppState } from 'react-native'
+import { StatusBar as RNStatusBar, View, AppState } from 'react-native'
 import { screenkeepAwake, screenUnkeepAwake } from '@/utils/nativeModules/utils'
 import StatusBar from '@/components/common/StatusBar'
 import MoreBtn from './MoreBtn'
@@ -7,7 +7,7 @@ import MoreBtn from './MoreBtn'
 import Header from './components/Header'
 import { setComponentId } from '@/core/common'
 import { COMPONENT_IDS } from '@/config/constant'
-import PageContent from '@/components/PageContent'
+import Background from '../components/Background'
 import commonState, { type InitState as CommonState } from '@/store/common/state'
 
 import Pic from './Pic'
@@ -52,8 +52,12 @@ export default memo(({ componentId }: { componentId: string }) => {
   }, [])
 
   return (
-    <PageContent>
+    <View style={styles.page}>
+      {/* 与竖屏播放器一致的暗色模糊底（封面模糊铺底 + 黑色遮罩） */}
+      <Background />
       <StatusBar />
+      {/* 覆盖全局主题的状态栏样式：本页背景恒为暗色，需要浅色图标（卸载后自动还原） */}
+      <RNStatusBar barStyle="light-content" />
       <View style={{ ...styles.container, paddingTop: statusBarHeight }}>
         <View style={styles.left}>
           <Header />
@@ -71,11 +75,14 @@ export default memo(({ componentId }: { componentId: string }) => {
           <Lyric />
         </View>
       </View>
-    </PageContent>
+    </View>
   )
 })
 
 const styles = createStyle({
+  page: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     flexDirection: 'row',

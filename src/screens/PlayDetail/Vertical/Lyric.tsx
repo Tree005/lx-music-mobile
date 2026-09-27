@@ -4,7 +4,6 @@ import { View, FlatList, type FlatListProps, type LayoutChangeEvent, type Native
 import { type Line, useLrcPlay, useLrcSet } from '@/plugins/lyric'
 import { createStyle } from '@/utils/tools'
 // import { useComponentIds } from '@/store/common/hook'
-import { useTheme } from '@/store/theme/hook'
 import { useSettingValue } from '@/store/setting/hook'
 import { AnimatedColorText } from '@/components/common/Text'
 import { setSpText } from '@/utils/pixelRatio'
@@ -63,7 +62,6 @@ interface LineProps {
   onLayout: (lineNum: number, height: number, width: number) => void
 }
 const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
-  const theme = useTheme()
   const lrcFontSize = useSettingValue('playDetail.vertical.style.lrcFontSize')
   const textAlign = useSettingValue('playDetail.style.align')
   const size = lrcFontSize / 10
@@ -71,16 +69,17 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
 
   const colors = useMemo(() => {
     const active = activeLine == lineNum
+    // 本页背景恒为封面模糊 + 黑色遮罩的暗色底，歌词统一白色系（主题色在暗底上不可靠）
     return active ? [
-      theme['c-primary'],
-      theme['c-primary-alpha-200'],
+      '#fff',
+      'rgba(255, 255, 255, 0.85)',
       1,
     ] as const : [
-      theme['c-350'],
-      theme['c-300'],
-      0.6,
+      'rgba(255, 255, 255, 0.5)',
+      'rgba(255, 255, 255, 0.32)',
+      0.8,
     ] as const
-  }, [activeLine, lineNum, theme])
+  }, [activeLine, lineNum])
 
   const handleLayout = ({ nativeEvent }: LayoutChangeEvent) => {
     onLayout(lineNum, nativeEvent.layout.height, nativeEvent.layout.width)

@@ -1,8 +1,6 @@
 import { memo } from 'react'
 import { View } from 'react-native'
 
-// import Title from './components/Title'
-import MoreBtn from './components/MoreBtn'
 import PlayInfo from './components/PlayInfo'
 import ControlBtn from './components/ControlBtn'
 import { createStyle } from '@/utils/tools'
@@ -14,7 +12,6 @@ export default memo(() => {
     <View style={styles.container} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_player}>
       <PlayInfo />
       <ControlBtn />
-      <MoreBtn />
     </View>
   )
 })
@@ -27,18 +24,11 @@ const styles = createStyle({
     // marginTop: -progressContentPadding,
     // backgroundColor: 'rgba(0, 0, 0, .1)',
     paddingHorizontal: 15,
-    paddingBottom: 15,
-    paddingTop: 5,
+    // 控制行图标底边到屏幕底部的视觉留白约 30dp（扣掉按钮自身的空白）
+    paddingBottom: 20,
+    paddingTop: 0,
     // backgroundColor: AppColors.primary,
     // backgroundColor: 'red',
     flexDirection: 'column',
-  },
-  status: {
-    marginTop: 10,
-    flexDirection: 'column',
-    flex: 0,
-    paddingLeft: 5,
-    justifyContent: 'space-evenly',
-    // backgroundColor: 'rgba(0, 0, 0, .1)',
   },
 })

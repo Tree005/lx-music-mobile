@@ -4,16 +4,16 @@ import { useKeyboard } from '@/utils/hooks'
 
 import Pic from './components/Pic'
 import Title from './components/Title'
-import PlayInfo from './components/PlayInfo'
 import ControlBtn from './components/ControlBtn'
 import { createStyle } from '@/utils/tools'
-// import { useSettingValue } from '@/store/setting/hook'
 import { useTheme } from '@/store/theme/hook'
 import { useSettingValue } from '@/store/setting/hook'
+import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
 
+// 胶囊条高度（圆角取高度的一半）
+const BAR_HEIGHT = scaleSizeH(46)
 
 export default memo(({ isHome = false }: { isHome?: boolean }) => {
-  // const { onLayout, ...layout } = useLayout()
   const { keyboardShown } = useKeyboard()
   const theme = useTheme()
   const autoHidePlayBar = useSettingValue('common.autoHidePlayBar')
@@ -23,10 +23,6 @@ export default memo(({ isHome = false }: { isHome?: boolean }) => {
       <Pic isHome={isHome} />
       <View style={styles.center}>
         <Title isHome={isHome} />
-        {/* <View style={{ ...styles.row, justifyContent: 'space-between' }}>
-          <PlayTime />
-        </View> */}
-        <PlayInfo isHome={isHome} />
       </View>
       <View style={styles.right}>
         <ControlBtn />
@@ -34,56 +30,33 @@ export default memo(({ isHome = false }: { isHome?: boolean }) => {
     </View>
   ), [theme, isHome])
 
-  // console.log('render pb')
-
   return autoHidePlayBar && keyboardShown ? null : playerComponent
 })
 
 
 const styles = createStyle({
   container: {
-    width: '100%',
-    // height: 100,
-    // paddingTop: progressContentPadding,
-    // marginTop: -progressContentPadding,
-    // backgroundColor: 'rgba(0, 0, 0, .1)',
-    // borderTopWidth: BorderWidths.normal2,
-    paddingVertical: 5,
-    paddingLeft: 5,
-    // backgroundColor: AppColors.primary,
-    // backgroundColor: 'red',
-    borderTopLeftRadius: 6,
-    borderTopRightRadius: 6,
+    height: BAR_HEIGHT,
+    marginHorizontal: scaleSizeW(10),
+    marginVertical: scaleSizeH(4),
+    paddingLeft: scaleSizeW(4),
+    borderRadius: BAR_HEIGHT / 2,
     flexDirection: 'row',
     alignItems: 'center',
     elevation: 10,
   },
-  left: {
-    // borderRadius: 3,
-    flexGrow: 0,
-    flexShrink: 0,
-  },
   center: {
-    flexDirection: 'column',
     flexGrow: 1,
     flexShrink: 1,
-    paddingLeft: 5,
     height: '100%',
-    // justifyContent: 'space-evenly',
-    // height: 48,
-    // backgroundColor: 'rgba(0, 0, 0, .1)',
+    justifyContent: 'center',
+    paddingHorizontal: scaleSizeW(8),
   },
   right: {
     flexDirection: 'row',
     alignItems: 'center',
     flexGrow: 0,
     flexShrink: 0,
-    paddingLeft: 5,
-    paddingRight: 5,
+    paddingRight: scaleSizeW(4),
   },
-  // row: {
-  //   flexDirection: 'row',
-  //   flexGrow: 0,
-  //   flexShrink: 0,
-  // },
 })

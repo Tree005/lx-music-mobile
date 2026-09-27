@@ -12,6 +12,10 @@ import { marginLeft } from './constant'
 import Image from '@/components/common/Image'
 import { useStatusbarHeight } from '@/store/common/hook'
 import commonState from '@/store/common/state'
+import { scaleSizeW } from '@/utils/pixelRatio'
+
+// 封面圆角与竖屏一致：小圆角近直角（参考图实测约 3dp）
+const BORDER_RADIUS = scaleSizeW(3)
 
 
 export default memo(({ componentId }: { componentId: string }) => {
@@ -40,7 +44,7 @@ export default memo(({ componentId }: { componentId: string }) => {
         <Image url={pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={{
           width: imgWidth,
           height: imgWidth,
-          borderRadius: 2,
+          borderRadius: BORDER_RADIUS,
         }} />
       </View>
     </View>
@@ -59,6 +63,6 @@ const styles = createStyle({
   content: {
     // elevation: 3,
     backgroundColor: 'rgba(0,0,0,0)',
-    borderRadius: 4,
+    borderRadius: BORDER_RADIUS,
   },
 })
