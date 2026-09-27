@@ -8,7 +8,7 @@ import Vertical from './Vertical'
 import Horizontal from './Horizontal'
 import { navigations } from '@/navigation'
 import settingState from '@/store/setting/state'
-import { useNavigationComponentDidAppear } from '@/navigation/hooks'
+import { useNavigationComponentDidAppear, useNavigationComponentWillAppear } from '@/navigation/hooks'
 import { setEdgeToEdge } from '@/utils/nativeModules/utils'
 
 
@@ -21,7 +21,8 @@ export default ({ componentId }: Props) => {
   const isHorizontalMode = useHorizontalMode()
 
   // 全应用沉浸式：窗口内容延伸到系统栏后面 + 系统导航栏透明
-  // （RNN 在应用页面 options 时会重置窗口状态，所以每次页面出现都要重新设置一遍）
+  // （RNN 在应用页面 options 时会重置窗口状态，所以出现播放页等页面返回时要重新设置；
+  //   willAppear 在转场动画开始前触发，提前恢复可以避免动画期间"底部栏被系统顶起再落下"的抖动）
   const applyEdgeToEdgeWindowStyle = useCallback(() => {
     Navigation.mergeOptions(componentId, {
       navigationBar: {
@@ -30,6 +31,7 @@ export default ({ componentId }: Props) => {
     })
     setEdgeToEdge(true)
   }, [componentId])
+  useNavigationComponentWillAppear(componentId, applyEdgeToEdgeWindowStyle)
   useNavigationComponentDidAppear(componentId, applyEdgeToEdgeWindowStyle)
 
   useEffect(() => {

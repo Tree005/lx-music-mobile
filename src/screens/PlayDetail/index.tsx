@@ -9,7 +9,7 @@ import PageContent from '@/components/PageContent'
 import StatusBar from '@/components/common/StatusBar'
 import { setComponentId } from '@/core/common'
 import { COMPONENT_IDS } from '@/config/constant'
-import { useNavigationComponentDidAppear } from '@/navigation/hooks'
+import { useNavigationComponentDidAppear, useNavigationComponentWillAppear } from '@/navigation/hooks'
 import { setEdgeToEdge } from '@/utils/nativeModules/utils'
 
 export default ({ componentId }: { componentId: string }) => {
@@ -21,7 +21,7 @@ export default ({ componentId }: { componentId: string }) => {
   }, [])
 
   // 播放页要铺满到屏幕最底部：导航栏透明 + 内容延伸到系统栏后面
-  // （RNN 在应用页面 options 时会把窗口状态重置，所以每次页面出现都要重新设置一遍）
+  // （RNN 在应用页面 options 时会把窗口状态重置，willAppear/didAppear 都要重新设置一遍）
   const applyPlayDetailWindowStyle = useCallback(() => {
     Navigation.mergeOptions(componentId, {
       navigationBar: {
@@ -30,6 +30,7 @@ export default ({ componentId }: { componentId: string }) => {
     })
     setEdgeToEdge(true)
   }, [componentId])
+  useNavigationComponentWillAppear(componentId, applyPlayDetailWindowStyle)
   useNavigationComponentDidAppear(componentId, applyPlayDetailWindowStyle)
   useEffect(() => {
     applyPlayDetailWindowStyle()
