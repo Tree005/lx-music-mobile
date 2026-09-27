@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { TouchableOpacity, View } from 'react-native'
 
 import MusicList from './MusicList'
@@ -13,6 +13,7 @@ import { BorderWidths } from '@/theme'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import { setActiveList } from '@/core/list'
 import { setNavActiveId } from '@/core/common'
+import { LIST_IDS } from '@/config/constant'
 
 const TABS = ['music', 'list'] as const
 type TabType = typeof TABS[number]
@@ -43,6 +44,19 @@ export default ({ embedded }: { embedded?: boolean }) => {
     global.lx.songlistDetailListId = item.id
     setNavActiveId('nav_songlist_detail')
   }, [])
+
+  // 内嵌在「我的」页时，「单曲」tab 固定展示我的收藏：
+  // 该列表读的是全局「当前列表」，内嵌场景下它会被别处切走（如在别处播放某个歌单），
+  // 而「我的」页常驻不重挂载，所以这里把当前列表钉回收藏（切到「歌单」tab 时解除，不影响进歌单详情）
+  useEffect(() => {
+    if (!embedded || tab != 'music') return
+    setActiveList(LIST_IDS.LOVE)
+    const handleListToggle = () => { setActiveList(LIST_IDS.LOVE) }
+    global.state_event.on('mylistToggled', handleListToggle)
+    return () => {
+      global.state_event.off('mylistToggled', handleListToggle)
+    }
+  }, [embedded, tab])
 
   return (
     <View style={styles.container}>
