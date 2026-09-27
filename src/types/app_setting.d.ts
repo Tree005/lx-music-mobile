@@ -77,6 +77,11 @@ declare global {
       'common.alwaysKeepStatusbarHeight': boolean
 
       /**
+       * 是否启用横屏模式（关闭后强制竖屏布局并锁定屏幕方向）
+       */
+      'common.isEnableHorizontal': boolean
+
+      /**
        * 主题id
        */
       'theme.id': string

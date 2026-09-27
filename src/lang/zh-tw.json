@@ -299,6 +299,7 @@
   "setting_basic_font_size_90": "小",
   "setting_basic_font_size_preview": "Music 字體大小預覽",
   "setting_basic_home_page_scroll": "啟用豎屏首頁橫向滾動",
+  "setting_basic_enable_horizontal": "啟用橫屏模式（關閉後強制豎屏）",
   "setting_basic_lang": "語言",
   "setting_basic_share_type": "分享方式",
   "setting_basic_share_type_clipboard": "複製到剪貼簿",

@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
@@ -370,6 +371,17 @@ public class UtilsModule extends ReactContextBaseJavaModule {
         // 关闭系统给导航栏加的对比度遮罩，否则透明导航栏上会多一层灰底
         window.setNavigationBarContrastEnforced(!edgeToEdge);
       }
+    });
+  }
+
+  // 锁定/恢复屏幕方向：portraitOnly=true 时禁止系统旋转（「启用横屏」设置关闭时用）
+  @ReactMethod
+  public void setOrientationLock(boolean portraitOnly) {
+    Activity currentActivity = reactContext.getCurrentActivity();
+    if (currentActivity == null) return;
+    currentActivity.runOnUiThread(() -> {
+      currentActivity.setRequestedOrientation(
+          portraitOnly ? ActivityInfo.SCREEN_ORIENTATION_PORTRAIT : ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     });
   }
 

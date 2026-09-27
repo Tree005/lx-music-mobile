@@ -90,6 +90,17 @@ export const getNavigationBarHeight = async(): Promise<number> => {
   }
 }
 
+// 锁定/恢复屏幕方向：portraitOnly=true 时禁止系统旋转（「启用横屏」设置关闭时用）
+// 注意：旧版本原生包里没有这个方法，热更 JS 时不能让它抛错崩掉
+export const setOrientationLock = (portraitOnly: boolean) => {
+  if (typeof UtilsModule.setOrientationLock !== 'function') return
+  try {
+    UtilsModule.setOrientationLock(portraitOnly)
+  } catch (err) {
+    console.log('setOrientationLock failed', err)
+  }
+}
+
 export const onWindowSizeChange = (handler: (size: { width: number, height: number }) => void): () => void => {
   UtilsModule.listenWindowSizeChanged()
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
