@@ -8,7 +8,6 @@ import StatusBar from '@/components/common/StatusBar'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import { HEADER_HEIGHT as _HEADER_HEIGHT, NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
 import commonState from '@/store/common/state'
-import { useStatusbarHeight } from '@/store/common/hook'
 import Btn from './Btn'
 import { createStyle } from '@/utils/tools'
 
@@ -19,7 +18,9 @@ const ICON_COLOR = '#fff'
 
 
 export default memo(() => {
-  const statusBarHeight = useStatusbarHeight()
+  // 固定用设备状态栏高度（不要读 store 里的 useStatusbarHeight：那个值会在 0 与状态栏高度之间抖动，
+  // 导致本页 Header 高度反复变化、整页布局跟着抖，ViewPager 的页面内容又不会跟着重排 → 信息行错位）
+  const statusBarHeight = StatusBar.currentHeight
 
   const back = () => {
     void pop(commonState.componentIds.playDetail!)

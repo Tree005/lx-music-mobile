@@ -8,7 +8,7 @@ import { NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
 import { useNavigationComponentDidAppear } from '@/navigation'
 import { HEADER_HEIGHT } from './components/Header'
 import Image from '@/components/common/Image'
-import { useStatusbarHeight } from '@/store/common/hook'
+import StatusBar from '@/components/common/StatusBar'
 import commonState from '@/store/common/state'
 import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
 
@@ -32,7 +32,8 @@ export default ({ componentId, pagerHeight, belowCoverHeight, onPress }: {
 }) => {
   const musicInfo = usePlayerMusicInfo()
   const { width: winWidth, height: winHeight } = useWindowSize()
-  const statusBarHeight = useStatusbarHeight()
+  // 用设备固定值（store 里的状态栏高度会抖动，见 Header.tsx 的说明）
+  const statusBarHeight = StatusBar.currentHeight
 
   const [animated, setAnimated] = useState(!!commonState.componentIds.playDetail)
   const [pic, setPic] = useState(musicInfo.pic)

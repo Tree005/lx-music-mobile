@@ -152,30 +152,10 @@ export function pushPlayDetailScreen(componentId: string, skipAnimation = false)
                   interpolation: { type: 'spring' },
                 },
               ],
-              elementTransitions: [
-                {
-                  id: NAV_SHEAR_NATIVE_IDS.playDetail_header,
-                  alpha: {
-                    from: 0, // We don't declare 'to' value as that is the element's current alpha value, here we're essentially animating from 0 to 1
-                    duration: 300,
-                  },
-                  translationY: {
-                    from: -32, // Animate translationY from 16dp to 0dp
-                    duration: 300,
-                  },
-                },
-                {
-                  id: NAV_SHEAR_NATIVE_IDS.playDetail_player,
-                  alpha: {
-                    from: 0, // We don't declare 'to' value as that is the element's current alpha value, here we're essentially animating from 0 to 1
-                    duration: 300,
-                  },
-                  translationY: {
-                    from: 32, // Animate translationY from 16dp to 0dp
-                    duration: 300,
-                  },
-                },
-              ],
+              // 元素转场（header/player 的淡入+位移）全部去掉：RNN 的元素动画在部分进入时机下
+              // 不会把位移复位干净，会给元素留下错位残影（表现为播放器压在歌曲信息上、重进才恢复）。
+              // 只保留封面的共享元素动画（那是进入动画的主要观感来源）
+              // elementTransitions: [],
               // content: {
               //   translationX: {
               //     from: windowSizeTools.getSize().width,

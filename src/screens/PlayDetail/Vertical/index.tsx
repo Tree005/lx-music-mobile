@@ -85,7 +85,9 @@ export default memo(({ componentId }: { componentId: string }) => {
           onLayout={({ nativeEvent }) => { setPagerHeight(nativeEvent.layout.height) }}
           style={styles.pagerView}
         >
-          <View collapsable={false}>
+          {/* 显式把页面高度绑到实测值：ViewPager 的页面内容不会跟着 pager 高度变化重排，
+              写死高度能让高度一变就触发整棵子树重新布局（否则信息行会留在旧位置、被进度条压住） */}
+          <View collapsable={false} style={{ height: pagerHeight > 0 ? pagerHeight : undefined }}>
             <Pic
               componentId={componentId}
               pagerHeight={pagerHeight}
