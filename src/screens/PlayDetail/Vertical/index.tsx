@@ -1,4 +1,4 @@
-import { memo, useRef, useEffect, useCallback } from 'react'
+import { memo, useRef, useEffect, useCallback, useState } from 'react'
 import { View, AppState } from 'react-native'
 import PagerView, { type PagerViewOnPageSelectedEvent } from 'react-native-pager-view'
 
@@ -65,6 +65,12 @@ export default memo(({ componentId }: { componentId: string }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // 页面（PagerView）实测高度与「封面以下内容」实测高度：用来把封面收缩到放得下的大小。
+  // 不用窗口尺寸推算——进页面瞬间拿到的窗口数据可能偏大，算出来的封面会把
+  // 歌词/信息行挤出页面，表现为进度条压在歌手行上（偶发错位）
+  const [pagerHeight, setPagerHeight] = useState(0)
+  const [belowCoverHeight, setBelowCoverHeight] = useState(0)
+
   return (
     <View style={styles.page}>
       <Background />
@@ -76,12 +82,20 @@ export default memo(({ componentId }: { componentId: string }) => {
           onPageSelected={onPageSelected}
           // 关掉滑到首尾时的过度滚动拉伸效果（安卓 12+ 会看到页面被拖拽变形）
           overScrollMode="never"
+          onLayout={({ nativeEvent }) => { setPagerHeight(nativeEvent.layout.height) }}
           style={styles.pagerView}
         >
           <View collapsable={false}>
-            <Pic componentId={componentId} onPress={showFullLyric} />
-            <LyricInline onPress={showFullLyric} />
-            <SongInfo />
+            <Pic
+              componentId={componentId}
+              pagerHeight={pagerHeight}
+              belowCoverHeight={belowCoverHeight}
+              onPress={showFullLyric}
+            />
+            <View onLayout={({ nativeEvent }) => { setBelowCoverHeight(nativeEvent.layout.height) }}>
+              <LyricInline onPress={showFullLyric} />
+              <SongInfo />
+            </View>
           </View>
           <View collapsable={false}>
             <Lyric onPress={hideFullLyric} />
