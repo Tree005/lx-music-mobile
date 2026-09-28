@@ -121,6 +121,7 @@ export default memo(({ snapshot, lyricLines }: {
           fetchPrev={fetchPrev}
           onSwipeNext={handleSwipeNext}
           onSwipePrev={handleSwipePrev}
+          currentPic={pic || ''}
         >
           <PageSlider
             page={showLyric ? 1 : 0}

@@ -109,6 +109,7 @@ export default memo(({ componentId }: { componentId: string }) => {
           fetchPrev={fetchPrev}
           onSwipeNext={handleSwipeNext}
           onSwipePrev={handleSwipePrev}
+          currentPic={musicInfo.pic ?? ''}
         >
           <PageSlider
             page={showLyric ? 1 : 0}

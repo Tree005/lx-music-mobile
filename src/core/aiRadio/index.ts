@@ -6,6 +6,7 @@ import { setProgress } from '@/core/player/progress'
 import { getLyricInfo } from '@/core/music'
 import { getListMusicSync, setMusicList, userLists } from '@/utils/listManage'
 import { removeListMusics } from '@/utils/data'
+import { prefetchMusicPicUrl } from '@/utils/musicPic'
 import playerState from '@/store/player/state'
 import { getRandom } from '@/utils/common'
 import { log } from '@/utils/log'
@@ -222,6 +223,13 @@ export const resumeSession = async() => {
 
 /** 「下一首」：回退过就顺序恢复，到队尾随机推新（结果会缓存，滑动预览与实际播放一致） */
 export const getAiRadioNext = async(): Promise<LX.Player.PlayMusicInfo | null> => {
+  const info = await fetchAiRadioNext()
+  // 决定歌的瞬间就预热封面：滑动预览 / 自动跳歌都在这里，切歌前 URL 就已开始取
+  if (info) prefetchMusicPicUrl(info.musicInfo)
+  return info
+}
+
+const fetchAiRadioNext = async(): Promise<LX.Player.PlayMusicInfo | null> => {
   if (prefetchedNext) return prefetchedNext
   const current = getCurrentMusic()
   if (!current) return null
@@ -238,6 +246,12 @@ export const getAiRadioNext = async(): Promise<LX.Player.PlayMusicInfo | null> =
 
 /** 「上一首」：心动列表里的前一首（本次会话的播放历史），没有则 null */
 export const getAiRadioPrev = (): LX.Player.PlayMusicInfo | null => {
+  const info = fetchAiRadioPrev()
+  if (info) prefetchMusicPicUrl(info.musicInfo)
+  return info
+}
+
+const fetchAiRadioPrev = (): LX.Player.PlayMusicInfo | null => {
   const current = getCurrentMusic()
   if (!current) return null
   const list = getListMusicSync(LIST_IDS.AI_RADIO)

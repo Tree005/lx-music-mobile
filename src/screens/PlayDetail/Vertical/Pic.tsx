@@ -9,6 +9,7 @@ import { useNavigationComponentDidAppear } from '@/navigation'
 import { HEADER_HEIGHT } from './components/Header'
 import Image from '@/components/common/Image'
 import CrossfadeImage from '@/screens/PlayDetail/components/CrossfadeImage'
+import { useSwipeDragActive } from '@/screens/PlayDetail/components/SwipeSongContainer'
 import StatusBar from '@/components/common/StatusBar'
 import commonState from '@/store/common/state'
 import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
@@ -83,13 +84,16 @@ export default ({ componentId, picOverride, pagerHeight, belowCoverHeight, onPre
     if (style.width > 0) onCoverSize?.(style.width)
   }, [style.width, onCoverSize])
 
+  // 横向拖拽切歌中：真实封面隐藏（由 SwipeSongContainer 的滑动卡片接管视觉，避免双影）
+  const swipeDragActive = useSwipeDragActive()
+
   return (
     <TouchableOpacity style={styles.container} activeOpacity={1} onPress={onPress}>
       <View style={{ ...styles.content, elevation: animated ? 3 : 0 }}>
         {/* nativeID 挂在容器上（共享元素转场对容器做动画，尺寸与封面一致）；
             crossfade 由 CrossfadeImage 负责：显示中的旧封面保持挂载、新封面淡入盖上，
             新歌封面地址没取到时保持旧封面，只有从头到尾都没有封面时才露出音符占位 */}
-        <View nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={{ ...style, overflow: 'hidden' }}>
+        <View nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={{ ...style, overflow: 'hidden', opacity: swipeDragActive ? 0 : 1 }}>
           <Image url={null} style={StyleSheet.absoluteFill} />
           <CrossfadeImage uri={pic ?? null} style={StyleSheet.absoluteFill} duration={FADE_DURATION} />
         </View>

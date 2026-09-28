@@ -21,6 +21,7 @@ import {
 } from '@/core/player/tempPlayList'
 import { getMusicUrl, getPicPath, getLyricInfo } from '@/core/music'
 import { getOtherSource } from '@/core/music/utils'
+import { prefetchMusicPicUrl } from '@/utils/musicPic'
 import { requestMsg } from '@/utils/message'
 import { getRandom } from '@/utils/common'
 import { filterList } from './utils'
@@ -234,6 +235,11 @@ const handleRestorePlay = async(restorePlayInfo: LX.Player.SavedPlayInfo) => {
     ) return
     setMusicInfo({ pic: url })
     global.app_event.picUpdated()
+  }).catch(() => {
+    // 封面取不到：显式置空（''=无封面），结束「保持上一首封面」的状态——宁可显示占位也不显示错封面
+    if (musicInfo.id != playMusicInfo.musicInfo?.id) return
+    if (playerState.musicInfo.pic) return
+    setMusicInfo({ pic: '' })
   })
 
   void getLyricInfo({ musicInfo }).then((lyricInfo) => {
@@ -266,6 +272,11 @@ const debouncePlay = debounceBackgroundTimer((musicInfo: LX.Player.PlayMusic) =>
       playerState.loadErrorPicUrl == url) return
     setMusicInfo({ pic: url })
     global.app_event.picUpdated()
+  }).catch(() => {
+    // 封面取不到：显式置空（''=无封面），结束「保持上一首封面」的状态——宁可显示占位也不显示错封面
+    if (musicInfo.id != playerState.playMusicInfo.musicInfo?.id) return
+    if (playerState.musicInfo.pic) return
+    setMusicInfo({ pic: '' })
   })
 
   void getLyricInfo({ musicInfo }).then((lyricInfo) => {
@@ -380,6 +391,13 @@ export const resetRandomNextMusicInfo = () => {
  *   会把「顺序播放 / 单曲循环 / 不循环」都当作列表循环处理（尾到头、单曲也会切走）
  */
 export const getNextPlayMusicInfo = async(isManual = false): Promise<LX.Player.PlayMusicInfo | null> => {
+  const info = await fetchNextPlayMusicInfo(isManual)
+  // 决定歌的瞬间就预热封面（滑动预览 / 自动切歌都在这里）：切歌前 URL 已开始取，避免封面空窗
+  if (info) prefetchMusicPicUrl(info.musicInfo)
+  return info
+}
+
+const fetchNextPlayMusicInfo = async(isManual = false): Promise<LX.Player.PlayMusicInfo | null> => {
   if (playerState.tempPlayList.length) { // 如果稍后播放列表存在歌曲则直接播放改列表的歌曲
     const playMusicInfo = playerState.tempPlayList[0]
     return playMusicInfo

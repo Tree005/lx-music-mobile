@@ -92,6 +92,7 @@ export default memo(() => {
           fetchPrev={fetchPrev}
           onSwipeNext={handleSwipeNext}
           onSwipePrev={handleSwipePrev}
+          currentPic={musicInfo.pic ?? ''}
         >
           <PageSlider
             page={showLyric ? 1 : 0}

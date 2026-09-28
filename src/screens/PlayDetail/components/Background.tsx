@@ -22,16 +22,18 @@ export default memo(({ pic: picOverride }: { pic?: string | null } = {}) => {
   const playerPic = usePlayerMusicInfo().pic
   const target = toUri(picOverride === undefined ? playerPic : picOverride)
 
-  // 遮罩色：出现过封面后一直用遮罩色（封面地址暂时取不到时 CrossfadeImage 会保持上一张图，遮罩跟着它）
+  // 遮罩色：明确无封面（''）或从未有过图时用深色纯底，其余用遮罩色
+  // （等待中 CrossfadeImage 会保持上一张图，遮罩跟着它）
   const [hasPicEver, setHasPicEver] = useState(!!target)
   useEffect(() => {
     if (target) setHasPicEver(true)
   }, [target])
+  const showMask = target !== '' && hasPicEver
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
       <CrossfadeImage uri={target} style={StyleSheet.absoluteFill} blurRadius={25} duration={FADE_DURATION} />
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: hasPicEver ? MASK_COLOR : FALLBACK_COLOR }]} />
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: showMask ? MASK_COLOR : FALLBACK_COLOR }]} />
     </View>
   )
 })

@@ -1,18 +1,26 @@
-import { memo, forwardRef, useCallback, useImperativeHandle, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createContext, memo, forwardRef, useCallback, useContext, useImperativeHandle, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Animated, Easing, PanResponder, View } from 'react-native'
-import Text from '@/components/common/Text'
 import Image from '@/components/common/Image'
 import { useWindowSize } from '@/utils/hooks'
 import { useMusicPic } from '@/utils/hooks/useMusicPic'
-import { getMusicPicUrl } from '@/utils/musicPic'
+import { prefetchMusicPicUrl } from '@/utils/musicPic'
 import { createStyle } from '@/utils/tools'
 import { scaleSizeW } from '@/utils/pixelRatio'
 
-// 横向滑动切歌的外层容器：跟手平移当前内容，相邻歌的预览（封面 + 歌名）从两侧滑入，
-// 松手滑够（阈值）补齐动画后真正切歌、不够回弹。
+// 横向滑动切歌的外层容器（对齐网易云的交互）：
+// 滑动时主内容（歌词行/信息行/进度条/控制）完全固定不动，封面像「架子上的唱片」整张滑动——
+// 当前封面整卡跟手滑出屏幕、相邻歌的封面整卡从另一侧滑入（盖着下方内容经过，不做裁剪框）；
+// 松手滑够（阈值）补齐动画后真正切歌、不够回弹；切歌后下方内容原地切换，
+// 预览卡片与真实封面是同一张图，卸载时无缝交接。
 // 与播放条「三格轨道」同一套交互（左滑下一首、右滑上一首），全屏播放页与心动页共用。
 // 预览数据由调用方提供：必须与「实际会播放的歌」一致（随机播放时用预取缓存保证）。
 // 按钮点击上一首/下一首时也可以通过 ref 的 triggerSwipe 触发同款滑动动画（视觉连续）
+
+/** 拖拽状态：滑动中为 true（真实封面订阅它隐藏自身、让卡片层接管视觉） */
+export const SwipeDragContext = createContext(false)
+
+/** 订阅当前是否在横向拖拽切歌 */
+export const useSwipeDragActive = () => useContext(SwipeDragContext)
 
 // 横向位移超过它才接管手势（避免和页面里的竖滑/点击抢）
 const SWIPE_THRESHOLD = 10
@@ -22,7 +30,7 @@ const DIRECTION_RATIO = 1.5
 const SETTLE_DURATION = 180
 // 提交切歌后的兜底：歌曲信息迟迟不落地也要把位移复位
 const COMMIT_TIMEOUT = 1200
-// 预览里没有相邻歌时的阻尼（仍可滑动切歌，只是没有预览滑进来）
+// 预览里没有相邻歌时的阻尼（仍可滑动切歌，只是没有「滑进来的预览」）
 const NO_PREVIEW_DAMPING = 0.35
 // 按钮触发切歌时的滑动动画时长
 const TRIGGER_DURATION = 220
@@ -39,42 +47,33 @@ export const toPreviewMusicInfo = (m: LX.Music.MusicInfo | LX.Download.ListItem 
   return 'progress' in m ? m.metadata.musicInfo : m
 }
 
-/** 后台预热相邻歌的封面地址（getMusicPicUrl 内部按歌曲 id 缓存）：
- * 歌一变化就拉好相邻歌的封面 URL，等手指按下滑动、预览层挂载时大概率已就绪，
- * 不然快速滑动切到没播过的歌时，预览封面要现取 URL，来不及就露占位（闪白） */
+/** 后台预热相邻歌的封面地址（内部按歌曲 id 缓存、重复调用安全）：
+ * 歌一变化就拉好相邻歌的封面 URL，等手指按下滑动、预览卡片挂载时大概率已就绪，
+ * 不然快速滑动切到没播过的歌时，预览封面要现取 URL，来不及就露空 */
 const prefetchPreviewPic = (info: LX.Music.MusicInfo | null) => {
-  if (!info) return
-  void getMusicPicUrl(info).catch(() => {})
+  prefetchMusicPicUrl(info)
 }
 
-/** 相邻歌的简化预览层：封面 + 歌名/歌手；两者的垂直位置都与真实页面严格对齐（减少切换时的跳变） */
-const PreviewLayer = memo(({ musicInfo, coverSize, coverBottomSpace }: {
-  musicInfo: LX.Music.MusicInfo
+/** 滑动中的封面卡片：完整一张停在真实封面的位置上，整卡跟手位移（滑出/滑入），不做裁剪框；
+ * 封面地址没就绪（还没取到/没加载完）时不渲染任何内容——不显示占位块（半透明框观感很差），
+ * 图就绪后自然出现 */
+const SlideCard = memo(({ pic, coverSize, coverBottomSpace, translateX }: {
+  pic: string
   coverSize: number
   coverBottomSpace: number
+  translateX: Animated.AnimatedInterpolation<number> | Animated.Value
 }) => {
-  const pic = useMusicPic(musicInfo)
+  if (!pic) return null
   return (
-    <View style={styles.preview}>
-      {/* 封面：贴底 + 与真实封面相同的底边距（coverBottomSpace），尺寸与真实封面一致；
-          封面地址没来得及取到时显示深色圆角块（与暗背景融合），不用近白占位（会在深色页面上闪白） */}
+    <View pointerEvents="none" style={styles.layer}>
       <View style={[styles.previewCoverBox, { paddingBottom: coverBottomSpace }]}>
-        {
-          coverSize > 0
-            ? pic
-              ? <Image url={pic} style={{ width: coverSize, height: coverSize, borderRadius: PREVIEW_BORDER_RADIUS }} />
-              : <View style={{ width: coverSize, height: coverSize, borderRadius: PREVIEW_BORDER_RADIUS, backgroundColor: 'rgba(0, 0, 0, 0.35)' }} />
-            : null
-        }
-      </View>
-      {/* 歌名/歌手：贴内容区底部（对齐真实信息行的位置） */}
-      <View style={styles.previewInfo}>
-        <Text numberOfLines={1} size={20} color="#fff" style={styles.previewName}>{musicInfo.name}</Text>
-        <Text numberOfLines={1} size={14} color="rgba(255, 255, 255, 0.7)" style={styles.previewSinger}>{musicInfo.singer}</Text>
+        <Animated.View style={{ transform: [{ translateX }] }}>
+          <Image url={pic} style={{ width: coverSize, height: coverSize, borderRadius: PREVIEW_BORDER_RADIUS }} />
+        </Animated.View>
       </View>
     </View>
   )
-})
+}, (p, n) => p.pic == n.pic && p.coverSize == n.coverSize && p.coverBottomSpace == n.coverBottomSpace)
 
 export interface SwipeSongContainerProps {
   children: ReactNode
@@ -91,6 +90,8 @@ export interface SwipeSongContainerProps {
   /** 滑够、动画归位后真正切歌 */
   onSwipeNext: () => void
   onSwipePrev: () => void
+  /** 当前封面地址（滑动时当前卡片从它开始滑出；无封面传空串） */
+  currentPic: string
 }
 
 export interface SwipeSongContainerType {
@@ -107,6 +108,7 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
   fetchPrev,
   onSwipeNext,
   onSwipePrev,
+  currentPic,
 }, ref) => {
   const { width } = useWindowSize()
   const [nextMusic, setNextMusic] = useState<LX.Music.MusicInfo | null>(null)
@@ -125,6 +127,10 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
   stateRef.current.width = width
   stateRef.current.canNext = !!nextMusic
   stateRef.current.canPrev = !!prevMusic
+
+  // 预览封面的地址（顶层取，hook 不能条件调用；没歌时传 undefined 内部自动空处理）
+  const nextPic = useMusicPic(nextMusic ?? undefined)
+  const prevPic = useMusicPic(prevMusic ?? undefined)
 
   // 取真正的下一首（随机播放时这次调用会把结果提前定下来，与实际播放的是同一首）；
   // 已有结果时返回同一个，重复调用安全（只认最后一次请求的结果）
@@ -264,46 +270,44 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
     })
   }, [dragX, refreshNext, refreshPrev, commit, settle])
 
-  const prevTranslate = useMemo(
-    () => dragX.interpolate({ inputRange: [-width, 0, width], outputRange: [-width * 2, -width, 0] }),
+  // 封面卡片的位移（整卡滑动，位移幅度 = 屏宽，卡片盖着内容区经过，露出屏外自然裁掉）：
+  // 左滑（dragX 0 → -w）：下一首的卡片从右侧屏外滑到封面位（translateX +w → 0）
+  // 右滑（dragX 0 → +w）：上一首的卡片从左侧屏外滑到封面位（translateX -w → 0）
+  // 当前卡片直接跟手（translateX = dragX）
+  const nextCardX = useMemo(
+    () => dragX.interpolate({ inputRange: [-width, 0], outputRange: [0, width], extrapolate: 'clamp' }),
     [dragX, width],
   )
-  const nextTranslate = useMemo(
-    () => dragX.interpolate({ inputRange: [-width, 0, width], outputRange: [0, width, width * 2] }),
+  const prevCardX = useMemo(
+    () => dragX.interpolate({ inputRange: [0, width], outputRange: [-width, 0], extrapolate: 'clamp' }),
     [dragX, width],
   )
-  const dragStyle = useMemo(() => ({ transform: [{ translateX: dragX }] }), [dragX])
-  const prevStyle = useMemo(() => ({ transform: [{ translateX: prevTranslate }] }), [prevTranslate])
-  const nextStyle = useMemo(() => ({ transform: [{ translateX: nextTranslate }] }), [nextTranslate])
 
   return (
-    <View style={styles.container} {...panResponder.panHandlers}>
-      {/* 预览层放在主内容层下面：同一坐标系里同向平移，互相不重叠 */}
-      {dragActive && prevMusic
-        ? (
-            <Animated.View pointerEvents="none" style={[styles.layer, prevStyle]}>
-              <PreviewLayer musicInfo={prevMusic} coverSize={coverSize} coverBottomSpace={coverBottomSpace} />
-            </Animated.View>
-          )
-        : null}
-      {dragActive && nextMusic
-        ? (
-            <Animated.View pointerEvents="none" style={[styles.layer, nextStyle]}>
-              <PreviewLayer musicInfo={nextMusic} coverSize={coverSize} coverBottomSpace={coverBottomSpace} />
-            </Animated.View>
-          )
-        : null}
-      <Animated.View style={[styles.layer, dragStyle]}>
-        {children}
-      </Animated.View>
-    </View>
+    <SwipeDragContext.Provider value={dragActive}>
+      <View style={styles.container} {...panResponder.panHandlers}>
+        {/* 主内容固定不动：切歌时歌词/信息/进度等原地切换 */}
+        <View style={styles.layer}>
+          {children}
+        </View>
+        {/* 滑动中的封面卡片：当前卡跟手滑出、相邻卡从屏外滑入；切歌后与真实封面（同一张图）无缝交接 */}
+        {dragActive && coverSize > 0
+          ? (
+              <>
+                <SlideCard pic={currentPic} coverSize={coverSize} coverBottomSpace={coverBottomSpace} translateX={dragX} />
+                {nextMusic ? <SlideCard pic={nextPic} coverSize={coverSize} coverBottomSpace={coverBottomSpace} translateX={nextCardX} /> : null}
+                {prevMusic ? <SlideCard pic={prevPic} coverSize={coverSize} coverBottomSpace={coverBottomSpace} translateX={prevCardX} /> : null}
+              </>
+            )
+          : null}
+      </View>
+    </SwipeDragContext.Provider>
   )
 }))
 
 const styles = createStyle({
   container: {
     flex: 1,
-    // 内容跟手滑出时裁掉，不露出屏幕外
     overflow: 'hidden',
   },
   layer: {
@@ -313,25 +317,9 @@ const styles = createStyle({
     right: 0,
     bottom: 0,
   },
-  preview: {
-    flex: 1,
-  },
   previewCoverBox: {
     flex: 1,
     justifyContent: 'flex-end',
     alignItems: 'center',
-  },
-  previewInfo: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: 20,
-  },
-  previewName: {
-    fontWeight: '600',
-  },
-  previewSinger: {
-    marginTop: 4,
   },
 })

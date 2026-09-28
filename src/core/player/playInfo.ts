@@ -2,6 +2,7 @@ import playerActions from '@/store/player/action'
 import playerState from '@/store/player/state'
 
 import { getListMusicSync } from '@/utils/listManage'
+import { prefetchMusicPicUrl } from '@/utils/musicPic'
 import { setProgress } from '@/core/player/progress'
 import { LIST_IDS } from '@/config/constant'
 
@@ -87,6 +88,9 @@ export const resetPlayerMusicInfo = () => {
 
 const setPlayerMusicInfo = (musicInfo: LX.Music.MusicInfo | LX.Download.ListItem | null) => {
   if (musicInfo) {
+    // 兜底预取封面：任何途径的切歌都经过这里（直接播放、恢复播放、开新会话等），
+    // 决定歌的入口（滑动预览 / 下一首）里已有预取时这里是缓存命中、无额外请求
+    prefetchMusicPicUrl(musicInfo)
     // picUrl 为 undefined 时必须显式置 null（setMusicInfo 会跳过 undefined 字段），
     // 否则 pic 残留上一首的封面地址——新歌封面异步回填前一直显示上一首的封面（快速连滑时连环错位/闪烁）
     setMusicInfo('progress' in musicInfo ? {
