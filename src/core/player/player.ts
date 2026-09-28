@@ -20,6 +20,7 @@ import {
   removeTempPlayList,
 } from '@/core/player/tempPlayList'
 import { getMusicUrl, getPicPath, getLyricInfo } from '@/core/music'
+import { getOtherSource } from '@/core/music/utils'
 import { requestMsg } from '@/utils/message'
 import { getRandom } from '@/utils/common'
 import { filterList } from './utils'
@@ -72,6 +73,46 @@ const diffCurrentMusicInfo = (curMusicInfo: LX.Music.MusicInfo | LX.Download.Lis
 }
 
 let cancelDelayRetry: (() => void) | null = null
+
+// 在线源列表（本地歌等非这些源的不参与优先源/自动换源）
+const ONLINE_SOURCES: string[] = ['kw', 'kg', 'tx', 'wy', 'mg']
+// 自动换源时跳过的源：QQ 链接在设备上大概率 403，不作为换源目标
+const AUTO_TOGGLE_SKIP_SOURCES: string[] = ['tx']
+
+// 取「播放优先源」设置的匹配版本：设置未开启/原歌已是该源/非在线歌/匹配失败时返回 null（回落原歌原源）
+const getPrioritySourceMusic = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListItem): Promise<LX.Music.MusicInfoOnline | null> => {
+  const prioritySource = settingState.setting['player.playPrioritySource']
+  if (!prioritySource) return null
+  const rawInfo = 'progress' in musicInfo ? musicInfo.metadata.musicInfo : musicInfo
+  if (!ONLINE_SOURCES.includes(rawInfo.source) || rawInfo.source == prioritySource) return null
+  try {
+    const candidates = await getOtherSource(musicInfo)
+    return candidates.find(c => c.source == prioritySource) ?? null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * 播放失败兜底：自动换源重播（按匹配质量挑一个其他源的版本直接播放）
+ * 挑到并开始播放返回 true，否则返回 false（调用方走原有兜底：报错/跳歌）
+ */
+export const autoToggleSourceReplay = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListItem): Promise<boolean> => {
+  if (global.lx.isPlayedStop || diffCurrentMusicInfo(musicInfo)) return false
+  const rawInfo = 'progress' in musicInfo ? musicInfo.metadata.musicInfo : musicInfo
+  if (!ONLINE_SOURCES.includes(rawInfo.source)) return false
+  try {
+    const candidates = await getOtherSource(musicInfo)
+    const target = candidates.find(c => c.source != rawInfo.source && !AUTO_TOGGLE_SKIP_SOURCES.includes(c.source))
+    if (!target) return false
+    setStatusText(global.i18n.t('toggle_source_try'))
+    setMusicUrl(target, true)
+    return true
+  } catch {
+    return false
+  }
+}
+
 const delayRetry = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListItem, isRefresh = false): Promise<string | null> => {
   // if (cancelDelayRetry) cancelDelayRetry()
   return new Promise<string | null>((resolve, reject) => {
@@ -101,11 +142,30 @@ const getMusicPlayUrl = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListIt
   // const type = getPlayType(settingState.setting['player.isPlayHighQuality'], musicInfo)
   let toggleMusicInfo = ('progress' in musicInfo ? musicInfo.metadata.musicInfo : musicInfo).meta.toggleMusicInfo
 
+  // 播放优先源：设置开启且原歌不是该源时，先试匹配的源版本，失败回落原歌原源
+  const priorityMusicInfo = await getPrioritySourceMusic(musicInfo)
+
   return (toggleMusicInfo ? getMusicUrl({
     musicInfo: toggleMusicInfo,
     isRefresh,
     allowToggleSource: false,
   }) : Promise.reject(new Error('not found'))).catch(async() => {
+    if (priorityMusicInfo) {
+      return getMusicUrl({
+        musicInfo: priorityMusicInfo,
+        isRefresh,
+        allowToggleSource: false,
+      }).catch(async() => {
+        return getMusicUrl({
+          musicInfo,
+          isRefresh,
+          onToggleSource(mInfo) {
+            if (diffCurrentMusicInfo(musicInfo)) return
+            setStatusText(global.i18n.t('toggle_source_try'))
+          },
+        })
+      })
+    }
     return getMusicUrl({
       musicInfo,
       isRefresh,

@@ -389,6 +389,8 @@
   "setting_play_handle_audio_focus_tip": "Take effect after restarting the app",
   "setting_play_lyric_transition": "Show translated lyrics",
   "setting_play_play_quality": "Prioritize Sound Quality for Playback If Available",
+  "setting_play_priority_source": "Priority playback source",
+  "setting_play_priority_source_off": "Off",
   "setting_play_s2t": "Convert Chinese lyrics that are playing to traditional",
   "setting_play_save_play_time": "Remember playback progress",
   "setting_play_show_bluetooth_full_lyric": "Display complete Bluetooth lyrics (device support required)",

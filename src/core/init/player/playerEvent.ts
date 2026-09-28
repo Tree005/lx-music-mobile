@@ -1,4 +1,4 @@
-import { playNext, setMusicUrl } from '@/core/player/player'
+import { playNext, setMusicUrl, autoToggleSourceReplay } from '@/core/player/player'
 import { setStatusText } from '@/core/player/playStatus'
 import { getPosition, isEmpty, setStop } from '@/plugins/player'
 import { isActive } from '@/utils/tools'
@@ -90,28 +90,38 @@ export default () => {
     if (!playerState.musicInfo.id) return
     clearLoadingTimeout()
     if (global.lx.isPlayedStop) return
-    if (playerState.playMusicInfo.musicInfo && retryNum < 2) { // 若音频URL无效则尝试刷新2次URL
+
+    const handlePlayErrorFallback = () => {
+      if (!isEmpty()) void setStop()
+      if (isActive()) {
+        setStatusText(global.i18n.t('player__error'))
+        setTimeout(addDelayNextTimeout)
+      } else {
+        console.warn('error skip to next')
+        void playNext(true)
+      }
+    }
+
+    if (playerState.playMusicInfo.musicInfo && retryNum < 2) { // 若音频URL无效则尝试刷新：第1次原源刷新，第2次自动换源重播
       let musicInfo = playerState.playMusicInfo.musicInfo
       void getPosition().then((position) => {
         if (position) setNowPlayTime(position)
       }).finally(() => {
-        // console.log(this.retryNum)
         if (playerState.playMusicInfo.musicInfo !== musicInfo) return
         retryNum++
-        setMusicUrl(playerState.playMusicInfo.musicInfo, true)
-        setStatusText(global.i18n.t('player__refresh_url'))
+        if (retryNum < 2) {
+          setMusicUrl(playerState.playMusicInfo.musicInfo, true)
+          setStatusText(global.i18n.t('player__refresh_url'))
+        } else {
+          // 原源重试仍失败：自动换源重播（跳过 QQ 源）；无可用候选时走原有兜底
+          void autoToggleSourceReplay(musicInfo).then((toggled) => {
+            if (!toggled) handlePlayErrorFallback()
+          })
+        }
       })
       return
     }
-    if (!isEmpty()) void setStop()
-
-    if (isActive()) {
-      setStatusText(global.i18n.t('player__error'))
-      setTimeout(addDelayNextTimeout)
-    } else {
-      console.warn('error skip to next')
-      void playNext(true)
-    }
+    handlePlayErrorFallback()
   }
 
   const handleSetPlayInfo = () => {

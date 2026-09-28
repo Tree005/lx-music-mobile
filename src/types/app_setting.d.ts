@@ -132,6 +132,11 @@ declare global {
       'player.playQuality': LX.Quality
 
       /**
+       * 播放优先源：不为空时，任何在线歌曲优先匹配该源的版本播放，失败回落原歌原源
+       */
+      'player.playPrioritySource': LX.OnlineSource | ''
+
+      /**
        * 启动软件时是否恢复上次播放进度
        */
       'player.isSavePlayTime': boolean

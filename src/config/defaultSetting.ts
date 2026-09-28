@@ -20,6 +20,7 @@ const defaultSetting: LX.AppSetting = {
   'player.startupPushPlayDetailScreen': false,
   'player.togglePlayMethod': 'listLoop',
   'player.playQuality': '128k',
+  'player.playPrioritySource': '',
   'player.isSavePlayTime': false,
   'player.volume': 1,
   'player.playbackRate': 1,
