@@ -72,8 +72,9 @@ const TitleCell = memo(({ width, name, singer, fileNameMode, textColor, labelCol
 
   const singerFirst = fileNameMode == '歌手 - 歌名'
   const showSinger = !!singer && fileNameMode != '歌名'
+  // 歌名/歌手统一用 14（默认 15 偏大，用户要求调小一点）
   const line = useMemo(() => (
-    <Text color={textColor} numberOfLines={1}>
+    <Text color={textColor} size={14} numberOfLines={1}>
       {showSinger && singerFirst ? <Text color={labelColor}>{singer} - </Text> : null}
       <Text style={styles.name}>{name}</Text>
       {showSinger && !singerFirst ? <Text color={labelColor}> - {singer}</Text> : null}
@@ -304,7 +305,7 @@ const styles = createStyle({
   },
   container: {
     width: '100%',
-    paddingHorizontal: 2,
+    // 不加内边距：文字裁剪区紧贴封面与右侧按钮
     // paddingBottom: 4,
     // height: '50%',
     // backgroundColor: 'rgba(0, 0, 0, .1)',

@@ -13,6 +13,8 @@ import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
 
 // 胶囊条高度（圆角取高度的一半）
 const BAR_HEIGHT = scaleSizeH(42)
+// 播放条悬浮在内容上时，列表底部要预留的高度（条高 + 上下外边距）
+export const PLAYER_BAR_SPACE = BAR_HEIGHT + scaleSizeH(6)
 
 export default memo(({ isHome = false }: { isHome?: boolean }) => {
   const { keyboardShown } = useKeyboard()
@@ -56,7 +58,8 @@ const styles = createStyle({
     flexShrink: 1,
     height: '100%',
     justifyContent: 'center',
-    paddingHorizontal: scaleSizeW(8),
+    // 不加左右内边距：歌名的裁剪区紧贴封面和右侧按钮，
+    // 滚动时文字从封面边缘滑出、到按钮边上消失（不会露出一段矩形的裁切边）
   },
   right: {
     flexDirection: 'row',

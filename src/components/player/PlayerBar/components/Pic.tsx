@@ -11,21 +11,29 @@ import { useSpinOnPlay } from '@/utils/hooks'
 import { setLoadErrorPicUrl, setMusicInfo } from '@/core/player/playInfo'
 import { createStyle } from '@/utils/tools'
 
-// 圆形封面：比胶囊条略大（参考网易云：封面直径约为条高的 1.17 倍、上下各探出一点），
-// 并贴在条左端把条的圆角端完全盖住——等高贴内时左端会露出白色月牙缝，观感不好
-const PIC_SIZE = scaleSizeH(48)
+// 黑胶唱片：黑色圆盘 + 中间的专辑图（仿网易云——黑色盘面在白色条上做视觉缓冲）。
+// 盘面直径和胶囊条等高（42dp）并贴在条左端（条的 paddingLeft 为 0），
+// 此时圆盘与条左端的圆角完全重合，不会露出白色月牙缝
+const PIC_SIZE = scaleSizeH(42)
+// 中间专辑图的直径（参考网易云，约占盘面 0.6）
+const ART_SIZE = Math.round(PIC_SIZE * 0.62)
 
 const styles = createStyle({
   touch: {
     borderRadius: PIC_SIZE / 2,
   },
-  image: {
+  disc: {
     width: PIC_SIZE,
     height: PIC_SIZE,
     borderRadius: PIC_SIZE / 2,
-    // 1dp 半透明黑边，模拟唱片边缘
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.2)',
+    backgroundColor: '#141414',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  art: {
+    width: ART_SIZE,
+    height: ART_SIZE,
+    borderRadius: ART_SIZE / 2,
   },
 })
 
@@ -64,8 +72,8 @@ export default ({ isHome }: { isHome: boolean }) => {
 
   return (
     <TouchableOpacity style={styles.touch} onLongPress={handleLongPress} onPress={handlePress} activeOpacity={0.7} >
-      <Animated.View style={spinStyle}>
-        <Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={styles.image} onError={handleError} />
+      <Animated.View style={[styles.disc, spinStyle]}>
+        <Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={styles.art} onError={handleError} />
       </Animated.View>
     </TouchableOpacity>
   )

@@ -8,6 +8,7 @@ import { getListPosition, getListPrevSelectId, saveListPosition } from '@/utils/
 // import { useMusicList } from '@/store/list/hook'
 import { getListMusics, setActiveList } from '@/core/list'
 import ListItem, { ITEM_HEIGHT, PIC_ITEM_HEIGHT } from './ListItem'
+import { PLAYER_BAR_SPACE } from '@/components/player/PlayerBar'
 import { createStyle, getRowInfo } from '@/utils/tools'
 import { usePlayInfo, usePlayMusicInfo } from '@/store/player/hook'
 import type { Position } from './ListMenu'
@@ -301,6 +302,8 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
       onScroll={handleScroll}
       showsVerticalScrollIndicator={false}
       style={styles.list}
+      // 播放条悬浮在内容上，底部预留条的高度（否则最后一项会被挡住）
+      contentContainerStyle={{ paddingBottom: PLAYER_BAR_SPACE }}
       data={currentList}
       maxToRenderPerBatch={4}
       numColumns={rowInfo.current.rowNum}

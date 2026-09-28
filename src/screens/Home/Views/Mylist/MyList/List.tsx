@@ -3,6 +3,7 @@ import { View, TouchableOpacity, FlatList, type NativeScrollEvent, type NativeSy
 
 import { X } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
+import { PLAYER_BAR_SPACE } from '@/components/player/PlayerBar'
 import Image from '@/components/common/Image'
 import Text from '@/components/common/Text'
 
@@ -125,6 +126,8 @@ export default ({ onOpenList, onRemove }: {
       onScroll={handleScroll}
       showsVerticalScrollIndicator={false}
       style={styles.container}
+      // 播放条悬浮在内容上，底部预留条的高度（否则最后一项会被挡住）
+      contentContainerStyle={{ paddingBottom: PLAYER_BAR_SPACE }}
       data={list}
       maxToRenderPerBatch={9}
       windowSize={9}

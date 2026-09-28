@@ -1,4 +1,5 @@
 import { ScrollView } from 'react-native'
+import { PLAYER_BAR_SPACE } from '@/components/player/PlayerBar'
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import SearchBar from './components/SearchBar'
@@ -33,7 +34,8 @@ const styles = createStyle({
   content: {
     // 顶部留出搜索框与状态栏的间距，区块之间统一 22px
     paddingTop: 14,
-    paddingBottom: 24,
+    // 播放条是悬浮的，底部预留条的高度（否则最后一块会被条挡住）
+    paddingBottom: 24 + PLAYER_BAR_SPACE,
     gap: 22,
   },
 })
