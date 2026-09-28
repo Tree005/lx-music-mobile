@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { TouchableOpacity, View } from 'react-native'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { StyleSheet, TouchableOpacity, View } from 'react-native'
 // import { useLayout } from '@/utils/hooks'
 import { createStyle } from '@/utils/tools'
 import { usePlayerMusicInfo } from '@/store/player/hook'
@@ -21,6 +21,8 @@ const BORDER_RADIUS = scaleSizeW(3)
 const BELOW_COVER_HEIGHT = scaleSizeH(322)
 // 封面与下方歌词的间距（content 的 marginBottom，计算可用高度时要一并扣掉）
 export const COVER_BOTTOM_MARGIN = scaleSizeH(16)
+// 切歌时新封面加载完成的淡入时长（ms），配合垫底层旧封面，避免加载期间露出浅色占位（闪白）
+const FADE_DURATION = 300
 
 // 入场动画注册：只在传了 componentId（全屏播放页）时挂载该子组件；
 // 复用组件（心动页）不传 componentId 时不注册（hook 不能条件调用，用空组件承载）
@@ -61,6 +63,19 @@ export default ({ componentId, picOverride, pagerHeight, belowCoverHeight, onPre
   }, [musicInfo.pic, animated, picOverride])
   // console.log('render pic')
 
+  // crossfade：换封面时旧封面垫底保持显示，新封面加载完成后淡入（FADE_DURATION）；
+  // 新歌封面 URL 还没取到时也保持旧封面，只有一开始就没有封面时才露出音符占位——避免大块浅色占位在深色页面上闪白
+  const [top, setTop] = useState<string | null>(pic ?? null)
+  const [bottom, setBottom] = useState<string | null>(null)
+  const topRef = useRef<string | null>(pic ?? null)
+  useEffect(() => {
+    const next = pic ?? null
+    if (next === topRef.current) return
+    setBottom(topRef.current)
+    topRef.current = next
+    setTop(next)
+  }, [pic])
+
   const style = useMemo(() => {
     // 优先用实测：页面高度 - 封面以下内容高度 - 封面下边距 = 封面可用的最大高度。
     // 这样无论歌词加载前后、进页面瞬间窗口数据准不准，封面都会自动收缩到放得下
@@ -83,7 +98,15 @@ export default ({ componentId, picOverride, pagerHeight, belowCoverHeight, onPre
   return (
     <TouchableOpacity style={styles.container} activeOpacity={1} onPress={onPress}>
       <View style={{ ...styles.content, elevation: animated ? 3 : 0 }}>
-        <Image url={pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={style} />
+        {/* nativeID 挂在容器上（共享元素转场对容器做动画，尺寸与封面一致）；overflow hidden 裁出圆角 */}
+        <View nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={{ ...style, overflow: 'hidden' }}>
+          {/* 最底层：音符占位兜底（没有任何封面时显示，也垫住新图加载的空档） */}
+          <Image url={null} style={StyleSheet.absoluteFill} />
+          {/* 垫底层：上一张封面，被新封面盖住，换歌瞬间维持画面 */}
+          {bottom != null && bottom !== top ? <Image url={bottom} style={StyleSheet.absoluteFill} /> : null}
+          {/* 新封面：加载完成后自动淡入 */}
+          {top != null ? <Image url={top} style={StyleSheet.absoluteFill} fadeDuration={FADE_DURATION} /> : null}
+        </View>
       </View>
       {componentId ? <EntryAppearListener componentId={componentId} onAppear={() => { setAnimated(true) }} /> : null}
     </TouchableOpacity>

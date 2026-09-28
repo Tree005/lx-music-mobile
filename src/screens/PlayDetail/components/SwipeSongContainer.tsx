@@ -4,6 +4,7 @@ import Text from '@/components/common/Text'
 import Image from '@/components/common/Image'
 import { useWindowSize } from '@/utils/hooks'
 import { useMusicPic } from '@/utils/hooks/useMusicPic'
+import { getMusicPicUrl } from '@/utils/musicPic'
 import { createStyle } from '@/utils/tools'
 import { scaleSizeW } from '@/utils/pixelRatio'
 
@@ -25,6 +26,8 @@ const COMMIT_TIMEOUT = 1200
 const NO_PREVIEW_DAMPING = 0.35
 // 按钮触发切歌时的滑动动画时长
 const TRIGGER_DURATION = 220
+// 两次切歌的最小间隔（ms）：短时间内快速连点/连滑直接忽略，给封面预取和加载留时间（间隔内切歌必闪占位）
+const SWITCH_THROTTLE = 800
 // 预览封面的圆角（与真实封面一致）
 const PREVIEW_BORDER_RADIUS = scaleSizeW(3)
 
@@ -36,6 +39,14 @@ export const toPreviewMusicInfo = (m: LX.Music.MusicInfo | LX.Download.ListItem 
   return 'progress' in m ? m.metadata.musicInfo : m
 }
 
+/** 后台预热相邻歌的封面地址（getMusicPicUrl 内部按歌曲 id 缓存）：
+ * 歌一变化就拉好相邻歌的封面 URL，等手指按下滑动、预览层挂载时大概率已就绪，
+ * 不然快速滑动切到没播过的歌时，预览封面要现取 URL，来不及就露占位（闪白） */
+const prefetchPreviewPic = (info: LX.Music.MusicInfo | null) => {
+  if (!info) return
+  void getMusicPicUrl(info).catch(() => {})
+}
+
 /** 相邻歌的简化预览层：封面 + 歌名/歌手；两者的垂直位置都与真实页面严格对齐（减少切换时的跳变） */
 const PreviewLayer = memo(({ musicInfo, coverSize, coverBottomSpace }: {
   musicInfo: LX.Music.MusicInfo
@@ -45,11 +56,14 @@ const PreviewLayer = memo(({ musicInfo, coverSize, coverBottomSpace }: {
   const pic = useMusicPic(musicInfo)
   return (
     <View style={styles.preview}>
-      {/* 封面：贴底 + 与真实封面相同的底边距（coverBottomSpace），尺寸与真实封面一致 */}
+      {/* 封面：贴底 + 与真实封面相同的底边距（coverBottomSpace），尺寸与真实封面一致；
+          封面地址没来得及取到时显示深色圆角块（与暗背景融合），不用近白占位（会在深色页面上闪白） */}
       <View style={[styles.previewCoverBox, { paddingBottom: coverBottomSpace }]}>
         {
           coverSize > 0
-            ? <Image url={pic || null} style={{ width: coverSize, height: coverSize, borderRadius: PREVIEW_BORDER_RADIUS }} />
+            ? pic
+              ? <Image url={pic} style={{ width: coverSize, height: coverSize, borderRadius: PREVIEW_BORDER_RADIUS }} />
+              : <View style={{ width: coverSize, height: coverSize, borderRadius: PREVIEW_BORDER_RADIUS, backgroundColor: 'rgba(0, 0, 0, 0.35)' }} />
             : null
         }
       </View>
@@ -103,6 +117,7 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
   const dragX = useRef(new Animated.Value(0)).current
   const startXRef = useRef(0)
   const committedRef = useRef(false)
+  const lastCommitTimeRef = useRef(0)
   const commitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const nextReqRef = useRef(0)
   // 手势回调只创建一次，宽度 / 相邻歌通过 ref 取最新值
@@ -118,11 +133,14 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
     void fetchNext().then(info => {
       if (req !== nextReqRef.current) return
       setNextMusic(info)
+      prefetchPreviewPic(info)
     })
   }, [fetchNext])
 
   const refreshPrev = useCallback(() => {
-    setPrevMusic(fetchPrev())
+    const info = fetchPrev()
+    setPrevMusic(info)
+    prefetchPreviewPic(info)
   }, [fetchPrev])
 
   // 歌变了：刷新相邻预览
@@ -150,6 +168,7 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
   const commit = useCallback((direction: 1 | -1) => {
     if (committedRef.current) return
     committedRef.current = true
+    lastCommitTimeRef.current = Date.now()
     if (commitTimerRef.current) clearTimeout(commitTimerRef.current)
     commitTimerRef.current = setTimeout(() => {
       commitTimerRef.current = null
@@ -184,6 +203,8 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
   // 程序化触发：点击上一首/下一首按钮时的滑动视觉（滑出 → 提交切歌 → 歌变化复位）
   const triggerSwipe = useCallback((direction: 1 | -1) => {
     if (committedRef.current) return
+    // 限速：短时间连点按钮直接忽略
+    if (Date.now() - lastCommitTimeRef.current < SWITCH_THROTTLE) return
     const w = stateRef.current.width
     if (!w) {
       commit(direction)
@@ -231,8 +252,10 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
         if (!w) return
         const trigger = Math.max(60, w * 0.15)
         const finalX = clamp(startXRef.current + g.dx, -w, w)
-        if (finalX <= -trigger) settle(-w, () => { commit(1) })
-        else if (finalX >= trigger) settle(w, () => { commit(-1) })
+        // 限速：距上次切歌太近视为没滑够（弹回），避免快速连滑导致封面来不及就位
+        const throttled = Date.now() - lastCommitTimeRef.current < SWITCH_THROTTLE
+        if (finalX <= -trigger && !throttled) settle(-w, () => { commit(1) })
+        else if (finalX >= trigger && !throttled) settle(w, () => { commit(-1) })
         else settle(0, () => { setDragActive(false) })
       },
       onPanResponderTerminate: () => {
