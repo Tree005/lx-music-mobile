@@ -1,6 +1,6 @@
 import { createContext, memo, forwardRef, useCallback, useContext, useImperativeHandle, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { Animated, Easing, PanResponder, View } from 'react-native'
-import Image from '@/components/common/Image'
+import { Animated, Easing, Image, PanResponder, View } from 'react-native'
+import { defaultHeaders } from '@/components/common/Image'
 import { useWindowSize } from '@/utils/hooks'
 import { useMusicPic } from '@/utils/hooks/useMusicPic'
 import { prefetchMusicPicUrl } from '@/utils/musicPic'
@@ -68,7 +68,12 @@ const SlideCard = memo(({ pic, coverSize, coverBottomSpace, translateX }: {
     <View pointerEvents="none" style={styles.layer}>
       <View style={[styles.previewCoverBox, { paddingBottom: coverBottomSpace }]}>
         <Animated.View style={{ transform: [{ translateX }] }}>
-          <Image url={pic} style={{ width: coverSize, height: coverSize, borderRadius: PREVIEW_BORDER_RADIUS }} />
+          {/* 用原生 Image 而不是共享组件：图加载失败时保持空白（透出背景），不显示浅色占位框 */}
+          <Image
+            source={{ uri: pic, headers: defaultHeaders }}
+            resizeMode="cover"
+            style={{ width: coverSize, height: coverSize, borderRadius: PREVIEW_BORDER_RADIUS }}
+          />
         </Animated.View>
       </View>
     </View>
@@ -122,11 +127,23 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
   const lastCommitTimeRef = useRef(0)
   const commitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const nextReqRef = useRef(0)
-  // 手势回调只创建一次，宽度 / 相邻歌通过 ref 取最新值
-  const stateRef = useRef({ width: 0, canNext: false, canPrev: false })
+  // 手势回调只创建一次，宽度 / 相邻歌 / 封面参数通过 ref 取最新值
+  const stateRef = useRef({ width: 0, canNext: false, canPrev: false, coverSize: 0, coverSpace: 0 })
   stateRef.current.width = width
   stateRef.current.canNext = !!nextMusic
   stateRef.current.canPrev = !!prevMusic
+  stateRef.current.coverSize = coverSize
+  stateRef.current.coverSpace = coverBottomSpace
+
+  // 滑动期间冻结卡片的尺寸/位置参数（用按下瞬间的值）：切歌过程会让「歌词+信息区」高度
+  // 实测值波动（歌词行变化），卡片若跟着变会跳大小/跳位置——冻结后卡片严格停在真实封面的位置上。
+  // 冻结值在 grant/triggerSwipe 里经 stateRef 同步记录（不留 effect 时序差）
+  const frozenRef = useRef<{ size: number, space: number } | null>(null)
+  useEffect(() => {
+    if (!dragActive) frozenRef.current = null
+  }, [dragActive])
+  const cardSize = frozenRef.current?.size ?? coverSize
+  const cardSpace = frozenRef.current?.space ?? coverBottomSpace
 
   // 预览封面的地址（顶层取，hook 不能条件调用；没歌时传 undefined 内部自动空处理）
   const nextPic = useMusicPic(nextMusic ?? undefined)
@@ -218,6 +235,8 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
     }
     refreshNext()
     refreshPrev()
+    // 同步冻结卡片的尺寸/位置（用触发瞬间的实测值）
+    frozenRef.current = { size: stateRef.current.coverSize, space: stateRef.current.coverSpace }
     setDragActive(true)
     const target = direction == 1 ? -w : w
     Animated.timing(dragX, {
@@ -242,6 +261,8 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
         // 手势开始时再取一次相邻歌（开播等时机会把预取结果清掉，这里保证滑进来的与实际一致）
         refreshNext()
         refreshPrev()
+        // 同步冻结卡片的尺寸/位置（用按下瞬间的实测值）
+        frozenRef.current = { size: stateRef.current.coverSize, space: stateRef.current.coverSpace }
         setDragActive(true)
         dragX.stopAnimation((value: number) => { startXRef.current = value })
       },
@@ -284,19 +305,22 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
   )
 
   return (
-    <SwipeDragContext.Provider value={dragActive}>
+    // 只有「当前卡片确实会渲染」时才隐藏真实封面（currentPic 为空时卡片不渲染，
+    // 此时继续显示真实封面，避免滑动中信封面区域整块空白）
+    <SwipeDragContext.Provider value={dragActive && currentPic !== ''}>
       <View style={styles.container} {...panResponder.panHandlers}>
         {/* 主内容固定不动：切歌时歌词/信息/进度等原地切换 */}
         <View style={styles.layer}>
           {children}
         </View>
-        {/* 滑动中的封面卡片：当前卡跟手滑出、相邻卡从屏外滑入；切歌后与真实封面（同一张图）无缝交接 */}
-        {dragActive && coverSize > 0
+        {/* 滑动中的封面卡片：当前卡跟手滑出、相邻卡从屏外滑入；切歌后与真实封面（同一张图）无缝交接；
+            尺寸/位置用滑动开始瞬间冻结的值（cardSize/cardSpace），滑动中不跟随布局波动 */}
+        {dragActive && cardSize > 0
           ? (
               <>
-                <SlideCard pic={currentPic} coverSize={coverSize} coverBottomSpace={coverBottomSpace} translateX={dragX} />
-                {nextMusic ? <SlideCard pic={nextPic} coverSize={coverSize} coverBottomSpace={coverBottomSpace} translateX={nextCardX} /> : null}
-                {prevMusic ? <SlideCard pic={prevPic} coverSize={coverSize} coverBottomSpace={coverBottomSpace} translateX={prevCardX} /> : null}
+                <SlideCard pic={currentPic} coverSize={cardSize} coverBottomSpace={cardSpace} translateX={dragX} />
+                {nextMusic ? <SlideCard pic={nextPic} coverSize={cardSize} coverBottomSpace={cardSpace} translateX={nextCardX} /> : null}
+                {prevMusic ? <SlideCard pic={prevPic} coverSize={cardSize} coverBottomSpace={cardSpace} translateX={prevCardX} /> : null}
               </>
             )
           : null}

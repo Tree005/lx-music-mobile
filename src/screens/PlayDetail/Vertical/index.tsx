@@ -17,6 +17,7 @@ import { useAdjacentMusic } from '../hooks/useAdjacentMusic'
 import { playNext, playPrev } from '@/core/player/player'
 import { usePlayerMusicInfo } from '@/store/player/hook'
 import { screenkeepAwake, screenUnkeepAwake } from '@/utils/nativeModules/utils'
+import { useDebouncedValue } from '@/utils/hooks'
 import commonState, { type InitState as CommonState } from '@/store/common/state'
 import { createStyle } from '@/utils/tools'
 // import { useTheme } from '@/store/theme/hook'
@@ -75,7 +76,10 @@ export default memo(({ componentId }: { componentId: string }) => {
   // 不用窗口尺寸推算——进页面瞬间拿到的窗口数据可能偏大，算出来的封面会把
   // 歌词/信息行挤出页面，表现为进度条压在歌手行上（偶发错位）
   const [pagerHeight, setPagerHeight] = useState(0)
-  const [belowCoverHeight, setBelowCoverHeight] = useState(0)
+  const [belowCoverHeightRaw, setBelowCoverHeightRaw] = useState(0)
+  // 防抖过滤瞬时波动：切歌/歌词折行时「歌词+信息区」的实测高度会跳动，
+  // 直接应用会让封面尺寸/位置反复变化——稳定后（300ms 无变化）才生效
+  const belowCoverHeight = useDebouncedValue(belowCoverHeightRaw, 300)
   // 封面实测尺寸（跟手滑动的预览封面按它对齐）
   const [coverSize, setCoverSize] = useState(0)
   const musicInfo = usePlayerMusicInfo()
@@ -125,7 +129,7 @@ export default memo(({ componentId }: { componentId: string }) => {
                 onPress={showFullLyric}
                 onCoverSize={setCoverSize}
               />
-              <View onLayout={({ nativeEvent }) => { setBelowCoverHeight(nativeEvent.layout.height) }}>
+              <View onLayout={({ nativeEvent }) => { setBelowCoverHeightRaw(nativeEvent.layout.height) }}>
                 <LyricInline onPress={showFullLyric} />
                 <SongInfo />
               </View>

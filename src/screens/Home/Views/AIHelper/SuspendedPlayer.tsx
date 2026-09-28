@@ -12,6 +12,7 @@ import Player from '@/screens/PlayDetail/Vertical/Player'
 import MorePopup, { type MorePopupType } from '@/screens/PlayDetail/Vertical/components/MorePopup'
 import { getAiRadioNext, getAiRadioPrev, playAiRadioMusic, resumeSession, type AiRadioSnapshot } from '@/core/aiRadio'
 import { useMusicPic } from '@/utils/hooks/useMusicPic'
+import { useDebouncedValue } from '@/utils/hooks'
 import { formatPlayTime2 } from '@/utils'
 import { useNavActiveId } from '@/store/common/hook'
 import { screenkeepAwake, screenUnkeepAwake } from '@/utils/nativeModules/utils'
@@ -27,7 +28,10 @@ export default memo(({ snapshot, lyricLines }: {
 }) => {
   const morePopupRef = useRef<MorePopupType>(null)
   const [pagerHeight, setPagerHeight] = useState(0)
-  const [belowCoverHeight, setBelowCoverHeight] = useState(0)
+  const [belowCoverHeightRaw, setBelowCoverHeightRaw] = useState(0)
+  // 防抖过滤瞬时波动：歌词折行/切歌过渡时「歌词+信息区」的实测高度会跳动，
+  // 直接应用会让封面尺寸/位置反复变化——稳定后（300ms 无变化）才生效
+  const belowCoverHeight = useDebouncedValue(belowCoverHeightRaw, 300)
   const [coverSize, setCoverSize] = useState(0)
   const [showLyric, setShowLyric] = useState(false)
   const pic = useMusicPic(snapshot.musicInfo)
@@ -137,7 +141,7 @@ export default memo(({ snapshot, lyricLines }: {
                 onPress={showFullLyric}
                 onCoverSize={setCoverSize}
               />
-              <View onLayout={({ nativeEvent }) => { setBelowCoverHeight(nativeEvent.layout.height) }}>
+              <View onLayout={({ nativeEvent }) => { setBelowCoverHeightRaw(nativeEvent.layout.height) }}>
                 <LyricInline lines={lyricLines} line={0} onPress={showFullLyric} />
                 <SongInfo musicInfoOverride={snapshot.musicInfo} showMore onMore={handleShowMore} onComment={handleComment} />
               </View>
