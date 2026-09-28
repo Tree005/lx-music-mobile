@@ -3,7 +3,6 @@ import { View } from 'react-native'
 import { BOTTOM_TABS, type NAV_ID_Type } from '@/config/constant'
 import Content from './Content'
 import PlayerBar from '@/components/player/PlayerBar'
-import PlayerBarBackdrop from '@/components/player/PlayerBar/Backdrop'
 import TabBar from './TabBar'
 import { useNavigationBarHeight } from '@/utils/hooks'
 import { useTheme } from '@/store/theme/hook'
@@ -38,8 +37,6 @@ export default () => {
         {playerBarVisible
           ? (
             <View style={styles.playerBarLayer} pointerEvents="box-none">
-              {/* 渐变遮罩：内容靠近条时渐隐到背景色（模仿网易云），条本身看不出「白底」边界 */}
-              <PlayerBarBackdrop />
               <PlayerBar isHome />
             </View>
             )
