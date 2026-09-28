@@ -12,8 +12,9 @@ import { LIST_IDS } from '@/config/constant'
 import { getListMusicSync } from '@/utils/listManage'
 import { createStyle } from '@/utils/tools'
 
-// 跑马灯滚动速度（px/秒，参考网易云实测约 100px/s）与循环接续的间隙
-const MARQUEE_SPEED = 100
+// 跑马灯滚动速度（px/秒）与循环接续的间隙
+// （网易云实测约 100px/s，但用户反馈偏快，调到 70）
+const MARQUEE_SPEED = 70
 const MARQUEE_GAP = 60
 // 左右滑动切歌（对齐网易云）：水平位移超过 SWIPE_THRESHOLD 时接管手势，
 // 松手时容器位置超过 SWIPE_TRIGGER 即切歌、否则回弹原位

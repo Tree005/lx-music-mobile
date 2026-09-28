@@ -43,7 +43,8 @@ const styles = createStyle({
     height: BAR_HEIGHT,
     marginHorizontal: scaleSizeW(10),
     marginVertical: scaleSizeH(3),
-    paddingLeft: scaleSizeW(4),
+    // 封面（比条略大）贴左端，把条的圆角端盖住、不留白缝
+    paddingLeft: 0,
     borderRadius: BAR_HEIGHT / 2,
     flexDirection: 'row',
     alignItems: 'center',

@@ -11,8 +11,9 @@ import { useSpinOnPlay } from '@/utils/hooks'
 import { setLoadErrorPicUrl, setMusicInfo } from '@/core/player/playInfo'
 import { createStyle } from '@/utils/tools'
 
-// 圆形封面，直径与胶囊条高度（index.tsx 的 BAR_HEIGHT）一致，贴在条内
-const PIC_SIZE = scaleSizeH(42)
+// 圆形封面：比胶囊条略大（参考网易云：封面直径约为条高的 1.17 倍、上下各探出一点），
+// 并贴在条左端把条的圆角端完全盖住——等高贴内时左端会露出白色月牙缝，观感不好
+const PIC_SIZE = scaleSizeH(48)
 
 const styles = createStyle({
   touch: {
