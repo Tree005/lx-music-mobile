@@ -4,6 +4,7 @@ import {
   getMusicUrl as getStoreMusicUrl,
 } from '@/utils/data'
 import { updateListMusics } from '@/core/list'
+import { getCachedMusicPicUrl } from '@/utils/musicPic'
 import settingState from '@/store/setting/state'
 
 import {
@@ -71,6 +72,16 @@ export const getPicUrl = async({ musicInfo, listId, isRefresh, allowToggleSource
   onToggleSource?: (musicInfo?: LX.Music.MusicInfoOnline) => void
 }): Promise<string> => {
   if (musicInfo.meta.picUrl && !isRefresh) return musicInfo.meta.picUrl
+  // 滑动切歌前预取过封面的歌（musicPic 缓存命中）直接用：切歌瞬间封面地址就可用，
+  // 背景/封面立即开始过渡，不用再等音源接口（慢的话好几秒，观感像"背景不跟变了"）
+  const cachedPic = getCachedMusicPicUrl(musicInfo)
+  if (cachedPic && !isRefresh) {
+    if (listId) {
+      musicInfo.meta.picUrl = cachedPic
+      void updateListMusics([{ id: listId, musicInfo }])
+    }
+    return cachedPic
+  }
   return handleGetOnlinePicUrl({ musicInfo, onToggleSource, isRefresh, allowToggleSource }).then(({ url, musicInfo: targetMusicInfo, isFromCache }) => {
     // picRequest = null
     if (listId) {

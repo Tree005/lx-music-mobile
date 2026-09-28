@@ -87,9 +87,11 @@ export const resetPlayerMusicInfo = () => {
 
 const setPlayerMusicInfo = (musicInfo: LX.Music.MusicInfo | LX.Download.ListItem | null) => {
   if (musicInfo) {
+    // picUrl 为 undefined 时必须显式置 null（setMusicInfo 会跳过 undefined 字段），
+    // 否则 pic 残留上一首的封面地址——新歌封面异步回填前一直显示上一首的封面（快速连滑时连环错位/闪烁）
     setMusicInfo('progress' in musicInfo ? {
       id: musicInfo.id,
-      pic: musicInfo.metadata.musicInfo.meta.picUrl,
+      pic: musicInfo.metadata.musicInfo.meta.picUrl ?? null,
       name: musicInfo.metadata.musicInfo.name,
       singer: musicInfo.metadata.musicInfo.singer,
       album: musicInfo.metadata.musicInfo.meta.albumName ?? '',
@@ -100,7 +102,7 @@ const setPlayerMusicInfo = (musicInfo: LX.Music.MusicInfo | LX.Download.ListItem
       rawlrc: null,
     } : {
       id: musicInfo.id,
-      pic: musicInfo.meta.picUrl,
+      pic: musicInfo.meta.picUrl ?? null,
       name: musicInfo.name,
       singer: musicInfo.singer,
       album: musicInfo.meta.albumName ?? '',

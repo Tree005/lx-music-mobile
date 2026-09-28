@@ -40,3 +40,12 @@ export const getMusicPicUrl = async(info: LX.Music.MusicInfo): Promise<string> =
   }
   return task
 }
+
+/**
+ * 只读缓存版：查 meta.picUrl 和已缓存的封面地址，**不发请求**（未缓存返回 null）。
+ * 供播放器取封面的链路短路用——滑动切歌前预取过封面的歌，切歌瞬间 URL 就可用，不用再等音源接口
+ */
+export const getCachedMusicPicUrl = (info: LX.Music.MusicInfo): string | null => {
+  if (info.meta.picUrl) return info.meta.picUrl
+  return cache.get(info.id) ?? null
+}

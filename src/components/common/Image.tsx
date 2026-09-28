@@ -15,10 +15,6 @@ export interface ImageProps extends ViewProps {
   cache?: boolean
   resizeMode?: ComponentProps<typeof FastImage>['resizeMode']
   onError?: (url: string | number) => void
-  /** 加载完成（成功或失败）回调；配合外部垫底层做 crossfade，需用稳定引用（useCallback）避免破坏 memo */
-  onLoadEnd?: () => void
-  /** Android：图片加载完成后的淡入时长（ms） */
-  fadeDuration?: number
 }
 
 
@@ -38,7 +34,7 @@ const EmptyPic = memo(({ style, nativeID }: { style: ImageProps['style'], native
   )
 })
 
-const Image = memo(({ url, cache, resizeMode = 'cover', style, onError, nativeID, onLoadEnd, fadeDuration }: ImageProps) => {
+const Image = memo(({ url, cache, resizeMode = 'cover', style, onError, nativeID }: ImageProps) => {
   const [isError, setError] = useState(false)
   const handleError = useCallback(() => {
     setError(true)
@@ -66,8 +62,6 @@ const Image = memo(({ url, cache, resizeMode = 'cover', style, onError, nativeID
               // cache: cache === false ? 'web' : 'immutable',
             }}
             onError={handleError}
-            onLoadEnd={onLoadEnd}
-            fadeDuration={fadeDuration}
             resizeMode={resizeMode}
             nativeID={nativeID}
           />
@@ -76,9 +70,7 @@ const Image = memo(({ url, cache, resizeMode = 'cover', style, onError, nativeID
 }, (prevProps, nextProps) => {
   return prevProps.url == nextProps.url &&
     prevProps.style == nextProps.style &&
-    prevProps.nativeID == nextProps.nativeID &&
-    prevProps.onLoadEnd == nextProps.onLoadEnd &&
-    prevProps.fadeDuration == nextProps.fadeDuration
+    prevProps.nativeID == nextProps.nativeID
 })
 
 export const getSize = (uri: string, success: (width: number, height: number) => void, failure?: (error: any) => void) => {
