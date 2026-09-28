@@ -314,7 +314,12 @@ export const resetRandomNextMusicInfo = () => {
   }
 }
 
-export const getNextPlayMusicInfo = async(): Promise<LX.Player.PlayMusicInfo | null> => {
+/**
+ * 获取下一首歌曲信息
+ * @param isManual 是否手动切歌：手动切歌与 playNext(false) 一致，
+ *   会把「顺序播放 / 单曲循环 / 不循环」都当作列表循环处理（尾到头、单曲也会切走）
+ */
+export const getNextPlayMusicInfo = async(isManual = false): Promise<LX.Player.PlayMusicInfo | null> => {
   if (playerState.tempPlayList.length) { // 如果稍后播放列表存在歌曲则直接播放改列表的歌曲
     const playMusicInfo = playerState.tempPlayList[0]
     return playMusicInfo
@@ -369,6 +374,15 @@ export const getNextPlayMusicInfo = async(): Promise<LX.Player.PlayMusicInfo | n
   let nextIndex = playerIndex
 
   let togglePlayMethod = settingState.setting['player.togglePlayMethod']
+  if (isManual) {
+    // 与 playNext(false) 的处理保持一致
+    switch (togglePlayMethod) {
+      case 'list':
+      case 'singleLoop':
+      case 'none':
+        togglePlayMethod = 'listLoop'
+    }
+  }
   switch (togglePlayMethod) {
     case 'listLoop':
       nextIndex = playerIndex === filteredList.length - 1 ? 0 : playerIndex + 1
