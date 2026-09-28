@@ -113,9 +113,20 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
 })
 const wait = async() => new Promise(resolve => setTimeout(resolve, 100))
 
-export default ({ onPress }: { onPress?: () => void } = {}) => {
-  const lyricLines = useLrcSet()
-  const { line } = useLrcPlay()
+// 传入 lines 时歌词数据与高亮行都来自外部（心动页的快照歌），不传时跟随全局播放歌词
+export default ({ onPress, lines: linesOverride, line: lineOverride }: {
+  onPress?: () => void
+  /** 外部歌词行（传入时不再使用全局歌词数据） */
+  lines?: Line[]
+  /** 外部当前行，缺省 0 */
+  line?: number
+} = {}) => {
+  const globalLyricLines = useLrcSet()
+  const globalLrcPlay = useLrcPlay()
+  const isExternal = linesOverride !== undefined
+  const lyricLines = linesOverride ?? globalLyricLines
+  // 外部模式下高亮行固定用外部值（缺省 0），不随全局播放变化
+  const line = isExternal ? (lineOverride ?? 0) : globalLrcPlay.line
   const flatListRef = useRef<FlatList>(null)
   const playLineRef = useRef<PlayLineType>(null)
   // 轻点返回用的触摸记录（不用 Pressable 包列表，否则会抢手势导致歌词滑不动）

@@ -4,6 +4,7 @@ import { CaretLeft, DownloadSimple, Heart, PlayCircle, type IconProps } from 'ph
 import { type ComponentType } from 'react'
 
 import MusicList from './MusicList'
+import { PLAYER_BAR_SPACE } from '@/components/player/PlayerBar'
 import Image from '@/components/common/Image'
 import Text from '@/components/common/Text'
 import { PhIcon } from '@/components/common/PhIcon'
@@ -102,8 +103,10 @@ export default () => {
         <Action Icon={PlayCircle} label={t('play_all')} color={theme['c-primary']} weight="fill" onPress={handlePlayAll} />
         <Action Icon={DownloadSimple} label={t('download_all')} color={theme['c-primary']} weight="fill" />
       </View>
-      {/* 自建歌单可以把歌从歌单里移除，收藏/导入的歌单暂时不行 */}
-      <MusicList embedded detailMode canRemoveMusic={!listInfo.source} />
+      {/* 自建歌单可以把歌从歌单里移除，收藏/导入的歌单暂时不行；底部让出迷你播放条的高度 */}
+      <View style={{ flex: 1, paddingBottom: PLAYER_BAR_SPACE }}>
+        <MusicList embedded detailMode canRemoveMusic={!listInfo.source} />
+      </View>
     </View>
   )
 }

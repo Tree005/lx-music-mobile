@@ -2,7 +2,7 @@ import { memo } from 'react'
 import { TouchableOpacity } from 'react-native'
 
 import Text from '@/components/common/Text'
-import { useLrcPlay, useLrcSet } from '@/plugins/lyric'
+import { type Line, useLrcPlay, useLrcSet } from '@/plugins/lyric'
 import { useI18n } from '@/lang'
 import { createStyle } from '@/utils/tools'
 import { setSpText } from '@/utils/pixelRatio'
@@ -12,10 +12,21 @@ const CURRENT_COLOR = '#fff'
 const NEXT_COLOR = 'rgba(255, 255, 255, 0.45)'
 
 // 封面下方嵌入的两行歌词：当前行（亮）+ 下一行（暗），点击进入全屏歌词页
-export default memo(({ onPress }: { onPress: () => void }) => {
+// 传入 lines 时用外部歌词渲染（心动页的快照歌），不传时跟随全局播放歌词
+export default memo(({ onPress, lines: linesOverride, line: lineOverride }: {
+  onPress: () => void
+  /** 外部歌词行（传入时不再使用全局歌词） */
+  lines?: Line[]
+  /** 外部当前行，缺省 0 */
+  line?: number
+}) => {
   const t = useI18n()
-  const { line } = useLrcPlay()
-  const lines = useLrcSet()
+  const globalLrcPlay = useLrcPlay()
+  const globalLines = useLrcSet()
+  const isExternal = linesOverride !== undefined
+  const lines = linesOverride ?? globalLines
+  // 外部模式下不随播放变化，缺省按第 0 行高亮
+  const line = isExternal ? (lineOverride ?? 0) : globalLrcPlay.line
 
   // 有歌词时：播放前（line < 0）先显示第一句；确无歌词才显示占位文案
   const hasLrc = lines.length > 0

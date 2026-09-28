@@ -63,6 +63,8 @@ global.lx = {
 
   homePagerIdle: true,
 
+  aiRadioHandler: null,
+
   // syncKeyInfo: initValue as LX.Sync.KeyInfo,
 
   // windowInfo: {

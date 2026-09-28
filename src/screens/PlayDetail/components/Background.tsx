@@ -12,8 +12,10 @@ const FALLBACK_COLOR = '#1a1a1a'
 
 // 播放器整页暗色模糊底：当前封面模糊铺底 + 黑色遮罩，封面切换时背景跟着变
 // 竖屏（Vertical）与横屏（Horizontal）共用，两端的文字/图标都按这个暗底配白色系
-export default memo(() => {
-  const pic = usePlayerMusicInfo().pic
+// 传入 pic 时用它做背景（心动页显示非当前播放歌的快照）；不传时跟随全局当前播放歌
+export default memo(({ pic: picOverride }: { pic?: string | null } = {}) => {
+  const playerPic = usePlayerMusicInfo().pic
+  const pic = picOverride === undefined ? playerPic : picOverride
   const uri = pic == null ? null : pic.startsWith('/') ? 'file://' + pic : pic
 
   return (

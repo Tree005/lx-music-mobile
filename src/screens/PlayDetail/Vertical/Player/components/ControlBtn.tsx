@@ -100,11 +100,26 @@ let prevTouchAt = 0
 let nextTouchAt = 0
 let playTouchAt = 0
 
-const PrevBtn = ({ size }: { size: number }) => {
+/** 各控制键的行为/状态覆盖（心动页复用时传入；不传 = 调用全局播放控制） */
+export interface ControlBtnOverrides {
+  /** 覆盖播放按钮的图标状态 */
+  isPlay?: boolean
+  /** 覆盖播放/暂停行为 */
+  onTogglePlay?: () => void
+  onPrev?: () => void
+  onNext?: () => void
+  /** 隐藏「播放顺序」切换键（心动流永远随机推歌，该键无意义） */
+  hidePlayMode?: boolean
+  /** 隐藏「播放队列」键（心动页不需要队列入口） */
+  hideQueue?: boolean
+}
+
+const PrevBtn = ({ size, onPrev }: { size: number, onPrev?: () => void }) => {
   const handlePlayPrev = () => {
     if (Date.now() - prevTouchAt > REAL_TOUCH_WINDOW) return
     prevTouchAt = 0
-    void playPrev()
+    if (onPrev) onPrev()
+    else void playPrev()
   }
   return (
     <TouchableOpacity
@@ -117,11 +132,12 @@ const PrevBtn = ({ size }: { size: number }) => {
     </TouchableOpacity>
   )
 }
-const NextBtn = ({ size }: { size: number }) => {
+const NextBtn = ({ size, onNext }: { size: number, onNext?: () => void }) => {
   const handlePlayNext = () => {
     if (Date.now() - nextTouchAt > REAL_TOUCH_WINDOW) return
     nextTouchAt = 0
-    void playNext()
+    if (onNext) onNext()
+    else void playNext()
   }
   return (
     <TouchableOpacity
@@ -135,12 +151,14 @@ const NextBtn = ({ size }: { size: number }) => {
   )
 }
 
-const TogglePlayBtn = ({ size }: { size: number }) => {
-  const isPlay = useIsPlay()
+const TogglePlayBtn = ({ size, isPlay: isPlayOverride, onTogglePlay }: { size: number, isPlay?: boolean, onTogglePlay?: () => void }) => {
+  const globalIsPlay = useIsPlay()
+  const isPlay = isPlayOverride ?? globalIsPlay
   const handleTogglePlay = () => {
     if (Date.now() - playTouchAt > REAL_TOUCH_WINDOW) return
     playTouchAt = 0
-    togglePlay()
+    if (onTogglePlay) onTogglePlay()
+    else togglePlay()
   }
   return (
     <TouchableOpacity
@@ -154,20 +172,23 @@ const TogglePlayBtn = ({ size }: { size: number }) => {
   )
 }
 
-export default memo(() => {
+export default memo(({ overrides }: { overrides?: ControlBtnOverrides } = {}) => {
   const winSize = useWindowSize()
   const maxHeight = Math.max(winSize.height * 0.11, MIN_SIZE)
   // 中间播放按钮放大，上一首/下一首跟随缩小一档
   const size = Math.min(Math.max(winSize.width * 0.33 * global.lx.fontSize * 0.4, MIN_SIZE), MAX_SIZE, maxHeight)
   const sideSize = size * 0.75
 
+  // 心动页的 3 键形态（无播放顺序/队列键）：居中排布、键距固定，避免 space-between 把两端键顶到边
+  const isCompact = !!(overrides?.hidePlayMode && overrides?.hideQueue)
+
   return (
-    <View style={styles.conatiner}>
-      <PlayModeBtn />
-      <PrevBtn size={sideSize} />
-      <TogglePlayBtn size={size} />
-      <NextBtn size={sideSize} />
-      <QueueBtn />
+    <View style={[styles.conatiner, isCompact && styles.compact]}>
+      {!overrides?.hidePlayMode && <PlayModeBtn />}
+      <PrevBtn size={sideSize} onPrev={overrides?.onPrev} />
+      <TogglePlayBtn size={size} isPlay={overrides?.isPlay} onTogglePlay={overrides?.onTogglePlay} />
+      <NextBtn size={sideSize} onNext={overrides?.onNext} />
+      {!overrides?.hideQueue && <QueueBtn />}
     </View>
   )
 })
@@ -191,6 +212,11 @@ const styles = createStyle({
     height: BTN_WIDTH,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  // 3 键形态：居中 + 固定键距
+  compact: {
+    justifyContent: 'center',
+    gap: scaleSizeW(52),
   },
   cotrolBtn: {
     justifyContent: 'center',

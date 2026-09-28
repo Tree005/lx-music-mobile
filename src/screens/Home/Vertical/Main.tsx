@@ -1,14 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef, type ComponentType } from 'react'
+import { useEffect, useState, type ComponentType } from 'react'
 import { View } from 'react-native'
-import PagerView, { type PageScrollStateChangedNativeEvent, type PagerViewOnPageSelectedEvent } from 'react-native-pager-view'
 import Home from '../Views/Home'
 import AIHelper from '../Views/AIHelper'
 import Mine from '../Views/Mine'
 import commonState, { type InitState as CommonState } from '@/store/common/state'
 import { createStyle } from '@/utils/tools'
-import { setNavActiveId } from '@/core/common'
-import settingState from '@/store/setting/state'
-import { BOTTOM_TABS, TAB_OF_ID, type NAV_TAB_Type } from '@/config/constant'
+import { useNavActiveId } from '@/store/common/hook'
+import { BOTTOM_TABS, type NAV_TAB_Type } from '@/config/constant'
 
 // 底部三个 Tab 对应的页面组件
 const PAGE_COMPONENTS: Record<NAV_TAB_Type, ComponentType> = {
@@ -17,11 +15,7 @@ const PAGE_COMPONENTS: Record<NAV_TAB_Type, ComponentType> = {
   nav_mine: Mine,
 }
 
-// 索引映射由 BOTTOM_TABS 单源派生，避免手写导致顺序错位
-const PAGE_IDS = BOTTOM_TABS.map(tab => tab.id) as readonly NAV_TAB_Type[]
-const viewMap = Object.fromEntries(PAGE_IDS.map((id, index) => [id, index])) as Record<NAV_TAB_Type, number>
-
-// 懒挂载：仅当前 Tab 页挂载，滑动到时再挂载
+// 懒挂载：仅当前 Tab 页挂载，切到时再挂载（挂载后常驻，靠 display 控制显隐、保留页面状态）
 const LazyPage = ({ id, Component }: { id: NAV_TAB_Type, Component: ComponentType }) => {
   const [visible, setVisible] = useState(commonState.navActiveId == id)
   useEffect(() => {
@@ -41,78 +35,32 @@ const LazyPage = ({ id, Component }: { id: NAV_TAB_Type, Component: ComponentTyp
   return visible ? <Component /> : null
 }
 
+// Tab 容器：只通过底部栏切换（左右滑动切 tab 已禁用，横滑手势让给页面内的切歌），
+// 所以不再用 PagerView —— 它的原生触摸拦截会把页面里的左右滑手势打断（ViewPager2 实测：
+// 每次 JS claim 都被 terminate），用条件渲染 + display 显隐替代
 const Main = () => {
-  const pagerViewRef = useRef<ComponentRef<typeof PagerView>>(null)
-  // 始终定位到当前 nav 所属 Tab 的索引
-  const activeIndexRef = useRef(viewMap[TAB_OF_ID[commonState.navActiveId]])
-
-  const onPageSelected = useCallback(({ nativeEvent }: PagerViewOnPageSelectedEvent) => {
-    activeIndexRef.current = nativeEvent.position
-    const tabId = PAGE_IDS[nativeEvent.position]
-    if (tabId != undefined && tabId != TAB_OF_ID[commonState.navActiveId]) {
-      setNavActiveId(tabId)
-    }
-  }, [])
-
-  const onPageScrollStateChanged = useCallback(({ nativeEvent }: PageScrollStateChangedNativeEvent) => {
-    const idle = nativeEvent.pageScrollState == 'idle'
-    if (global.lx.homePagerIdle != idle) global.lx.homePagerIdle = idle
-  }, [])
-
-  useEffect(() => {
-    const handleUpdate = (id: CommonState['navActiveId']) => {
-      const index = viewMap[TAB_OF_ID[id]]
-      if (index == undefined || activeIndexRef.current == index) return
-      activeIndexRef.current = index
-      pagerViewRef.current?.setPageWithoutAnimation(index)
-    }
-    const handleConfigUpdate = (keys: Array<keyof LX.AppSetting>, setting: Partial<LX.AppSetting>) => {
-      if (!keys.includes('common.homePageScroll')) return
-      pagerViewRef.current?.setScrollEnabled(setting['common.homePageScroll']!)
-    }
-    global.state_event.on('navActiveIdUpdated', handleUpdate)
-    global.state_event.on('configUpdated', handleConfigUpdate)
-    return () => {
-      global.state_event.off('navActiveIdUpdated', handleUpdate)
-      global.state_event.off('configUpdated', handleConfigUpdate)
-    }
-  }, [])
-
-
-  const component = useMemo(() => (
-    <PagerView ref={pagerViewRef}
-      initialPage={activeIndexRef.current}
-      offscreenPageLimit={1}
-      onPageSelected={onPageSelected}
-      onPageScrollStateChanged={onPageScrollStateChanged}
-      scrollEnabled={settingState.setting['common.homePageScroll']}
-      // 关掉滑到首尾时的过度滚动拉伸效果（安卓 12+ 会看到页面被拖拽变形）
-      overScrollMode="never"
-      style={styles.pagerView}
-    >
+  const activeId = useNavActiveId()
+  return (
+    <>
       {
         BOTTOM_TABS.map(tab => (
-          <View collapsable={false} key={tab.id} style={styles.pageStyle}>
+          <View key={tab.id} style={activeId == tab.id ? styles.pageVisible : styles.pageHidden}>
             <LazyPage id={tab.id} Component={PAGE_COMPONENTS[tab.id]} />
           </View>
         ))
       }
-    </PagerView>
-  ), [onPageScrollStateChanged, onPageSelected])
-
-  return component
+    </>
+  )
 }
 
 const styles = createStyle({
-  pagerView: {
+  pageVisible: {
     flex: 1,
-    overflow: 'hidden',
   },
-  pageStyle: {
-    // alignItems: 'center',
-    // padding: 20,
+  // 挂载过的 Tab 页保留状态（不卸载），用 display 隐藏
+  pageHidden: {
+    display: 'none',
   },
 })
-
 
 export default Main

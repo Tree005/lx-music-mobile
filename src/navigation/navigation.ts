@@ -283,7 +283,7 @@ export function pushSonglistDetailScreen(componentId: string, info: ListInfoItem
     })
   })
 }
-export function pushCommentScreen(componentId: string) {
+export function pushCommentScreen(componentId: string, musicInfo?: LX.Music.MusicInfo) {
   /*
     Navigation.setDefaultOptions({
       topBar: {
@@ -322,6 +322,8 @@ export function pushCommentScreen(componentId: string) {
     void Navigation.push(componentId, {
       component: {
         name: COMMENT_SCREEN,
+        // 指定要查看评论的歌曲（心动页挂起态查看「快照歌」的评论）；不传则评论页读全局当前播放歌
+        passProps: musicInfo ? { musicInfo } : undefined,
         options: {
           topBar: {
             visible: false,

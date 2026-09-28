@@ -78,12 +78,14 @@ const getMusicInfo = (musicInfo: LX.Player.PlayMusic | null) => {
   if (!musicInfo) return null
   return 'progress' in musicInfo ? musicInfo.metadata.musicInfo : musicInfo
 }
-export default memo(({ componentId }: {
+export default memo(({ componentId, musicInfo: initMusicInfo }: {
   componentId: string
+  /** 指定要查看评论的歌曲（心动页挂起态传快照歌）；缺省时读全局当前播放歌 */
+  musicInfo?: LX.Music.MusicInfo
 }) => {
   const pagerViewRef = useRef<PagerView>(null)
   const [activeId, setActiveId] = useState<ActiveId>('hot')
-  const [musicInfo, setMusicInfo] = useState<LX.Music.MusicInfo | null>(getMusicInfo(playerState.playMusicInfo.musicInfo))
+  const [musicInfo, setMusicInfo] = useState<LX.Music.MusicInfo | null>(initMusicInfo ?? getMusicInfo(playerState.playMusicInfo.musicInfo))
   const t = useI18n()
   const theme = useTheme()
   const [total, setTotal] = useState({ hot: 0, new: 0 })
@@ -110,6 +112,11 @@ export default memo(({ componentId }: {
   }, [])
 
   const refreshComment = useCallback(() => {
+    // 指定了歌曲（心动页挂起态）：刷新不跟随全局播放歌切换，只提示
+    if (initMusicInfo) {
+      toast(t('comment_refresh', { name: initMusicInfo.name }))
+      return
+    }
     if (!playerState.playMusicInfo.musicInfo) return
     let playerMusicInfo = playerState.playMusicInfo.musicInfo
     if ('progress' in playerMusicInfo) playerMusicInfo = playerMusicInfo.metadata.musicInfo
@@ -119,7 +126,7 @@ export default memo(({ componentId }: {
       return
     }
     setMusicInfo(playerMusicInfo)
-  }, [musicInfo, t])
+  }, [initMusicInfo, musicInfo, t])
 
   const setHotTotal = useCallback((total: number) => {
     setTotal(totalInfo => ({ ...totalInfo, hot: total }))

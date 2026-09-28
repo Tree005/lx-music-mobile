@@ -13,6 +13,11 @@ export const LIST_IDS = {
   TEMP: 'temp',
   DOWNLOAD: 'download',
   PLAY_LATER: null,
+  /**
+   * 心动页的隐藏播放列表（只在内存里维护、不落盘，App 重启即清空）：
+   * 内容 = 本次会话推过的歌（追加式），播放上下文切到它即「心动流」接管播放
+   */
+  AI_RADIO: 'ai_radio',
 } as const
 
 // export const COMPONENT_IDS = {

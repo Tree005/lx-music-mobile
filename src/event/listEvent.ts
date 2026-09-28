@@ -34,7 +34,9 @@ const checkListExist = (changedIds: string[]) => {
 
 export const checkUpdateList = async(changedIds: string[]) => {
   if (!changedIds.length) return
-  await saveListMusics(changedIds.map(id => ({ id, musics: allMusicList.get(id) as LX.List.ListMusics })))
+  // 心动列表是会话级的（只在内存里维护），不落盘——过滤掉它（历史遗留的持久化数据由心动模块自行清理）
+  const saveIds = changedIds.filter(id => id != LIST_IDS.AI_RADIO)
+  if (saveIds.length) await saveListMusics(saveIds.map(id => ({ id, musics: allMusicList.get(id) as LX.List.ListMusics })))
   global.app_event.myListMusicUpdate(changedIds)
 }
 

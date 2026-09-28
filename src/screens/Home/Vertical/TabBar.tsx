@@ -35,7 +35,11 @@ const TabItem = ({ id, onPress }: {
   const activeId = useNavActiveId()
   // 用 TAB_OF_ID 映射，子页面时高亮其归属的父 Tab
   const active = TAB_OF_ID[activeId] === id
-  const color = active ? theme['c-primary'] : theme['c-font-label']
+  // 心动页是暗色封面背景，Tab 跟着用白色系融入页面
+  const isHeartbeat = activeId == 'nav_ai'
+  const color = isHeartbeat
+    ? (active ? '#fff' : 'rgba(255, 255, 255, 0.6)')
+    : (active ? theme['c-primary'] : theme['c-font-label'])
 
   return (
     <TouchableOpacity style={styles.item} activeOpacity={0.7} onPress={() => { onPress(id) }}>
@@ -47,6 +51,9 @@ const TabItem = ({ id, onPress }: {
 export default memo(() => {
   const theme = useTheme()
   const navigationBarHeight = useNavigationBarHeight()
+  const activeId = useNavActiveId()
+  // 心动页：底栏透明，露出页面延伸过来的封面模糊背景
+  const isHeartbeat = activeId == 'nav_ai'
 
   const handlePress = (id: (typeof BOTTOM_TABS)[number]['id']) => {
     setNavActiveId(id)
@@ -59,8 +66,8 @@ export default memo(() => {
         ...styles.container,
         height: TAB_BAR_HEIGHT + navigationBarHeight,
         paddingBottom: navigationBarHeight,
-        backgroundColor: theme['c-content-background'],
-        borderTopColor: theme['c-border-background'],
+        backgroundColor: isHeartbeat ? 'transparent' : theme['c-content-background'],
+        borderTopColor: isHeartbeat ? 'transparent' : theme['c-border-background'],
       }}
     >
       {BOTTOM_TABS.map(item => <TabItem key={item.id} id={item.id} onPress={handlePress} />)}

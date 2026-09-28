@@ -20,30 +20,45 @@ const BORDER_RADIUS = scaleSizeW(3)
 // 只在实测高度还没拿到时兜底；正常都用页面实测值算，避免整页被撑出屏幕
 const BELOW_COVER_HEIGHT = scaleSizeH(322)
 // 封面与下方歌词的间距（content 的 marginBottom，计算可用高度时要一并扣掉）
-const COVER_BOTTOM_MARGIN = scaleSizeH(16)
+export const COVER_BOTTOM_MARGIN = scaleSizeH(16)
 
-export default ({ componentId, pagerHeight, belowCoverHeight, onPress }: {
-  componentId: string
+// 入场动画注册：只在传了 componentId（全屏播放页）时挂载该子组件；
+// 复用组件（心动页）不传 componentId 时不注册（hook 不能条件调用，用空组件承载）
+const EntryAppearListener = ({ componentId, onAppear }: { componentId: string, onAppear: () => void }) => {
+  useNavigationComponentDidAppear(componentId, onAppear)
+  return null
+}
+
+export default ({ componentId, picOverride, pagerHeight, belowCoverHeight, onPress, onCoverSize }: {
+  /** 全屏播放页的 componentId；复用组件时不传（不注册入场动画） */
+  componentId?: string
+  /** 覆盖显示的封面图（含 null = 无封面）；不传时跟随全局当前播放歌 */
+  picOverride?: string | null
   /** 页面（PagerView）实测高度，0 = 还没量到 */
   pagerHeight: number
   /** 封面以下内容（歌词 + 歌曲信息）实测高度，0 = 还没量到 */
   belowCoverHeight: number
   onPress: () => void
+  /** 上报实际渲染的封面边长（跟手滑动的预览封面按它对齐，减少切换跳变） */
+  onCoverSize?: (size: number) => void
 }) => {
   const musicInfo = usePlayerMusicInfo()
   const { width: winWidth, height: winHeight } = useWindowSize()
   // 用设备固定值（store 里的状态栏高度会抖动，见 Header.tsx 的说明）
   const statusBarHeight = StatusBar.currentHeight
 
-  const [animated, setAnimated] = useState(!!commonState.componentIds.playDetail)
-  const [pic, setPic] = useState(musicInfo.pic)
+  // 没传 componentId（复用场景如心动页）：没有入场动画，直接跟随全局封面更新；
+  // 传了 componentId 的全屏播放页则等页面出现后再同步（避免进场瞬间封面闪变）
+  const [animated, setAnimated] = useState(componentId ? !!commonState.componentIds.playDetail : true)
+  const [pic, setPic] = useState(picOverride === undefined ? musicInfo.pic : picOverride)
   useEffect(() => {
+    // 传了 picOverride 时封面直接用外部值（含 null），不做全局封面同步
+    if (picOverride !== undefined) {
+      setPic(picOverride)
+      return
+    }
     if (animated) setPic(musicInfo.pic)
-  }, [musicInfo.pic, animated])
-
-  useNavigationComponentDidAppear(componentId, () => {
-    setAnimated(true)
-  })
+  }, [musicInfo.pic, animated, picOverride])
   // console.log('render pic')
 
   const style = useMemo(() => {
@@ -60,11 +75,17 @@ export default ({ componentId, pagerHeight, belowCoverHeight, onPress }: {
     }
   }, [statusBarHeight, winHeight, winWidth, pagerHeight, belowCoverHeight])
 
+  // 上报封面尺寸（跟手滑动的预览封面按它对齐）
+  useEffect(() => {
+    if (style.width > 0) onCoverSize?.(style.width)
+  }, [style.width, onCoverSize])
+
   return (
     <TouchableOpacity style={styles.container} activeOpacity={1} onPress={onPress}>
       <View style={{ ...styles.content, elevation: animated ? 3 : 0 }}>
         <Image url={pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={style} />
       </View>
+      {componentId ? <EntryAppearListener componentId={componentId} onAppear={() => { setAnimated(true) }} /> : null}
     </TouchableOpacity>
   )
 }

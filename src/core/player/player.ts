@@ -327,6 +327,12 @@ export const getNextPlayMusicInfo = async(isManual = false): Promise<LX.Player.P
 
   if (playerState.playMusicInfo.musicInfo == null) return null
 
+  // 心动流（心动页的随机推歌）：下一首由心动模块提供——队尾随机推新、回退过则顺序恢复。
+  // 结果在心动模块里缓存，滑动预览（这里）与之后 playNext 实际播放的保证是同一首
+  if (playerState.playInfo.playerListId == LIST_IDS.AI_RADIO && global.lx.aiRadioHandler) {
+    return global.lx.aiRadioHandler.getNext()
+  }
+
   if (randomNextMusicInfo.info) return randomNextMusicInfo.info
 
   const playMusicInfo = playerState.playMusicInfo
@@ -445,6 +451,17 @@ export const playNext = async(isAutoToggle = false): Promise<void> => {
   // console.log(playInfo.playerListId)
   const currentListId = playInfo.playerListId
   if (!currentListId) return handleToggleStop()
+
+  // 心动流：下一首由心动模块提供（含随机推新），走统一的播放流程。
+  // 先把歌同步进心动列表再起播：否则索引重算的瞬间「当前歌不在列表」会误触发自动跳歌
+  if (currentListId == LIST_IDS.AI_RADIO && global.lx.aiRadioHandler) {
+    const nextPlayMusicInfo = await global.lx.aiRadioHandler.getNext()
+    if (!nextPlayMusicInfo) return handleToggleStop()
+    global.lx.aiRadioHandler.prepare?.(nextPlayMusicInfo.musicInfo)
+    await handlePlayNext(nextPlayMusicInfo)
+    return
+  }
+
   const currentList = getList(currentListId)
 
   const playedList = playerState.playedList
@@ -536,6 +553,14 @@ export const playPrev = async(isAutoToggle = false): Promise<void> => {
 
   const currentListId = playInfo.playerListId
   if (!currentListId) return handleToggleStop()
+
+  // 心动流：上一首 = 心动列表里当前歌的前一首（本次会话的播放历史）；没有则不动
+  if (currentListId == LIST_IDS.AI_RADIO && global.lx.aiRadioHandler) {
+    const prevPlayMusicInfo = global.lx.aiRadioHandler.getPrev()
+    if (prevPlayMusicInfo) await handlePlayNext(prevPlayMusicInfo)
+    return
+  }
+
   const currentList = getList(currentListId)
 
   const playedList = playerState.playedList

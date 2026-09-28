@@ -1,12 +1,15 @@
 import { getPlayInfo } from '@/utils/data'
 import { getListMusics } from '@/core/list'
 import { playList, play } from '@/core/player/player'
+import { LIST_IDS } from '@/config/constant'
 
 
 export default async(setting: LX.AppSetting) => {
   const info = await getPlayInfo()
   global.lx.restorePlayInfo = null
   if (!info?.listId || info.index < 0) return
+  // 心动流是会话级播放（列表只在内存里维护），不做跨启动恢复——恢复它只会得到一个「暂停的残骸」
+  if (info.listId == LIST_IDS.AI_RADIO) return
 
   const list = await getListMusics(info.listId)
   if (!list[info.index]) return
