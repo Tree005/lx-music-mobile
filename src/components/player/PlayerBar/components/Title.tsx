@@ -1,5 +1,7 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Animated, Easing, PanResponder, TouchableOpacity, View } from 'react-native'
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg'
+import { scaleSizeW } from '@/utils/pixelRatio'
 import { navigations } from '@/navigation'
 import { usePlayerMusicInfo, usePlayInfo } from '@/store/player/hook'
 import { useSettingValue } from '@/store/setting/hook'
@@ -24,6 +26,23 @@ const SWIPE_TRIGGER = 30
 const SETTLE_DURATION = 180
 // 提交切歌后的兜底：歌曲信息迟迟不落地（如单曲列表重播同一首）也要把位移复位
 const COMMIT_TIMEOUT = 1200
+// 滚动时歌名裁剪区两端的渐隐宽度（文字进出时淡出/淡入，而不是被硬裁一刀）
+const FADE_WIDTH = scaleSizeW(10)
+
+// 裁剪区两端的渐隐遮罩：从条背景色渐到透明（只在歌名滚动时出现，静态歌名不遮）
+const FadeMask = ({ side, bg }: { side: 'left' | 'right', bg: string }) => (
+  <View style={[styles.fade, side == 'left' ? styles.fadeLeft : styles.fadeRight]} pointerEvents="none">
+    <Svg width="100%" height="100%">
+      <Defs>
+        <LinearGradient id={`titleFade_${side}`} x1="0" y1="0" x2="1" y2="0">
+          <Stop offset="0" stopColor={bg} stopOpacity={side == 'left' ? '1' : '0'} />
+          <Stop offset="1" stopColor={bg} stopOpacity={side == 'left' ? '0' : '1'} />
+        </LinearGradient>
+      </Defs>
+      <Rect x="0" y="0" width="100%" height="100%" fill={`url(#titleFade_${side})`} />
+    </Svg>
+  </View>
+)
 
 // 歌名容器要显示的信息（跟手切换时的上一首/下一首统一成「歌名 + 歌手」）
 interface MusicLabel {
@@ -37,7 +56,7 @@ const toMusicLabel = (music: LX.Music.MusicInfo | LX.Download.ListItem | null | 
 }
 
 // 单格歌名（歌名 + 歌手）：过长时无缝向左循环滚动
-const TitleCell = memo(({ width, name, singer, fileNameMode, textColor, labelColor }: {
+const TitleCell = memo(({ width, name, singer, fileNameMode, textColor, labelColor, bgColor }: {
   width: number
   name: string
   singer: string
@@ -45,6 +64,8 @@ const TitleCell = memo(({ width, name, singer, fileNameMode, textColor, labelCol
   fileNameMode: string
   textColor: string
   labelColor: string
+  /** 播放条底色：滚动时两端渐隐遮罩用它渐到透明 */
+  bgColor: string
 }) => {
   const [textWidth, setTextWidth] = useState(0)
   const needScroll = width > 0 && textWidth > width
@@ -98,6 +119,15 @@ const TitleCell = memo(({ width, name, singer, fileNameMode, textColor, labelCol
             )
           : line}
       </View>
+      {/* 只有滚动时才在两端上渐隐：文字从封面侧淡入、到按钮侧淡出（静态歌名不加，免得首字被淡化） */}
+      {needScroll
+        ? (
+          <>
+            <FadeMask side="left" bg={bgColor} />
+            <FadeMask side="right" bg={bgColor} />
+          </>
+          )
+        : null}
       {/* 隐藏的测量副本：必须给一个明确的大宽度——绝对定位子节点会被 Yoga 约束成容器宽度，
           不给宽度量到的就是被截断后的宽度（textWidth 永远不大于可视宽度），跑马灯不会触发 */}
       <View style={styles.measure} pointerEvents="none">
@@ -258,7 +288,12 @@ export default ({ isHome }: { isHome: boolean }) => {
     if (commitTimerRef.current) clearTimeout(commitTimerRef.current)
   }, [])
 
-  const cellProps = { fileNameMode: downloadFileName, textColor: theme['c-font'], labelColor: theme['c-font-label'] }
+  const cellProps = {
+    fileNameMode: downloadFileName,
+    textColor: theme['c-font'],
+    labelColor: theme['c-font-label'],
+    bgColor: theme['c-content-background'],
+  }
 
   return (
     <View style={styles.outer} {...panResponder.panHandlers}>
@@ -329,6 +364,18 @@ const styles = createStyle({
   scrollRow: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  fade: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: FADE_WIDTH,
+  },
+  fadeLeft: {
+    left: 0,
+  },
+  fadeRight: {
+    right: 0,
   },
   measure: {
     position: 'absolute',

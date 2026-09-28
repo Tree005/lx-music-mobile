@@ -39,7 +39,7 @@ const TabItem = ({ id, onPress }: {
 
   return (
     <TouchableOpacity style={styles.item} activeOpacity={0.7} onPress={() => { onPress(id) }}>
-      <Text size={14} color={color}>{t(id)}</Text>
+      <Text size={15} color={color}>{t(id)}</Text>
     </TouchableOpacity>
   )
 }
