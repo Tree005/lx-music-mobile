@@ -3,20 +3,34 @@ import { Animated, Image, StyleSheet, View, type StyleProp, type ViewStyle } fro
 
 import { defaultHeaders } from '@/components/common/Image'
 
+// 「快速加载」阈值（ms）：挂载后这么快就画出来的图基本是缓存命中（如滑动切歌的卡片刚展示过的图），
+// 直接显示跳过淡入——淡入只对「真需要下载的图」有意义（防白），缓存图还跑淡入会有"重新加载一遍"的观感
+const FAST_LOAD_THRESHOLD = 200
+
 // 单层图：opacity 初始 0，图片加载结束后淡入到 1（动画完成后回调 onLoaded）；
 // initialOpacity=1 时直接显示（垫底层：图已加载过，缓存秒出，无需动画）
-const FadeLayer = memo(({ uri, blurRadius, duration, initialOpacity, onLoaded }: {
+// allowFastSkip=false 时禁用「快速加载直接显示」——全屏模糊背景这类大图解码快但绘制慢
+// （模糊是绘制期运算），直接显示会在绘制完成前露底、随后突变，必须保留淡入盖住这段窗口
+const FadeLayer = memo(({ uri, blurRadius, duration, initialOpacity, allowFastSkip, onLoaded }: {
   uri: string
   blurRadius?: number
   duration: number
   initialOpacity: 0 | 1
+  allowFastSkip: boolean
   onLoaded?: () => void
 }) => {
   const opacity = useRef(new Animated.Value(initialOpacity)).current
   const startedRef = useRef(false)
+  const mountTimeRef = useRef(Date.now())
   const handleLoadEnd = useRef(() => {
     if (startedRef.current) return
     startedRef.current = true
+    if (allowFastSkip && Date.now() - mountTimeRef.current < FAST_LOAD_THRESHOLD) {
+      // 缓存命中：直接显示（滑动交接时与卡片展示的同一张图，瞬时替换无缝）
+      opacity.setValue(1)
+      onLoaded?.()
+      return
+    }
     Animated.timing(opacity, { toValue: 1, duration, useNativeDriver: true }).start(({ finished }) => {
       if (finished) onLoaded?.()
     })
@@ -33,7 +47,7 @@ const FadeLayer = memo(({ uri, blurRadius, duration, initialOpacity, onLoaded }:
       />
     </Animated.View>
   )
-}, (p, n) => p.uri == n.uri && p.duration == n.duration)
+}, (p, n) => p.uri == n.uri && p.duration == n.duration && p.allowFastSkip == n.allowFastSkip)
 
 interface Layer { uri: string, settled: boolean }
 
@@ -41,13 +55,15 @@ interface Layer { uri: string, settled: boolean }
 // 显示中的图层保持挂载不挪动（挪动 = 换组件实例 = RN Image 清空重载 = 闪空白帧），
 // 新层淡入完成后才裁掉更早的层。uri 为 null（封面地址还没取到）时保持当前显示的层不动。
 // 淡入不依赖 RN Image 的 fadeDuration——图在缓存里时它会被跳过（切回已加载的歌就没了过渡）
-export default memo(({ uri, style, blurRadius, duration = 600 }: {
+export default memo(({ uri, style, blurRadius, duration = 600, allowFastSkip = true }: {
   /** 目标图片地址；null = 等待中（保持当前显示的层），'' = 明确无封面（清空显示占位） */
   uri: string | null
   /** 容器定位/尺寸样式（内部图层铺满它） */
   style: StyleProp<ViewStyle>
   blurRadius?: number
   duration?: number
+  /** 是否允许「图加载极快（缓存命中）时直接显示、跳过淡入」；全屏模糊背景应传 false（大图模糊绘制慢，跳淡入会露底突变） */
+  allowFastSkip?: boolean
 }) => {
   const [layers, setLayers] = useState<Layer[]>(uri ? [{ uri, settled: true }] : [])
 
@@ -88,10 +104,11 @@ export default memo(({ uri, style, blurRadius, duration = 600 }: {
             blurRadius={blurRadius}
             duration={duration ?? 600}
             initialOpacity={l.settled ? 1 : 0}
+            allowFastSkip={allowFastSkip}
             onLoaded={l.settled ? undefined : () => { handleLayerSettled(l.uri) }}
           />
         ))
       }
     </View>
   )
-}, (p, n) => p.uri == n.uri && p.duration == n.duration && p.blurRadius == n.blurRadius)
+}, (p, n) => p.uri == n.uri && p.duration == n.duration && p.blurRadius == n.blurRadius && p.allowFastSkip == n.allowFastSkip)

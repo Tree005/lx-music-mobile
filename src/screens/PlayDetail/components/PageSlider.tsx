@@ -24,15 +24,19 @@ export interface PageSliderProps {
   onDragSettled?: (page: number) => void
   /** 是否允许拖动跟手（封面页 true；歌词页交给列表滚动，传 false） */
   canDrag?: boolean
+  /** 翻页轨道的纵向位移值（与外部共享，让封面卡跟随翻页一起走；不传则内部自建） */
+  translateY?: Animated.Value
   /** 每项一页 */
   children: ReactNode[]
 }
 
-export default memo(({ page, onHeightChange, onDragSettled, canDrag = true, children }: PageSliderProps) => {
+export default memo(({ page, onHeightChange, onDragSettled, canDrag = true, translateY: translateYProp, children }: PageSliderProps) => {
   const [height, setHeight] = useState(0)
   // 歌词页是否已被翻到过（首次翻到才挂载，之后常驻）
   const [everShowedPage1, setEverShowedPage1] = useState(false)
-  const translateY = useRef(new Animated.Value(0)).current
+  const innerTranslateY = useRef(new Animated.Value(0)).current
+  // 优先用外部传入的共享值（封面卡要跟着翻页一起位移）
+  const translateY = translateYProp ?? innerTranslateY
   const draggingRef = useRef(false)
   const startYRef = useRef(0)
   const pageRef = useRef(0)

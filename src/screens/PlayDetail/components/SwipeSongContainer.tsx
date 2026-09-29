@@ -1,26 +1,26 @@
-import { createContext, memo, forwardRef, useCallback, useContext, useImperativeHandle, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { Animated, Easing, Image, PanResponder, View } from 'react-native'
+import { memo, forwardRef, useCallback, useImperativeHandle, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { Animated, Easing, Image, PanResponder, StyleSheet, View } from 'react-native'
 import { defaultHeaders } from '@/components/common/Image'
 import { useWindowSize } from '@/utils/hooks'
 import { useMusicPic } from '@/utils/hooks/useMusicPic'
 import { prefetchMusicPicUrl } from '@/utils/musicPic'
 import { createStyle } from '@/utils/tools'
 import { scaleSizeW } from '@/utils/pixelRatio'
+import CrossfadeImage from './CrossfadeImage'
 
 // 横向滑动切歌的外层容器（对齐网易云的交互）：
 // 滑动时主内容（歌词行/信息行/进度条/控制）完全固定不动，封面像「架子上的唱片」整张滑动——
 // 当前封面整卡跟手滑出屏幕、相邻歌的封面整卡从另一侧滑入（盖着下方内容经过，不做裁剪框）；
-// 松手滑够（阈值）补齐动画后真正切歌、不够回弹；切歌后下方内容原地切换，
-// 预览卡片与真实封面是同一张图，卸载时无缝交接。
+// 松手滑够（阈值）补齐动画后真正切歌、不够回弹；切歌后下方内容原地切换。
+// 封面是「单层显示」：当前封面的 crossfade 就在当前卡里（平时显示、滑动时整卡移走），
+// 不存在「图片层与卡片层的交接」——没有任何交接闪烁/占位残影。
+// 三张卡常驻挂载：相邻卡的图在滑动前就已加载/绘制完成，滑动时只有纯位移动画。
 // 与播放条「三格轨道」同一套交互（左滑下一首、右滑上一首），全屏播放页与心动页共用。
 // 预览数据由调用方提供：必须与「实际会播放的歌」一致（随机播放时用预取缓存保证）。
 // 按钮点击上一首/下一首时也可以通过 ref 的 triggerSwipe 触发同款滑动动画（视觉连续）
 
-/** 拖拽状态：滑动中为 true（真实封面订阅它隐藏自身、让卡片层接管视觉） */
-export const SwipeDragContext = createContext(false)
-
-/** 订阅当前是否在横向拖拽切歌 */
-export const useSwipeDragActive = () => useContext(SwipeDragContext)
+// 当前封面的 crossfade 淡入时长（ms）：图就绪得快（缓存命中）时会直接显示、跳过淡入
+const CURRENT_FADE_DURATION = 300
 
 // 横向位移超过它才接管手势（避免和页面里的竖滑/点击抢）
 const SWIPE_THRESHOLD = 10
@@ -54,9 +54,8 @@ const prefetchPreviewPic = (info: LX.Music.MusicInfo | null) => {
   prefetchMusicPicUrl(info)
 }
 
-/** 滑动中的封面卡片：完整一张停在真实封面的位置上，整卡跟手位移（滑出/滑入），不做裁剪框；
- * 封面地址没就绪（还没取到/没加载完）时不渲染任何内容——不显示占位块（半透明框观感很差），
- * 图就绪后自然出现 */
+/** 相邻歌的封面卡片：完整一张停在封面位置上，整卡跟手位移（滑出/滑入）；
+ * 封面地址没就绪（还没取到/没加载完）时不渲染任何内容——不显示占位块（半透明框观感很差） */
 const SlideCard = memo(({ pic, coverSize, coverBottomSpace, translateX }: {
   pic: string
   coverSize: number
@@ -80,6 +79,29 @@ const SlideCard = memo(({ pic, coverSize, coverBottomSpace, translateX }: {
   )
 }, (p, n) => p.pic == n.pic && p.coverSize == n.coverSize && p.coverBottomSpace == n.coverBottomSpace)
 
+/** 当前封面的卡片：常驻显示（封面唯一的显示层），crossfade 内置——
+ * 切歌/封面回填的淡入过渡都在它内部完成；「图加载极快（缓存命中）」时直接显示跳过淡入，
+ * 滑动切歌就是「同一块封面直接停到位置」，无任何二次渲染/交接
+ * （没封面传空串：uri=null 内部会保持当前显示的层，等新图） */
+const CurrentCard = memo(({ pic, coverSize, coverBottomSpace, translateX }: {
+  pic: string
+  coverSize: number
+  coverBottomSpace: number
+  translateX: Animated.AnimatedInterpolation<number> | Animated.Value
+}) => {
+  return (
+    <View pointerEvents="none" style={styles.layer}>
+      <View style={[styles.previewCoverBox, { paddingBottom: coverBottomSpace }]}>
+        <Animated.View style={{ transform: [{ translateX }] }}>
+          <View style={{ width: coverSize, height: coverSize, borderRadius: PREVIEW_BORDER_RADIUS, overflow: 'hidden' }}>
+            <CrossfadeImage uri={pic || null} style={StyleSheet.absoluteFill} duration={CURRENT_FADE_DURATION} />
+          </View>
+        </Animated.View>
+      </View>
+    </View>
+  )
+}, (p, n) => p.pic == n.pic && p.coverSize == n.coverSize && p.coverBottomSpace == n.coverBottomSpace)
+
 export interface SwipeSongContainerProps {
   children: ReactNode
   /** 当前内容的歌 key：歌变化时复位滑动动画 */
@@ -97,6 +119,10 @@ export interface SwipeSongContainerProps {
   onSwipePrev: () => void
   /** 当前封面地址（滑动时当前卡片从它开始滑出；无封面传空串） */
   currentPic: string
+  /** 是否允许横向滑动切歌（歌词页传 false：歌词页上滑封面会和歌词冲突，此时禁用切歌并隐藏封面卡） */
+  canSwipe?: boolean
+  /** 翻页轨道的纵向位移值（与 PageSlider 共享，让封面卡跟随翻页一起上移；不传则不跟随） */
+  pageOffset?: Animated.Value
 }
 
 export interface SwipeSongContainerType {
@@ -114,6 +140,8 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
   onSwipeNext,
   onSwipePrev,
   currentPic,
+  canSwipe = true,
+  pageOffset,
 }, ref) => {
   const { width } = useWindowSize()
   const [nextMusic, setNextMusic] = useState<LX.Music.MusicInfo | null>(null)
@@ -128,12 +156,13 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
   const commitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const nextReqRef = useRef(0)
   // 手势回调只创建一次，宽度 / 相邻歌 / 封面参数通过 ref 取最新值
-  const stateRef = useRef({ width: 0, canNext: false, canPrev: false, coverSize: 0, coverSpace: 0 })
+  const stateRef = useRef({ width: 0, canNext: false, canPrev: false, coverSize: 0, coverSpace: 0, canSwipe: true })
   stateRef.current.width = width
   stateRef.current.canNext = !!nextMusic
   stateRef.current.canPrev = !!prevMusic
   stateRef.current.coverSize = coverSize
   stateRef.current.coverSpace = coverBottomSpace
+  stateRef.current.canSwipe = canSwipe
 
   // 滑动期间冻结卡片的尺寸/位置参数（用按下瞬间的值）：切歌过程会让「歌词+信息区」高度
   // 实测值波动（歌词行变化），卡片若跟着变会跳大小/跳位置——冻结后卡片严格停在真实封面的位置上。
@@ -226,6 +255,8 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
   // 程序化触发：点击上一首/下一首按钮时的滑动视觉（滑出 → 提交切歌 → 歌变化复位）
   const triggerSwipe = useCallback((direction: 1 | -1) => {
     if (committedRef.current) return
+    // 歌词页禁用（同手势：卡片隐藏时按钮也不该触发滑动视觉）
+    if (!stateRef.current.canSwipe) return
     // 限速：短时间连点按钮直接忽略
     if (Date.now() - lastCommitTimeRef.current < SWITCH_THROTTLE) return
     const w = stateRef.current.width
@@ -254,6 +285,8 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
   const panResponder = useMemo(() => {
     return PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) => {
+        // 歌词页（canSwipe=false）不接管横向手势：此时封面卡隐藏，滑动切歌会和歌词冲突
+        if (!stateRef.current.canSwipe) return false
         // 横向意图：接管（切歌跟手）；纵向手势由内层 PageSlider 自己处理
         return Math.abs(g.dx) > SWIPE_THRESHOLD && Math.abs(g.dx) > Math.abs(g.dy) * DIRECTION_RATIO
       },
@@ -305,27 +338,29 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
   )
 
   return (
-    // 只有「当前卡片确实会渲染」时才隐藏真实封面（currentPic 为空时卡片不渲染，
-    // 此时继续显示真实封面，避免滑动中信封面区域整块空白）
-    <SwipeDragContext.Provider value={dragActive && currentPic !== ''}>
-      <View style={styles.container} {...panResponder.panHandlers}>
-        {/* 主内容固定不动：切歌时歌词/信息/进度等原地切换 */}
-        <View style={styles.layer}>
-          {children}
-        </View>
-        {/* 滑动中的封面卡片：当前卡跟手滑出、相邻卡从屏外滑入；切歌后与真实封面（同一张图）无缝交接；
-            尺寸/位置用滑动开始瞬间冻结的值（cardSize/cardSpace），滑动中不跟随布局波动 */}
-        {dragActive && cardSize > 0
-          ? (
-              <>
-                <SlideCard pic={currentPic} coverSize={cardSize} coverBottomSpace={cardSpace} translateX={dragX} />
-                {nextMusic ? <SlideCard pic={nextPic} coverSize={cardSize} coverBottomSpace={cardSpace} translateX={nextCardX} /> : null}
-                {prevMusic ? <SlideCard pic={prevPic} coverSize={cardSize} coverBottomSpace={cardSpace} translateX={prevCardX} /> : null}
-              </>
-            )
-          : null}
+    // 封面卡常驻挂载（不只在拖拽时渲染）：相邻卡的图在滑动前就已加载/绘制完成，
+    // 滑动时只有纯位移动画——没有「图滑过来了才开始渲染」的卡顿感（对齐网易云的组件预渲染方式）；
+    // current 卡是封面唯一的显示层（平时显示、滑动时整卡移走），尺寸/位置用滑动开始瞬间冻结的值
+    <View style={styles.container} {...panResponder.panHandlers}>
+      {/* 主内容固定不动：切歌时歌词/信息/进度等原地切换 */}
+      <View style={styles.layer}>
+        {children}
       </View>
-    </SwipeDragContext.Provider>
+      {/* 歌词页（canSwipe=false）隐藏全部卡片：歌词页是独立的全屏内容，封面卡会与它冲突；
+          卡片层整体跟随翻页轨道位移（pageOffset）：上滑看歌词时封面跟手翻走，翻完正好在屏幕外、隐藏无感 */}
+      {cardSize > 0 && canSwipe
+        ? (
+            <Animated.View
+              pointerEvents="none"
+              style={[styles.layer, pageOffset ? { transform: [{ translateY: pageOffset }] } : null]}
+            >
+              <CurrentCard pic={currentPic} coverSize={cardSize} coverBottomSpace={cardSpace} translateX={dragX} />
+              {nextMusic ? <SlideCard pic={nextPic} coverSize={cardSize} coverBottomSpace={cardSpace} translateX={nextCardX} /> : null}
+              {prevMusic ? <SlideCard pic={prevPic} coverSize={cardSize} coverBottomSpace={cardSpace} translateX={prevCardX} /> : null}
+            </Animated.View>
+          )
+        : null}
+    </View>
   )
 }))
 

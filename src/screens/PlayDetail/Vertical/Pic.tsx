@@ -8,8 +8,6 @@ import { NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
 import { useNavigationComponentDidAppear } from '@/navigation'
 import { HEADER_HEIGHT } from './components/Header'
 import Image from '@/components/common/Image'
-import CrossfadeImage from '@/screens/PlayDetail/components/CrossfadeImage'
-import { useSwipeDragActive } from '@/screens/PlayDetail/components/SwipeSongContainer'
 import StatusBar from '@/components/common/StatusBar'
 import commonState from '@/store/common/state'
 import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
@@ -23,8 +21,6 @@ const BORDER_RADIUS = scaleSizeW(3)
 const BELOW_COVER_HEIGHT = scaleSizeH(322)
 // 封面与下方歌词的间距（content 的 marginBottom，计算可用高度时要一并扣掉）
 export const COVER_BOTTOM_MARGIN = scaleSizeH(16)
-// 切歌时新封面加载完成的淡入时长（ms），配合垫底层旧封面，避免加载期间露出浅色占位（闪白）
-const FADE_DURATION = 300
 
 // 入场动画注册：只在传了 componentId（全屏播放页）时挂载该子组件；
 // 复用组件（心动页）不传 componentId 时不注册（hook 不能条件调用，用空组件承载）
@@ -33,10 +29,13 @@ const EntryAppearListener = ({ componentId, onAppear }: { componentId: string, o
   return null
 }
 
+// 封面容器：只负责「位置/尺寸/点击/无封面时的音符占位」——
+// 封面图本身由外层 SwipeSongContainer 的封面卡（常驻、自带 crossfade）显示，
+// 单层显示避免「图片层 + 卡片层」双层协调带来的交接闪烁/残影
 export default ({ componentId, picOverride, pagerHeight, belowCoverHeight, onPress, onCoverSize }: {
   /** 全屏播放页的 componentId；复用组件时不传（不注册入场动画） */
   componentId?: string
-  /** 覆盖显示的封面图（含 null = 无封面）；不传时跟随全局当前播放歌 */
+  /** 覆盖判断用（含 null = 无封面）；不传时跟随全局当前播放歌 */
   picOverride?: string | null
   /** 页面（PagerView）实测高度，0 = 还没量到 */
   pagerHeight: number
@@ -84,18 +83,15 @@ export default ({ componentId, picOverride, pagerHeight, belowCoverHeight, onPre
     if (style.width > 0) onCoverSize?.(style.width)
   }, [style.width, onCoverSize])
 
-  // 横向拖拽切歌中：真实封面隐藏（由 SwipeSongContainer 的滑动卡片接管视觉，避免双影）
-  const swipeDragActive = useSwipeDragActive()
+  // 没有封面（取不到/还没回填）时显示音符占位；有封面时这一层是空的，图由封面卡显示
+  const showEmptyPic = pic == null || pic === ''
 
   return (
     <TouchableOpacity style={styles.container} activeOpacity={1} onPress={onPress}>
       <View style={{ ...styles.content, elevation: animated ? 3 : 0 }}>
-        {/* nativeID 挂在容器上（共享元素转场对容器做动画，尺寸与封面一致）；
-            crossfade 由 CrossfadeImage 负责：显示中的旧封面保持挂载、新封面淡入盖上，
-            新歌封面地址没取到时保持旧封面，只有从头到尾都没有封面时才露出音符占位 */}
-        <View nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={{ ...style, overflow: 'hidden', opacity: swipeDragActive ? 0 : 1 }}>
-          <Image url={null} style={StyleSheet.absoluteFill} />
-          <CrossfadeImage uri={pic ?? null} style={StyleSheet.absoluteFill} duration={FADE_DURATION} />
+        {/* nativeID 挂在容器上（共享元素转场对容器做动画，尺寸与封面一致） */}
+        <View nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={{ ...style, overflow: 'hidden' }}>
+          {showEmptyPic ? <Image url={null} style={StyleSheet.absoluteFill} /> : null}
         </View>
       </View>
       {componentId ? <EntryAppearListener componentId={componentId} onAppear={() => { setAnimated(true) }} /> : null}

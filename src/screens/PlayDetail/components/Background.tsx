@@ -9,8 +9,9 @@ import CrossfadeImage from './CrossfadeImage'
 const MASK_COLOR = 'rgba(0, 0, 0, 0.45)'
 // 无封面时的深色纯底（与遮罩后的整体亮度接近）
 const FALLBACK_COLOR = '#1a1a1a'
-// 换封面时新图加载完成的淡入时长（ms）：放慢一些过渡更柔和，也给新封面的预取/加载留时间
-const FADE_DURATION = 600
+// 换封面时新图加载完成的淡入时长（ms）：全屏模糊背景是大面积+高对比的变化（如白封面对深色封面），
+// 过渡必须放得很慢（呼吸式渐变）——600ms 在高对比切换下观感仍是"闪一下"，实测 1200ms 才平滑
+const FADE_DURATION = 1200
 
 const toUri = (pic: string | null | undefined) => pic == null ? null : pic.startsWith('/') ? 'file://' + pic : pic
 
@@ -32,7 +33,9 @@ export default memo(({ pic: picOverride }: { pic?: string | null } = {}) => {
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
-      <CrossfadeImage uri={target} style={StyleSheet.absoluteFill} blurRadius={25} duration={FADE_DURATION} />
+      {/* allowFastSkip={false}：背景是全屏大图 + 模糊（绘制期运算，比解码慢很多），
+          缓存命中也不能直接显示（模糊没画完会露底再突变）——保留淡入平滑过渡 */}
+      <CrossfadeImage uri={target} style={StyleSheet.absoluteFill} blurRadius={25} duration={FADE_DURATION} allowFastSkip={false} />
       <View style={[StyleSheet.absoluteFill, { backgroundColor: showMask ? MASK_COLOR : FALLBACK_COLOR }]} />
     </View>
   )

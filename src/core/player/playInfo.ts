@@ -2,7 +2,7 @@ import playerActions from '@/store/player/action'
 import playerState from '@/store/player/state'
 
 import { getListMusicSync } from '@/utils/listManage'
-import { prefetchMusicPicUrl } from '@/utils/musicPic'
+import { prefetchMusicPicUrl, getCachedMusicPicUrl } from '@/utils/musicPic'
 import { setProgress } from '@/core/player/progress'
 import { LIST_IDS } from '@/config/constant'
 
@@ -92,10 +92,11 @@ const setPlayerMusicInfo = (musicInfo: LX.Music.MusicInfo | LX.Download.ListItem
     // 决定歌的入口（滑动预览 / 下一首）里已有预取时这里是缓存命中、无额外请求
     prefetchMusicPicUrl(musicInfo)
     // picUrl 为 undefined 时必须显式置 null（setMusicInfo 会跳过 undefined 字段），
-    // 否则 pic 残留上一首的封面地址——新歌封面异步回填前一直显示上一首的封面（快速连滑时连环错位/闪烁）
+    // 否则 pic 残留上一首的封面地址；同时用预取缓存「同步」回填——滑动切歌时卡片刚展示过该图，
+    // 交接瞬间封面就已经是新图（不用等异步回填再淡入一遍，避免"滑过来又重新加载一次"）
     setMusicInfo('progress' in musicInfo ? {
       id: musicInfo.id,
-      pic: musicInfo.metadata.musicInfo.meta.picUrl ?? null,
+      pic: musicInfo.metadata.musicInfo.meta.picUrl ?? getCachedMusicPicUrl(musicInfo.metadata.musicInfo) ?? null,
       name: musicInfo.metadata.musicInfo.name,
       singer: musicInfo.metadata.musicInfo.singer,
       album: musicInfo.metadata.musicInfo.meta.albumName ?? '',
@@ -106,7 +107,7 @@ const setPlayerMusicInfo = (musicInfo: LX.Music.MusicInfo | LX.Download.ListItem
       rawlrc: null,
     } : {
       id: musicInfo.id,
-      pic: musicInfo.meta.picUrl ?? null,
+      pic: musicInfo.meta.picUrl ?? getCachedMusicPicUrl(musicInfo) ?? null,
       name: musicInfo.name,
       singer: musicInfo.singer,
       album: musicInfo.meta.albumName ?? '',

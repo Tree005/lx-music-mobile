@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { View } from 'react-native'
+import { Animated, View } from 'react-native'
 import { type Line } from '@/plugins/lyric'
 
 import SwipeSongContainer, { toPreviewMusicInfo, type SwipeSongContainerType } from '@/screens/PlayDetail/components/SwipeSongContainer'
@@ -34,6 +34,8 @@ export default memo(({ snapshot, lyricLines }: {
   const belowCoverHeight = useDebouncedValue(belowCoverHeightRaw, 300)
   const [coverSize, setCoverSize] = useState(0)
   const [showLyric, setShowLyric] = useState(false)
+  // 翻页轨道位移：PageSlider 与封面卡共享，让封面跟着上滑手势一起翻走
+  const pageTrackY = useRef(new Animated.Value(0)).current
   const pic = useMusicPic(snapshot.musicInfo)
 
   const showFullLyric = useCallback(() => { setShowLyric(true) }, [])
@@ -126,9 +128,12 @@ export default memo(({ snapshot, lyricLines }: {
           onSwipeNext={handleSwipeNext}
           onSwipePrev={handleSwipePrev}
           currentPic={pic || ''}
+          canSwipe={!showLyric}
+          pageOffset={pageTrackY}
         >
           <PageSlider
             page={showLyric ? 1 : 0}
+            translateY={pageTrackY}
             onHeightChange={setPagerHeight}
             canDrag={canDrag}
             onDragSettled={handleDragSettled}

@@ -1,5 +1,5 @@
 import { memo, useEffect, useCallback, useRef, useState } from 'react'
-import { View, AppState } from 'react-native'
+import { Animated, AppState, View } from 'react-native'
 
 import Header from './components/Header'
 import ToolsBar from './components/ToolsBar'
@@ -28,6 +28,8 @@ export default memo(({ componentId }: { componentId: string }) => {
   // 竖向两页：封面页（封面 + 两行歌词 + 歌曲信息）与全屏歌词页。
   // 翻页由 PageSlider（纯 JS）承担：上滑看歌词、点封面/嵌入歌词进、点歌词页回
   const [showLyric, setShowLyric] = useState(false)
+  // 翻页轨道位移：PageSlider 与封面卡共享，让封面跟着上滑手势一起翻走
+  const pageTrackY = useRef(new Animated.Value(0)).current
   // AppState 回调里要用最新值（effect 闭包在挂载时固化，不能用 state）
   const showLyricRef = useRef(false)
 
@@ -114,9 +116,12 @@ export default memo(({ componentId }: { componentId: string }) => {
           onSwipeNext={handleSwipeNext}
           onSwipePrev={handleSwipePrev}
           currentPic={musicInfo.pic ?? ''}
+          canSwipe={!showLyric}
+          pageOffset={pageTrackY}
         >
           <PageSlider
             page={showLyric ? 1 : 0}
+            translateY={pageTrackY}
             onHeightChange={setPagerHeight}
             canDrag={canDrag}
             onDragSettled={handleDragSettled}
