@@ -14,6 +14,8 @@ import { scaleSizeH } from '@/utils/pixelRatio'
 import { setActiveList } from '@/core/list'
 import { setNavActiveId } from '@/core/common'
 import { LIST_IDS } from '@/config/constant'
+import commonState from '@/store/common/state'
+import { SLIDE_DURATION_STACK } from '@/components/transitions/constants'
 
 const TABS = ['music', 'list'] as const
 type TabType = typeof TABS[number]
@@ -21,7 +23,7 @@ type TabType = typeof TABS[number]
 // 我的收藏：单曲 / 歌单 双 tab（等宽两列，对齐参考图）
 // - 独立页面（nav_love）与「我的」页内嵌都用它
 // - 单曲 = 我的收藏的歌，歌单 = 收藏/导入/自建的歌单列表
-export default ({ embedded }: { embedded?: boolean }) => {
+export default ({ embedded, active = true }: { embedded?: boolean, active?: boolean }) => {
   const t = useI18n()
   const theme = useTheme()
   const [tab, setTab] = useState<TabType>('music')
@@ -45,22 +47,34 @@ export default ({ embedded }: { embedded?: boolean }) => {
     setNavActiveId('nav_songlist_detail')
   }, [])
 
-  // 内嵌在「我的」页时，「单曲」tab 固定展示我的收藏：
-  // 该列表读的是全局「当前列表」，内嵌场景下它会被别处切走（如在别处播放某个歌单），
-  // 而「我的」页常驻不重挂载，所以这里把当前列表钉回收藏（切到「歌单」tab 时解除，不影响进歌单详情）
+  // 内嵌在「我的」页时，「单曲」tab 固定展示我的收藏（列表本身已用 listId 钉死 LOVE）：
+  // 全局「当前列表」会被别处切走（如在别处播放某个歌单），这里在回到「我的」页时把它钉回收藏。
+  // 注意：
+  // - 不活跃时（active=false，如已进歌单详情页）完全不注册监听——否则隐藏的监听会把
+  //   详情页刚切好的列表抢回 LOVE，导致详情页显示错误内容
+  // - 钉住延迟到转场结束后再做——歌单详情页的歌曲列表会实时跟随当前列表变化（它监听
+  //   mylistToggled），返回时详情页还在滑出，立即钉会把它的内容换掉
   useEffect(() => {
-    if (!embedded || tab != 'music') return
-    setActiveList(LIST_IDS.LOVE)
+    if (!active || !embedded || tab != 'music') return
+    const pinTimer = setTimeout(() => {
+      // 竞态兜底：回调到期时可能已离开「我的」页（如刚点进歌单详情，clearTimeout 对已入队的回调无效）
+      if (commonState.navActiveId != 'nav_mine') return
+      setActiveList(LIST_IDS.LOVE)
+    }, SLIDE_DURATION_STACK + 60)
     // 监听回调带 id：LOVE 自身触发的不再回调，避免 setActiveList 自触发循环
     const handleListToggle = (id: string) => {
       if (id == LIST_IDS.LOVE) return
+      // 已离开「我的」页时（如点击歌单进详情页）不要抢回；事件是 setImmediate 异步派发，
+      // 读到的一定是最新的 nav id
+      if (commonState.navActiveId != 'nav_mine') return
       setActiveList(LIST_IDS.LOVE)
     }
     global.state_event.on('mylistToggled', handleListToggle)
     return () => {
+      clearTimeout(pinTimer)
       global.state_event.off('mylistToggled', handleListToggle)
     }
-  }, [embedded, tab])
+  }, [active, embedded, tab])
 
   return (
     <View style={styles.container}>

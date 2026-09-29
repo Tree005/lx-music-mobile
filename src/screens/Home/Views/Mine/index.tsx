@@ -13,7 +13,9 @@ import { BorderWidths } from '@/theme'
 import { setNavActiveId } from '@/core/common'
 import { setActiveList } from '@/core/list'
 import { useNavActiveId } from '@/store/common/hook'
+import commonState from '@/store/common/state'
 import { LIST_IDS } from '@/config/constant'
+import { SLIDE_DURATION_STACK } from '@/components/transitions/constants'
 
 // 顶部宫格入口（as const 保证 labelKey 是字面量类型，能被 t() 接受）
 const GRID_ENTRIES = [
@@ -43,9 +45,17 @@ export default () => {
   const t = useI18n()
   const navActiveId = useNavActiveId()
 
-  // 收藏区的「单曲」tab 展示的是我的收藏，所以进入我的页时把当前列表切到收藏
+  // 收藏区的「单曲」tab 展示的是我的收藏，所以进入我的页时把当前列表切到收藏。
+  // 延迟到转场结束后再钉：歌单详情页的歌曲列表会实时跟随当前列表（它监听 mylistToggled），
+  // 返回时详情页还在滑出，立即钉会把正在滑出的详情页内容换成收藏列表
   useEffect(() => {
-    if (navActiveId == 'nav_mine') setActiveList(LIST_IDS.LOVE)
+    if (navActiveId != 'nav_mine') return
+    const timer = setTimeout(() => {
+      // 竞态兜底：回调到期时可能已离开「我的」页（clearTimeout 对已入队的回调无效）
+      if (commonState.navActiveId != 'nav_mine') return
+      setActiveList(LIST_IDS.LOVE)
+    }, SLIDE_DURATION_STACK + 60)
+    return () => { clearTimeout(timer) }
   }, [navActiveId])
 
   return (
@@ -64,8 +74,9 @@ export default () => {
         }
       </View>
       <View style={{ ...styles.divider, backgroundColor: theme['c-150'] }} />
-      {/* 「我的收藏」标题与新建/导入入口由 Mylist 自己渲染 */}
-      <Mylist embedded />
+      {/* 「我的收藏」标题与新建/导入入口由 Mylist 自己渲染；
+          active：只在「我的」页真正显示时启用内嵌列表的钉住逻辑（详情页转场期间不抢回列表） */}
+      <Mylist embedded active={navActiveId == 'nav_mine'} />
     </View>
   )
 }
