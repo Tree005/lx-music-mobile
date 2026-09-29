@@ -312,19 +312,9 @@ declare global {
       'desktopLyric.style.lyricPlayedColor': string
 
       /**
-        * 桌面歌词字体阴影颜色
-        */
+       * 桌面歌词字体阴影颜色
+       */
       'desktopLyric.style.lyricShadowColor': string
-
-      /**
-       * 是否显示热门搜索
-       */
-      'search.isShowHotSearch': boolean
-
-      /**
-       * 是否显示搜索历史
-       */
-      'search.isShowHistorySearch': boolean
 
       /**
        * 是否启用双击列表里的歌曲时自动切换到当前列表播放（仅对歌单、排行榜有效）

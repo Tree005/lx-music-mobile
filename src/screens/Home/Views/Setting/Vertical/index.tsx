@@ -6,7 +6,6 @@ import Home from './Home'
 import Basic from '../settings/Basic'
 import Player from '../settings/Player'
 import LyricDesktop from '../settings/LyricDesktop'
-import Search from '../settings/Search'
 import List from '../settings/List'
 import Sync from '../settings/Sync'
 import Backup from '../settings/Backup'
@@ -31,7 +30,7 @@ import { TAB_OF_ID } from '@/config/constant'
 // 每页各渲染一份 Header，标题随页滑动
 const PAGE_SECTIONS = {
   // 应用设置：除有独立入口的「数据同步 / 检测更新」外的所有分区
-  app: ['basic', 'player', 'lyric_desktop', 'search', 'list', 'backup', 'other'],
+  app: ['basic', 'player', 'lyric_desktop', 'list', 'backup', 'other'],
   sync: ['sync'],
   source: ['source', 'source_name'],
   version: ['version'],
@@ -60,7 +59,6 @@ const SectionItem = memo(({ id }: { id: SectionId }) => {
     case 'basic': return <Basic />
     case 'player': return <Player />
     case 'lyric_desktop': return <LyricDesktop />
-    case 'search': return <Search />
     case 'list': return <List />
     case 'sync': return <Sync />
     case 'backup': return <Backup />
