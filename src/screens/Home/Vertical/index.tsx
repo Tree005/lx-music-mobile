@@ -45,13 +45,19 @@ export default () => {
   const musicInfo = usePlayerMusicInfo()
   const aiSession = useAiRadioSession()
   const snapshotPic = useMusicPic(aiSession.snapshot?.musicInfo)
-  // 心动页的透明态（模糊背景 + 透明底栏）延迟释放：离开 nav_ai 时页面本身透明、
-  // 靠背景透出，立即关闭会在切页瞬间白闪，延迟 HEARTBEAT_RELEASE_DELAY + 60ms 再释放
-  // （释放后底栏从透明渐显回主题色，见 TabBar 的颜色过渡）
+  // 心动页的透明态（模糊背景 + 透明底栏）释放策略，按离开的目标页型区分：
+  // - 目标是底部 Tab（首页/我的）：Tab 之间是直切、无转场 → 立即释放。
+  //   若延迟释放，残留的模糊背景会从「状态栏占位」与「透明底栏」两条缝里透出深色，
+  //   表现为切页后上下各一条窄黑条一闪（真机复现过）
+  // - 目标是子页面：有 150ms 横滑转场 → 延迟释放，防止心动页滑出期间失去背景白闪
   const [heartbeatUi, setHeartbeatUi] = useState(navActiveId == 'nav_ai')
   useEffect(() => {
     if (navActiveId == 'nav_ai') {
       setHeartbeatUi(true)
+      return
+    }
+    if (BOTTOM_TABS.some(tab => tab.id == navActiveId)) {
+      setHeartbeatUi(false)
       return
     }
     const timer = setTimeout(() => { setHeartbeatUi(false) }, HEARTBEAT_RELEASE_DELAY + 60)
