@@ -3,21 +3,21 @@ import type { InitState as SearchState } from '@/store/search/state'
 import type { Source as MusicSource } from '@/store/search/music/state'
 import type { Source as SongListSource } from '@/store/search/songlist/state'
 import MusicList, { type MusicListType } from './MusicList'
-import BlankView, { type BlankViewType } from './BlankView'
+import BlankView from './BlankView'
 import SonglistList from './SonglistList'
 
 interface ListProps {
+  source: LX.OnlineSource | 'all'
   onSearch: (keyword: string) => void
 }
 export interface ListType {
   loadList: (text: string, source: MusicSource | SongListSource, type: SearchState['searchType']) => void
 }
 
-export default forwardRef<ListType, ListProps>(({ onSearch }, ref) => {
+export default forwardRef<ListType, ListProps>(({ source, onSearch }, ref) => {
   const [listType, setListType] = useState<SearchState['searchType']>('music')
   const [showBlankView, setShowListView] = useState(true)
   const listRef = useRef<MusicListType>(null)
-  const blankViewRef = useRef<BlankViewType>(null)
 
   useImperativeHandle(ref, () => ({
     loadList(text, source, type) {
@@ -29,17 +29,15 @@ export default forwardRef<ListType, ListProps>(({ onSearch }, ref) => {
           listRef.current?.loadList(text, source)
         })
       } else {
+        // 空态：重新挂载 BlankView（组件挂载时自取数据），数据加载不再靠 ref 触发
         setShowListView(true)
-        requestAnimationFrame(() => {
-          blankViewRef.current?.show(source)
-        })
       }
     },
   }), [])
 
   return (
     showBlankView
-      ? <BlankView ref={blankViewRef} onSearch={onSearch} />
+      ? <BlankView source={source} onSearch={onSearch} />
       : listType == 'songlist'
         ? <SonglistList ref={listRef} />
         : <MusicList ref={listRef} />

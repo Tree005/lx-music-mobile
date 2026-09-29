@@ -1,7 +1,5 @@
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
-import { TouchableOpacity, View } from 'react-native'
-import { type InitState } from '@/store/hotSearch/state'
-import Button from '@/components/common/Button'
+import { useEffect, useRef, useState } from 'react'
+import { ScrollView, TouchableOpacity, View } from 'react-native'
 import Text from '@/components/common/Text'
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
@@ -11,121 +9,102 @@ import { Eraser } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
 
 
-export type List = NonNullable<InitState['sourceList'][keyof InitState['sourceList']]>
-
-const ListItem = ({ keyword, onSearch, onRemove }: {
-  keyword: string
-  onSearch: (keyword: string) => void
-  onRemove: (keyword: string) => void
-}) => {
-  const theme = useTheme()
-  return (
-    <Button
-      style={{ ...styles.button, backgroundColor: theme['c-button-background'] }}
-      onPress={() => { onSearch(keyword) }}
-      onLongPress={() => { onRemove(keyword) }}
-    >
-      <Text color={theme['c-button-font']} size={13}>{keyword}</Text>
-    </Button>
-  )
-}
-
-
 interface HistorySearchProps {
   onSearch: (keyword: string) => void
 }
-export interface HistorySearchType {
-  show: () => void
-}
 
-export default forwardRef<HistorySearchType, HistorySearchProps>((props, ref) => {
-  const [list, setList] = useState<List>([])
-  const isUnmountedRef = useRef(false)
-  const t = useI18n()
+// 搜索历史：一行横向滚动胶囊 + 清空按钮；挂载时读取（搜索后返回空态会重新挂载，即为最新）
+export default ({ onSearch }: HistorySearchProps) => {
+  const [list, setList] = useState<string[]>([])
   const theme = useTheme()
+  const t = useI18n()
+  const isUnmountedRef = useRef(false)
 
   useEffect(() => {
     isUnmountedRef.current = false
+    void getSearchHistory().then(list => {
+      if (isUnmountedRef.current) return
+      setList(list)
+    })
     return () => {
       isUnmountedRef.current = true
     }
   }, [])
-
-  useImperativeHandle(ref, () => ({
-    show() {
-      void getSearchHistory().then((list) => {
-        if (isUnmountedRef.current) return
-        setList(list)
-      })
-    },
-  }), [])
 
   const handleClear = () => {
     clearHistoryList()
     setList([])
   }
 
-  const handleRemove = useCallback((keyword: string) => {
+  const handleRemove = (keyword: string) => {
     setList(list => {
-      list = [...list]
       const index = list.indexOf(keyword)
-      list.splice(index, 1)
+      if (index < 0) return list
+      const next = [...list]
+      next.splice(index, 1)
       removeHistoryWord(index)
-      return list
+      return next
     })
-  }, [])
+  }
+
+  if (!list.length) return null
 
   return (
-    list.length
-      ? (
-          <View>
-            <View style={styles.titleContent}>
-              <Text size={16}>{t('search_history_search')}</Text>
-              <TouchableOpacity onPress={handleClear} style={styles.titleBtn}>
-                <PhIcon Icon={Eraser} size={14} color={theme['c-300']} />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.list}>
-              {
-                list.map(keyword => <ListItem keyword={keyword} key={keyword} onSearch={props.onSearch} onRemove={handleRemove} />)
-              }
-            </View>
-          </View>
-        )
-      : null
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text size={13} color={theme['c-font-label']}>{t('search_history_search')}</Text>
+        <TouchableOpacity onPress={handleClear} style={styles.clearBtn} activeOpacity={0.7}>
+          <PhIcon Icon={Eraser} size={14} color={theme['c-300']} />
+        </TouchableOpacity>
+      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.list}>
+        {
+          list.map(keyword => (
+            // 与热搜词行一致用 TouchableOpacity（项目列表/胶囊的通用写法）
+            <TouchableOpacity
+              key={keyword}
+              style={{ ...styles.button, backgroundColor: theme['c-button-background'] }}
+              activeOpacity={0.7}
+              onPress={() => { onSearch(keyword) }}
+              onLongPress={() => { handleRemove(keyword) }}
+            >
+              <Text color={theme['c-button-font']} size={13}>{keyword}</Text>
+            </TouchableOpacity>
+          ))
+        }
+      </ScrollView>
+    </View>
   )
-})
+}
 
 
 const styles = createStyle({
-  titleContent: {
-    paddingTop: 15,
+  container: {
+    paddingTop: 10,
+  },
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingLeft: 20,
+    paddingRight: 20,
   },
-  title: {
-    // paddingLeft: 15,
-    // paddingBottom: 5,
-  },
-  titleBtn: {
-    marginLeft: 10,
+  clearBtn: {
     padding: 5,
   },
   list: {
-    // paddingLeft: 15,
-    // paddingRight: 15,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    // paddingBottom: 15,
+    paddingLeft: 20,
+    paddingRight: 20,
+    paddingTop: 8,
+    paddingBottom: 4,
   },
   button: {
     textAlign: 'center',
-    paddingLeft: 10,
-    paddingRight: 10,
+    paddingLeft: 12,
+    paddingRight: 12,
     paddingTop: 5,
     paddingBottom: 5,
-    borderRadius: 4,
-    marginRight: 10,
-    marginTop: 8,
+    borderRadius: 14,
+    marginRight: 8,
   },
 })

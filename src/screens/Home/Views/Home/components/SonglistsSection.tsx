@@ -4,6 +4,7 @@ import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import { setNavActiveId } from '@/core/common'
+import { useMainSource } from '@/core/mainSource'
 import { scaleSizeW, setSpText } from '@/utils/pixelRatio'
 import Text from '@/components/common/Text'
 import { CaretRight, Play } from 'phosphor-react-native'
@@ -19,6 +20,7 @@ const MAX_SONGLIST_NUM = 10
 export default () => {
   const theme = useTheme()
   const t = useI18n()
+  const mainSource = useMainSource()
   const [list, setList] = useState<ListInfoItem[]>([])
   const [status, setStatus] = useState<'loading' | 'idle' | 'empty'>('loading')
   const isUnmountedRef = useRef(false)
@@ -33,9 +35,9 @@ export default () => {
         return
       }
       try {
-        const { source, sortId } = await getSongListSetting()
+        const { sortId } = await getSongListSetting()
         // tabId 传空串表示「推荐」，sortId 沿用用户上次在歌单页选择的值
-        const result = await getList(source, '', sortId, 1)
+        const result = await getList(mainSource, '', sortId, 1)
         if (isUnmountedRef.current) return
         if (!result?.list?.length) {
           setStatus('empty')
@@ -55,7 +57,7 @@ export default () => {
     return () => {
       isUnmountedRef.current = true
     }
-  }, [])
+  }, [mainSource])
 
   const handleMore = () => {
     setNavActiveId('nav_songlist')

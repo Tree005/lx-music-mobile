@@ -20,7 +20,8 @@ const defaultSetting: LX.AppSetting = {
   'player.startupPushPlayDetailScreen': false,
   'player.togglePlayMethod': 'listLoop',
   'player.playQuality': '128k',
-  'player.playPrioritySource': '',
+  // 主音源：全 App 浏览数据与播放优先匹配使用（读取时经 getMainSource 归一化，空值视为小蜗）
+  'player.playPrioritySource': 'kw',
   'player.isSavePlayTime': false,
   'player.volume': 1,
   'player.playbackRate': 1,

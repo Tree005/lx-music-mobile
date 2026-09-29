@@ -21,6 +21,7 @@ import {
 } from '@/core/player/tempPlayList'
 import { getMusicUrl, getPicPath, getLyricInfo } from '@/core/music'
 import { getOtherSource } from '@/core/music/utils'
+import { getMainSource } from '@/core/mainSource'
 import { prefetchMusicPicUrl } from '@/utils/musicPic'
 import { prefetchMusicUrl } from '@/utils/musicUrlPrefetch'
 import { requestMsg } from '@/utils/message'
@@ -81,10 +82,9 @@ const ONLINE_SOURCES: string[] = ['kw', 'kg', 'tx', 'wy', 'mg']
 // 自动换源时跳过的源：QQ 链接在设备上大概率 403，不作为换源目标
 const AUTO_TOGGLE_SKIP_SOURCES: string[] = ['tx']
 
-// 取「播放优先源」设置的匹配版本：设置未开启/原歌已是该源/非在线歌/匹配失败时返回 null（回落原歌原源）
+// 取「主音源」的匹配版本：原歌已是该源/非在线歌/匹配失败时返回 null（回落原歌原源）
 const getPrioritySourceMusic = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListItem): Promise<LX.Music.MusicInfoOnline | null> => {
-  const prioritySource = settingState.setting['player.playPrioritySource']
-  if (!prioritySource) return null
+  const prioritySource = getMainSource()
   const rawInfo = 'progress' in musicInfo ? musicInfo.metadata.musicInfo : musicInfo
   if (!ONLINE_SOURCES.includes(rawInfo.source) || rawInfo.source == prioritySource) return null
   try {
@@ -138,6 +138,18 @@ export const prefetchPlayMusicUrl = (musicInfo: LX.Music.MusicInfo | LX.Download
   void getPrioritySourceMusic(musicInfo).then((priorityMusicInfo) => {
     if (priorityMusicInfo) prefetchMusicUrl(priorityMusicInfo)
   }).catch(() => {})
+}
+
+/**
+ * 解析「这首歌接下来实际会播放的版本」：手动换源 > 主音源匹配版本 > 原歌。
+ * 与 getMusicPlayUrl 的取值顺序一致；给「预热播放器」这类需要对齐实际播放版本的场景用
+ * （修改取值顺序时两处要同步）
+ */
+export const resolvePlayMusicInfo = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListItem): Promise<LX.Music.MusicInfo | LX.Download.ListItem> => {
+  const toggleMusicInfo = ('progress' in musicInfo ? musicInfo.metadata.musicInfo : musicInfo).meta.toggleMusicInfo
+  if (toggleMusicInfo) return toggleMusicInfo
+  const priorityMusicInfo = await getPrioritySourceMusic(musicInfo)
+  return priorityMusicInfo ?? musicInfo
 }
 
 const delayRetry = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListItem, isRefresh = false): Promise<string | null> => {

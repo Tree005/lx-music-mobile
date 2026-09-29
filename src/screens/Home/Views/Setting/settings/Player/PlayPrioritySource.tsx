@@ -4,21 +4,22 @@ import { StyleSheet, View } from 'react-native'
 
 import SubTitle from '../../components/SubTitle'
 import CheckBox from '@/components/common/CheckBox'
-import { useSettingValue } from '@/store/setting/hook'
 import { updateSetting } from '@/core/common'
+import { useMainSource } from '@/core/mainSource'
 import { useI18n } from '@/lang'
 import { useSourceListI18n } from '@/components/SourceSelector'
 
 const SOURCES: LX.OnlineSource[] = ['kw', 'kg', 'wy', 'tx', 'mg']
 
-const useActive = (id: LX.OnlineSource | '') => {
-  const source = useSettingValue('player.playPrioritySource')
+const useActive = (id: LX.OnlineSource) => {
+  // 主音源必选：遗留空值由 useMainSource 归一化为默认源
+  const source = useMainSource()
   const isActive = useMemo(() => source == id, [source, id])
   return isActive
 }
 
 const Item = ({ id, name }: {
-  id: LX.OnlineSource | ''
+  id: LX.OnlineSource
   name: string
 }) => {
   const isActive = useActive(id)
@@ -32,7 +33,6 @@ export default memo(() => {
   return (
     <SubTitle title={t('setting_play_priority_source')}>
       <View style={styles.list}>
-        <Item id={''} name={t('setting_play_priority_source_off')} />
         {
           sourceNames.map(({ label, action }) => <Item id={action as LX.OnlineSource} name={label} key={action} />)
         }

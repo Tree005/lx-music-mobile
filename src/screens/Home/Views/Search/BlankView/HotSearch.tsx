@@ -1,98 +1,90 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
-import { ScrollView, View } from 'react-native'
-import { type Source, type InitState } from '@/store/hotSearch/state'
-import Button from '@/components/common/Button'
-import { getList } from '@/core/hotSearch'
+import { useEffect, useRef, useState } from 'react'
+import { ScrollView, TouchableOpacity } from 'react-native'
 import Text from '@/components/common/Text'
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
+import { getList } from '@/core/hotSearch'
 
+// 热搜词最多显示 10 条
+const MAX_HOT_WORD_NUM = 10
 
-interface ListProps {
+interface HotSearchProps {
+  source: LX.OnlineSource | 'all'
   onSearch: (keyword: string) => void
 }
-export interface HotSearchType {
-  show: (source: Source) => void
-}
 
-
-export type List = NonNullable<InitState['sourceList'][keyof InitState['sourceList']]>
-
-const ListItem = ({ keyword, onSearch }: {
-  keyword: string
-  onSearch: (keyword: string) => void
-}) => {
+// 热搜词列表：挂载/源变化时自取数据（core 层有缓存），点击直接搜索
+export default ({ source, onSearch }: HotSearchProps) => {
+  const [list, setList] = useState<string[]>([])
+  const [status, setStatus] = useState<'loading' | 'idle' | 'empty'>('loading')
   const theme = useTheme()
-  return (
-    <Button style={{ ...styles.button, backgroundColor: theme['c-button-background'] }} onPress={() => { onSearch(keyword) }}>
-      <Text color={theme['c-button-font']} size={13}>{keyword}</Text>
-    </Button>
-  )
-}
-
-export default forwardRef<HotSearchType, ListProps>((props, ref) => {
-  // const [listType, setListType] = useState<SearchState['searchType']>('music')
-  // const listRef = useRef<MusicListType>(null)
-  const [list, setList] = useState<List>([])
   const t = useI18n()
-  // const theme = useTheme()
-
   const isUnmountedRef = useRef(false)
+
   useEffect(() => {
     isUnmountedRef.current = false
+    setStatus('loading')
+    setList([])
+    void getList(source).then(list => {
+      if (isUnmountedRef.current) return
+      setList(list.slice(0, MAX_HOT_WORD_NUM))
+      setStatus(list.length ? 'idle' : 'empty')
+    }).catch(err => {
+      if (isUnmountedRef.current) return
+      console.log('get hot search words failed:', err)
+      setStatus('empty')
+    })
     return () => {
       isUnmountedRef.current = true
     }
-  }, [])
+  }, [source])
 
-  useImperativeHandle(ref, () => ({
-    show(source) {
-      void getList(source).then((list) => {
-        if (isUnmountedRef.current) return
-        setList(list)
-      })
-    },
-  }), [])
+  if (status == 'empty') {
+    return <Text style={styles.empty} size={13} color={theme['c-font-label']}>{t('no_item')}</Text>
+  }
+  if (status == 'loading') return null
 
   return (
-    list.length
-      ? (
-          <ScrollView>
-            <Text style={styles.title} size={16}>{t('search_hot_search')}</Text>
-            <View style={styles.list}>
-              {
-                list.map(keyword => <ListItem keyword={keyword} key={keyword} onSearch={props.onSearch} />)
-              }
-            </View>
-          </ScrollView>
-        )
-      : null
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.list}>
+      {
+        list.map((word, index) => (
+          <TouchableOpacity
+            key={`${word}_${index}`}
+            style={styles.row}
+            activeOpacity={0.7}
+            onPress={() => { onSearch(word) }}
+          >
+            <Text size={15} color={index < 3 ? theme['c-primary'] : theme['c-font-label']} style={styles.index}>{index + 1}</Text>
+            <Text size={15} numberOfLines={1} style={styles.word}>{word}</Text>
+          </TouchableOpacity>
+        ))
+      }
+    </ScrollView>
   )
-})
-
+}
 
 const styles = createStyle({
-  title: {
-    // paddingLeft: 15,
-    paddingTop: 15,
-    // paddingBottom: 10,
-  },
   list: {
-    // paddingLeft: 15,
-    // paddingRight: 15,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    // paddingBottom: 15,
+    paddingBottom: 15,
+    paddingLeft: 20,
+    paddingRight: 20,
   },
-  button: {
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 44,
+  },
+  index: {
+    width: 28,
     textAlign: 'center',
-    paddingLeft: 10,
-    paddingRight: 10,
-    paddingTop: 5,
-    paddingBottom: 5,
-    borderRadius: 4,
-    marginRight: 10,
-    marginTop: 8,
+  },
+  word: {
+    flex: 1,
+    marginLeft: 8,
+  },
+  empty: {
+    paddingLeft: 20,
+    paddingTop: 15,
   },
 })

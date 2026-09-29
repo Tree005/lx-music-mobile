@@ -1,5 +1,5 @@
 import { getMusicUrl } from '@/core/music'
-import { getNextPlayMusicInfo, resetRandomNextMusicInfo } from '@/core/player/player'
+import { getNextPlayMusicInfo, resetRandomNextMusicInfo, resolvePlayMusicInfo } from '@/core/player/player'
 import { checkUrl } from '@/utils/request'
 import playerState from '@/store/player/state'
 import { isCached } from '@/plugins/player/utils'
@@ -22,12 +22,14 @@ const preloadNextMusicUrl = async(curTime: number) => {
   const info = await getNextPlayMusicInfo()
   if (info) {
     preloadMusicInfo.info = info
-    const url = await getMusicUrl({ musicInfo: info.musicInfo }).catch(() => '')
+    // 预加载「实际会播的版本」（手动换源 > 主音源 > 原歌，与播放取值顺序一致），否则预热的是原歌、切歌时仍要等主源版本
+    const target = await resolvePlayMusicInfo(info.musicInfo)
+    const url = await getMusicUrl({ musicInfo: target }).catch(() => '')
     if (url) {
       console.log('preload url', url)
       const [cached, available] = await Promise.all([isCached(url), checkUrl(url).then(() => true).catch(() => false)])
       if (!cached && !available) {
-        const url = await getMusicUrl({ musicInfo: info.musicInfo, isRefresh: true }).catch(() => '')
+        const url = await getMusicUrl({ musicInfo: target, isRefresh: true }).catch(() => '')
         console.log('preload url refresh', url)
       }
     }

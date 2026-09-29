@@ -9,7 +9,7 @@ import Text from '@/components/common/Text'
 import Image from '@/components/common/Image'
 import { PhIcon } from '@/components/common/PhIcon'
 import { getBoardsList, getListDetail } from '@/core/leaderboard'
-import { getLeaderboardSetting } from '@/utils/data'
+import { useMainSource } from '@/core/mainSource'
 import leaderboardState from '@/store/leaderboard/state'
 import { setTempList } from '@/core/list'
 import { playList } from '@/core/player/player'
@@ -24,6 +24,7 @@ const PAGE_SIZE = 3
 export default () => {
   const theme = useTheme()
   const t = useI18n()
+  const mainSource = useMainSource()
   const { width } = useWindowDimensions()
   const [list, setList] = useState<LX.Music.MusicInfoOnline[]>([])
   // 记录实际使用的榜单 id，播放时作为临时列表 id 的组成部分
@@ -42,8 +43,7 @@ export default () => {
         return
       }
       try {
-        const { source } = await getLeaderboardSetting()
-        const boards = await getBoardsList(source)
+        const boards = await getBoardsList(mainSource)
         if (isUnmountedRef.current) return
         if (!boards?.length) {
           setStatus('empty')
@@ -72,7 +72,7 @@ export default () => {
     return () => {
       isUnmountedRef.current = true
     }
-  }, [])
+  }, [mainSource])
 
   // 按每页 3 首切分成若干页
   const pages = useMemo(() => {

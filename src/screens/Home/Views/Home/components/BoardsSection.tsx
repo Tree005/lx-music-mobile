@@ -9,7 +9,7 @@ import Text from '@/components/common/Text'
 import { CaretRight } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
 import { getBoardsList } from '@/core/leaderboard'
-import { getLeaderboardSetting } from '@/utils/data'
+import { useMainSource } from '@/core/mainSource'
 import leaderboardState, { type BoardItem } from '@/store/leaderboard/state'
 
 // 首页排行榜：横向滚动小卡片，最多取 6 个
@@ -20,6 +20,7 @@ const BOARD_CARD_COLORS = ['#7C6FE8', '#3FB980', '#4A9FE0', '#E0A24A', '#E86F8F'
 export default () => {
   const theme = useTheme()
   const t = useI18n()
+  const mainSource = useMainSource()
   const [list, setList] = useState<BoardItem[]>([])
   const [status, setStatus] = useState<'loading' | 'idle' | 'empty'>('loading')
   const isUnmountedRef = useRef(false)
@@ -34,8 +35,7 @@ export default () => {
         return
       }
       try {
-        const { source } = await getLeaderboardSetting()
-        const boards = await getBoardsList(source)
+        const boards = await getBoardsList(mainSource)
         if (isUnmountedRef.current) return
         if (!boards?.length) {
           setStatus('empty')
@@ -55,7 +55,7 @@ export default () => {
     return () => {
       isUnmountedRef.current = true
     }
-  }, [])
+  }, [mainSource])
 
   const handleMore = () => {
     setNavActiveId('nav_top')
