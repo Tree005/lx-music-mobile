@@ -5,6 +5,8 @@ import { getMusicUrl } from '@/core/music'
 // 真正切歌时播放链的 getStoreMusicUrl 直接命中，把原来 1~3s 的等链接时间压在切歌之前。
 // 与播放链同源（同一个 getMusicUrl、同一套音质计算），allowToggleSource 保持默认 true：
 // 原源取不到时会像播放时一样换源，并把可用的 URL 存进缓存——切歌即出声。
+// 注意：「播放优先源」变体的同序预取在调用方 player.ts 的 prefetchPlayMusicUrl 里做
+// （那边才有取值顺序逻辑），这里只负责按歌取 URL。
 //
 // 说明（对齐封面预取 musicPic.ts 的策略）：fire-and-forget、按歌曲 id 去重、
 // 失败静默（播放链照常走原路径，什么都不影响）

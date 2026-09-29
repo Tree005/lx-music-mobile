@@ -126,6 +126,20 @@ export const autoToggleSourceReplay = async(musicInfo: LX.Music.MusicInfo | LX.D
   }
 }
 
+/**
+ * 预取「这首歌接下来真正会用的播放 URL」：与 getMusicPlayUrl 的取值顺序对齐——
+ * 开了「播放优先源」且匹配到变体时，变体才是先被播放的那个，必须连它一起预取；
+ * 原歌原源也预热（变体在设备侧播放失败时会回落到它）。
+ * 设置未开启时 getPrioritySourceMusic 立即返回 null，这里退化为「只预取原歌」。
+ */
+export const prefetchPlayMusicUrl = (musicInfo: LX.Music.MusicInfo | LX.Download.ListItem | null | undefined) => {
+  if (!musicInfo) return
+  prefetchMusicUrl(musicInfo)
+  void getPrioritySourceMusic(musicInfo).then((priorityMusicInfo) => {
+    if (priorityMusicInfo) prefetchMusicUrl(priorityMusicInfo)
+  }).catch(() => {})
+}
+
 const delayRetry = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListItem, isRefresh = false): Promise<string | null> => {
   // if (cancelDelayRetry) cancelDelayRetry()
   return new Promise<string | null>((resolve, reject) => {
@@ -405,10 +419,11 @@ export const resetRandomNextMusicInfo = () => {
 export const getNextPlayMusicInfo = async(isManual = false): Promise<LX.Player.PlayMusicInfo | null> => {
   const info = await fetchNextPlayMusicInfo(isManual)
   // 决定歌的瞬间就预热封面与音频 URL（滑动预览 / 自动切歌都在这里）：
-  // 切歌前两者都已开始取——避免封面空窗，也把原来切歌后 1~3s 的等链接压在切歌之前
+  // 切歌前两者都已开始取——避免封面空窗，也把原来切歌后 1~3s 的等链接压在切歌之前。
+  // URL 走 prefetchPlayMusicUrl（与播放取值顺序对齐，含「播放优先源」变体）
   if (info) {
     prefetchMusicPicUrl(info.musicInfo)
-    prefetchMusicUrl(info.musicInfo)
+    prefetchPlayMusicUrl(info.musicInfo)
   }
   return info
 }

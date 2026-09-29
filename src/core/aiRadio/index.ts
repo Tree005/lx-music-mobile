@@ -1,13 +1,12 @@
 import Lyric, { type Lines } from 'lrc-file-parser'
 import { LIST_IDS } from '@/config/constant'
 import { getListMusics } from '@/core/list'
-import { playListById } from '@/core/player/player'
+import { playListById, prefetchPlayMusicUrl } from '@/core/player/player'
 import { setProgress } from '@/core/player/progress'
 import { getLyricInfo } from '@/core/music'
 import { getListMusicSync, setMusicList, userLists } from '@/utils/listManage'
 import { removeListMusics } from '@/utils/data'
 import { prefetchMusicPicUrl } from '@/utils/musicPic'
-import { prefetchMusicUrl } from '@/utils/musicUrlPrefetch'
 import playerState from '@/store/player/state'
 import { getRandom } from '@/utils/common'
 import { log } from '@/utils/log'
@@ -228,7 +227,7 @@ export const getAiRadioNext = async(): Promise<LX.Player.PlayMusicInfo | null> =
   // 决定歌的瞬间就预热封面与音频 URL：滑动预览 / 自动跳歌都在这里，切歌前两者都已开始取
   if (info) {
     prefetchMusicPicUrl(info.musicInfo)
-    prefetchMusicUrl(info.musicInfo)
+    prefetchPlayMusicUrl(info.musicInfo)
   }
   return info
 }
@@ -253,7 +252,7 @@ export const getAiRadioPrev = (): LX.Player.PlayMusicInfo | null => {
   const info = fetchAiRadioPrev()
   if (info) {
     prefetchMusicPicUrl(info.musicInfo)
-    prefetchMusicUrl(info.musicInfo)
+    prefetchPlayMusicUrl(info.musicInfo)
   }
   return info
 }
