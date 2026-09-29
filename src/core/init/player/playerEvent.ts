@@ -1,7 +1,7 @@
 import { playNext, setMusicUrl, autoToggleSourceReplay } from '@/core/player/player'
 import { setStatusText } from '@/core/player/playStatus'
 import { getPosition, isEmpty, setStop } from '@/plugins/player'
-import { isActive } from '@/utils/tools'
+import { isActive, toast } from '@/utils/tools'
 import BackgroundTimer from 'react-native-background-timer'
 import playerState from '@/store/player/state'
 import { setNowPlayTime } from '@/core/player/progress'
@@ -53,6 +53,8 @@ export default () => {
         setStatusText('')
         return
       }
+      // 跳歌时给一个轻提示（仅前台场景会走到这里）：让用户知道为什么换歌了
+      toast(global.i18n.t('player__error_skipped', { name: playerState.musicInfo.name }), 'short')
       void playNext(true)
     }, 5000)
   }

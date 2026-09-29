@@ -1,6 +1,7 @@
 import { memo, forwardRef, useCallback, useImperativeHandle, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Animated, Easing, Image, PanResponder, StyleSheet, View } from 'react-native'
 import { defaultHeaders } from '@/components/common/Image'
+import { setMusicPreviewPic } from '@/core/player/musicPreviewPic'
 import { useWindowSize } from '@/utils/hooks'
 import { useMusicPic } from '@/utils/hooks/useMusicPic'
 import { prefetchMusicPicUrl } from '@/utils/musicPic'
@@ -57,7 +58,7 @@ const prefetchPreviewPic = (info: LX.Music.MusicInfo | null) => {
 /** 相邻歌的封面卡片：完整一张停在封面位置上，整卡跟手位移（滑出/滑入）；
  * 封面地址没就绪（还没取到/没加载完）时不渲染任何内容——不显示占位块（半透明框观感很差） */
 const SlideCard = memo(({ pic, coverSize, coverBottomSpace, translateX }: {
-  pic: string
+  pic: string | null
   coverSize: number
   coverBottomSpace: number
   translateX: Animated.AnimatedInterpolation<number> | Animated.Value
@@ -156,7 +157,7 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
   const commitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const nextReqRef = useRef(0)
   // 手势回调只创建一次，宽度 / 相邻歌 / 封面参数通过 ref 取最新值
-  const stateRef = useRef({ width: 0, canNext: false, canPrev: false, coverSize: 0, coverSpace: 0, canSwipe: true })
+  const stateRef = useRef({ width: 0, canNext: false, canPrev: false, coverSize: 0, coverSpace: 0, canSwipe: true, nextPic: null as string | null, prevPic: null as string | null })
   stateRef.current.width = width
   stateRef.current.canNext = !!nextMusic
   stateRef.current.canPrev = !!prevMusic
@@ -177,6 +178,20 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
   // 预览封面的地址（顶层取，hook 不能条件调用；没歌时传 undefined 内部自动空处理）
   const nextPic = useMusicPic(nextMusic ?? undefined)
   const prevPic = useMusicPic(prevMusic ?? undefined)
+  stateRef.current.nextPic = nextPic
+  stateRef.current.prevPic = prevPic
+
+  // 滑动方向（0=没在滑）：方向一确定就把「将要滑进来的那张封面」上报给背景，
+  // 让背景提前开始慢渐变（把变化摊开在滑动过程里）；回弹 / 切歌完成后清空、回落真实封面
+  const [previewDir, setPreviewDir] = useState<0 | 1 | -1>(0)
+  useEffect(() => {
+    if (!previewDir) return
+    setMusicPreviewPic(previewDir === 1 ? nextPic : prevPic)
+  }, [previewDir, nextPic, prevPic])
+  const clearPreview = useCallback(() => {
+    setPreviewDir(0)
+    setMusicPreviewPic(null)
+  }, [])
 
   // 取真正的下一首（随机播放时这次调用会把结果提前定下来，与实际播放的是同一首）；
   // 已有结果时返回同一个，重复调用安全（只认最后一次请求的结果）
@@ -227,12 +242,13 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
       if (!committedRef.current) return
       committedRef.current = false
       setDragActive(false)
+      clearPreview()
       dragX.setValue(0)
       startXRef.current = 0
     }, COMMIT_TIMEOUT)
     if (direction == 1) onSwipeNext()
     else onSwipePrev()
-  }, [dragX, onSwipeNext, onSwipePrev])
+  }, [dragX, onSwipeNext, onSwipePrev, clearPreview])
 
   // 歌变了：复位（提交切歌后，新内容在视觉上就「停」在中间位置）
   useLayoutEffect(() => {
@@ -246,10 +262,14 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
     dragX.stopAnimation()
     dragX.setValue(0)
     startXRef.current = 0
-  }, [currentKey, dragX])
+    // 切歌已落地：清掉背景的预览上报（此时背景目标自然接到新歌的真实封面）
+    clearPreview()
+  }, [currentKey, dragX, clearPreview])
 
   useEffect(() => () => {
     if (commitTimerRef.current) clearTimeout(commitTimerRef.current)
+    // 组件销毁（如心动页挂起态被替换）时兜底清掉预览上报，避免背景停在邻歌封面上
+    setMusicPreviewPic(null)
   }, [])
 
   // 程序化触发：点击上一首/下一首按钮时的滑动视觉（滑出 → 提交切歌 → 歌变化复位）
@@ -266,6 +286,8 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
     }
     refreshNext()
     refreshPrev()
+    // 按钮触发的滑动也上报预览封面（背景与手势滑动同样提前渐变）
+    setPreviewDir(direction)
     // 同步冻结卡片的尺寸/位置（用触发瞬间的实测值）
     frozenRef.current = { size: stateRef.current.coverSize, space: stateRef.current.coverSpace }
     setDragActive(true)
@@ -305,6 +327,8 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
         let dx = g.dx
         // 该方向没有相邻歌时加阻尼：仍可以滑动切歌，只是没有「滑进来的预览」
         if ((dx < 0 && !stateRef.current.canNext) || (dx > 0 && !stateRef.current.canPrev)) dx *= NO_PREVIEW_DAMPING
+        // 方向确定：上报「将要滑进来的封面」给背景提前渐变（方向翻转会自然改报另一侧）
+        if (dx) setPreviewDir(dx < 0 ? 1 : -1)
         dragX.setValue(clamp(startXRef.current + dx, -w, w))
       },
       onPanResponderRelease: (_, g) => {
@@ -316,13 +340,18 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
         const throttled = Date.now() - lastCommitTimeRef.current < SWITCH_THROTTLE
         if (finalX <= -trigger && !throttled) settle(-w, () => { commit(1) })
         else if (finalX >= trigger && !throttled) settle(w, () => { commit(-1) })
-        else settle(0, () => { setDragActive(false) })
+        else {
+          // 没滑够（回弹）：背景的预览渐变也回退
+          clearPreview()
+          settle(0, () => { setDragActive(false) })
+        }
       },
       onPanResponderTerminate: () => {
+        clearPreview()
         settle(0, () => { setDragActive(false) })
       },
     })
-  }, [dragX, refreshNext, refreshPrev, commit, settle])
+  }, [dragX, refreshNext, refreshPrev, commit, settle, clearPreview])
 
   // 封面卡片的位移（整卡滑动，位移幅度 = 屏宽，卡片盖着内容区经过，露出屏外自然裁掉）：
   // 左滑（dragX 0 → -w）：下一首的卡片从右侧屏外滑到封面位（translateX +w → 0）

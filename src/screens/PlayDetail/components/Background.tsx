@@ -1,6 +1,7 @@
-import { memo, useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 
+import { getMusicPreviewPic, subscribeMusicPreviewPic } from '@/core/player/musicPreviewPic'
 import { usePlayerMusicInfo } from '@/store/player/hook'
 import CrossfadeImage from './CrossfadeImage'
 
@@ -10,8 +11,9 @@ const MASK_COLOR = 'rgba(0, 0, 0, 0.45)'
 // 无封面时的深色纯底（与遮罩后的整体亮度接近）
 const FALLBACK_COLOR = '#1a1a1a'
 // 换封面时新图加载完成的淡入时长（ms）：全屏模糊背景是大面积+高对比的变化（如白封面对深色封面），
-// 过渡必须放得很慢（呼吸式渐变）——600ms 在高对比切换下观感仍是"闪一下"，实测 1200ms 才平滑
-const FADE_DURATION = 1200
+// 过渡必须放得很慢（呼吸式渐变）——且滑动切歌时渐变的起点会提前到「手势方向确定」的瞬间
+// （见下面的预览封面通道），2s 的时长让变化几乎摊满整个滑动过程，高对比切换的"闪一下"基本被抹平
+const FADE_DURATION = 2000
 
 const toUri = (pic: string | null | undefined) => pic == null ? null : pic.startsWith('/') ? 'file://' + pic : pic
 
@@ -21,21 +23,30 @@ const toUri = (pic: string | null | undefined) => pic == null ? null : pic.start
 // 竖屏（Vertical）与横屏（Horizontal）共用；传入 pic 时用它做背景（心动页显示非当前播放歌的快照），不传时跟随全局当前播放歌
 export default memo(({ pic: picOverride }: { pic?: string | null } = {}) => {
   const playerPic = usePlayerMusicInfo().pic
-  const target = toUri(picOverride === undefined ? playerPic : picOverride)
+  // 滑动切歌的预览封面（滑动方向确定时由 SwipeSongContainer 上报，含按钮触发的滑动）：
+  // 优先于真实封面——背景在切歌落地前就开始朝邻歌渐变；回弹/切歌完成后上报方清空、自动回落
+  const [previewPic, setPreviewPic] = useState(getMusicPreviewPic())
+  useEffect(() => subscribeMusicPreviewPic(() => { setPreviewPic(getMusicPreviewPic()) }), [])
+  const target = toUri(previewPic ?? (picOverride === undefined ? playerPic : picOverride))
+  // 背景图加载失败（外链 CDN 在设备侧偶发拒绝）：退回深色纯底，
+  // 不然「白底色页面 + 半透明黑遮罩」会渲染成一片灰面，观感像背景坏了
+  const [failedUri, setFailedUri] = useState<string | null>(null)
+  useEffect(() => { setFailedUri(null) }, [target])
+  const handleLayerError = useCallback((uri: string) => { setFailedUri(uri) }, [])
 
-  // 遮罩色：明确无封面（''）或从未有过图时用深色纯底，其余用遮罩色
+  // 遮罩色：明确无封面（''）/加载失败或从未有过图时用深色纯底，其余用遮罩色
   // （等待中 CrossfadeImage 会保持上一张图，遮罩跟着它）
   const [hasPicEver, setHasPicEver] = useState(!!target)
   useEffect(() => {
     if (target) setHasPicEver(true)
   }, [target])
-  const showMask = target !== '' && hasPicEver
+  const showMask = target !== '' && hasPicEver && failedUri !== target
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
       {/* allowFastSkip={false}：背景是全屏大图 + 模糊（绘制期运算，比解码慢很多），
           缓存命中也不能直接显示（模糊没画完会露底再突变）——保留淡入平滑过渡 */}
-      <CrossfadeImage uri={target} style={StyleSheet.absoluteFill} blurRadius={25} duration={FADE_DURATION} allowFastSkip={false} />
+      <CrossfadeImage uri={target} style={StyleSheet.absoluteFill} blurRadius={25} duration={FADE_DURATION} allowFastSkip={false} onError={handleLayerError} />
       <View style={[StyleSheet.absoluteFill, { backgroundColor: showMask ? MASK_COLOR : FALLBACK_COLOR }]} />
     </View>
   )

@@ -11,13 +11,14 @@ const FAST_LOAD_THRESHOLD = 200
 // initialOpacity=1 时直接显示（垫底层：图已加载过，缓存秒出，无需动画）
 // allowFastSkip=false 时禁用「快速加载直接显示」——全屏模糊背景这类大图解码快但绘制慢
 // （模糊是绘制期运算），直接显示会在绘制完成前露底、随后突变，必须保留淡入盖住这段窗口
-const FadeLayer = memo(({ uri, blurRadius, duration, initialOpacity, allowFastSkip, onLoaded }: {
+const FadeLayer = memo(({ uri, blurRadius, duration, initialOpacity, allowFastSkip, onLoaded, onError }: {
   uri: string
   blurRadius?: number
   duration: number
   initialOpacity: 0 | 1
   allowFastSkip: boolean
   onLoaded?: () => void
+  onError?: () => void
 }) => {
   const opacity = useRef(new Animated.Value(initialOpacity)).current
   const startedRef = useRef(false)
@@ -35,6 +36,8 @@ const FadeLayer = memo(({ uri, blurRadius, duration, initialOpacity, allowFastSk
       if (finished) onLoaded?.()
     })
   }).current
+  // 图片加载失败（外链 CDN 在设备侧偶发拒绝）：上报给容器丢弃这一层，避免留一个「永远透明的层」
+  const handleError = useRef(() => { onError?.() }).current
 
   return (
     <Animated.View style={[StyleSheet.absoluteFill, { opacity }]}>
@@ -44,6 +47,7 @@ const FadeLayer = memo(({ uri, blurRadius, duration, initialOpacity, allowFastSk
         resizeMode="cover"
         blurRadius={blurRadius}
         onLoadEnd={handleLoadEnd}
+        onError={handleError}
       />
     </Animated.View>
   )
@@ -55,7 +59,7 @@ interface Layer { uri: string, settled: boolean }
 // 显示中的图层保持挂载不挪动（挪动 = 换组件实例 = RN Image 清空重载 = 闪空白帧），
 // 新层淡入完成后才裁掉更早的层。uri 为 null（封面地址还没取到）时保持当前显示的层不动。
 // 淡入不依赖 RN Image 的 fadeDuration——图在缓存里时它会被跳过（切回已加载的歌就没了过渡）
-export default memo(({ uri, style, blurRadius, duration = 600, allowFastSkip = true }: {
+export default memo(({ uri, style, blurRadius, duration = 600, allowFastSkip = true, onError }: {
   /** 目标图片地址；null = 等待中（保持当前显示的层），'' = 明确无封面（清空显示占位） */
   uri: string | null
   /** 容器定位/尺寸样式（内部图层铺满它） */
@@ -64,6 +68,8 @@ export default memo(({ uri, style, blurRadius, duration = 600, allowFastSkip = t
   duration?: number
   /** 是否允许「图加载极快（缓存命中）时直接显示、跳过淡入」；全屏模糊背景应传 false（大图模糊绘制慢，跳淡入会露底突变） */
   allowFastSkip?: boolean
+  /** 某个图层加载失败的回调（该层会被丢弃；调用方可据此退回兜底显示） */
+  onError?: (uri: string) => void
 }) => {
   const [layers, setLayers] = useState<Layer[]>(uri ? [{ uri, settled: true }] : [])
 
@@ -79,6 +85,9 @@ export default memo(({ uri, style, blurRadius, duration = 600, allowFastSkip = t
       if (prev[0]?.uri === uri) return prev
       // 只保留最近一个已完成淡入的层做垫底；中途插进来但还没显示过的层直接丢弃（无闪烁）
       const lastSettled = prev.find(l => l.settled)
+      // 目标回到了「正在垫底的那张」（如滑动的预览层回退）：直接保留它——否则会同时出现
+      // 两张同 uri 的层（React key 重复警告；观感上也只是无意义的自淡入）
+      if (lastSettled?.uri === uri) return [lastSettled]
       return [{ uri, settled: false }, ...(lastSettled ? [lastSettled] : [])]
     })
   }, [uri])
@@ -91,6 +100,12 @@ export default memo(({ uri, style, blurRadius, duration = 600, allowFastSkip = t
       return layer ? [{ ...layer, settled: true }] : prev
     })
   }, [])
+
+  // 某个图层加载失败：丢弃它（不留「永远透明的层」），并上报给调用方
+  const handleLayerError = useCallback((layerUri: string) => {
+    setLayers(prev => prev.filter(l => l.uri !== layerUri))
+    onError?.(layerUri)
+  }, [onError])
 
   return (
     <View style={[style, { overflow: 'hidden' }]}>
@@ -106,6 +121,7 @@ export default memo(({ uri, style, blurRadius, duration = 600, allowFastSkip = t
             initialOpacity={l.settled ? 1 : 0}
             allowFastSkip={allowFastSkip}
             onLoaded={l.settled ? undefined : () => { handleLayerSettled(l.uri) }}
+            onError={() => { handleLayerError(l.uri) }}
           />
         ))
       }

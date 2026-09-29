@@ -14,10 +14,10 @@ import Background from '../components/Background'
 import SwipeSongContainer, { type SwipeSongContainerType } from '../components/SwipeSongContainer'
 import PageSlider from '../components/PageSlider'
 import { useAdjacentMusic } from '../hooks/useAdjacentMusic'
+import { useBelowCoverHeight } from '../hooks/useBelowCoverHeight'
 import { playNext, playPrev } from '@/core/player/player'
 import { usePlayerMusicInfo } from '@/store/player/hook'
 import { screenkeepAwake, screenUnkeepAwake } from '@/utils/nativeModules/utils'
-import { useDebouncedValue } from '@/utils/hooks'
 import commonState, { type InitState as CommonState } from '@/store/common/state'
 import { createStyle } from '@/utils/tools'
 // import { useTheme } from '@/store/theme/hook'
@@ -80,8 +80,9 @@ export default memo(({ componentId }: { componentId: string }) => {
   const [pagerHeight, setPagerHeight] = useState(0)
   const [belowCoverHeightRaw, setBelowCoverHeightRaw] = useState(0)
   // 防抖过滤瞬时波动：切歌/歌词折行时「歌词+信息区」的实测高度会跳动，
-  // 直接应用会让封面尺寸/位置反复变化——稳定后（300ms 无变化）才生效
-  const belowCoverHeight = useDebouncedValue(belowCoverHeightRaw, 300)
+  // 直接应用会让封面尺寸/位置反复变化——稳定后（300ms 无变化）才生效；
+  // 但首次实测值立即生效（不等防抖），否则进页面时封面会先停初始位置再跳一下
+  const belowCoverHeight = useBelowCoverHeight(belowCoverHeightRaw)
   // 封面实测尺寸（跟手滑动的预览封面按它对齐）
   const [coverSize, setCoverSize] = useState(0)
   const musicInfo = usePlayerMusicInfo()

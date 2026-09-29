@@ -11,8 +11,8 @@ import SongInfo from '@/screens/PlayDetail/Vertical/SongInfo'
 import Player from '@/screens/PlayDetail/Vertical/Player'
 import MorePopup, { type MorePopupType } from '@/screens/PlayDetail/Vertical/components/MorePopup'
 import { getAiRadioNext, getAiRadioPrev, playAiRadioMusic, resumeSession, type AiRadioSnapshot } from '@/core/aiRadio'
+import { useBelowCoverHeight } from '@/screens/PlayDetail/hooks/useBelowCoverHeight'
 import { useMusicPic } from '@/utils/hooks/useMusicPic'
-import { useDebouncedValue } from '@/utils/hooks'
 import { formatPlayTime2 } from '@/utils'
 import { useNavActiveId } from '@/store/common/hook'
 import { screenkeepAwake, screenUnkeepAwake } from '@/utils/nativeModules/utils'
@@ -29,9 +29,10 @@ export default memo(({ snapshot, lyricLines }: {
   const morePopupRef = useRef<MorePopupType>(null)
   const [pagerHeight, setPagerHeight] = useState(0)
   const [belowCoverHeightRaw, setBelowCoverHeightRaw] = useState(0)
-  // 防抖过滤瞬时波动：歌词折行/切歌过渡时「歌词+信息区」的实测高度会跳动，
-  // 直接应用会让封面尺寸/位置反复变化——稳定后（300ms 无变化）才生效
-  const belowCoverHeight = useDebouncedValue(belowCoverHeightRaw, 300)
+  // 防抖过滤瞬时波动：切歌/歌词折行时「歌词+信息区」的实测高度会跳动，
+  // 直接应用会让封面尺寸/位置反复变化——稳定后（300ms 无变化）才生效；
+  // 但首次实测值立即生效（不等防抖），否则进页面时封面会先停初始位置再跳一下
+  const belowCoverHeight = useBelowCoverHeight(belowCoverHeightRaw)
   const [coverSize, setCoverSize] = useState(0)
   const [showLyric, setShowLyric] = useState(false)
   // 翻页轨道位移：PageSlider 与封面卡共享，让封面跟着上滑手势一起翻走
@@ -127,7 +128,7 @@ export default memo(({ snapshot, lyricLines }: {
           fetchPrev={fetchPrev}
           onSwipeNext={handleSwipeNext}
           onSwipePrev={handleSwipePrev}
-          currentPic={pic || ''}
+          currentPic={pic ?? ''}
           canSwipe={!showLyric}
           pageOffset={pageTrackY}
         >
@@ -140,7 +141,6 @@ export default memo(({ snapshot, lyricLines }: {
           >
             <View style={{ height: pagerHeight > 0 ? pagerHeight : undefined }}>
               <Pic
-                picOverride={pic || null}
                 pagerHeight={pagerHeight}
                 belowCoverHeight={belowCoverHeight}
                 onPress={showFullLyric}

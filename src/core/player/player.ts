@@ -22,6 +22,7 @@ import {
 import { getMusicUrl, getPicPath, getLyricInfo } from '@/core/music'
 import { getOtherSource } from '@/core/music/utils'
 import { prefetchMusicPicUrl } from '@/utils/musicPic'
+import { prefetchMusicUrl } from '@/utils/musicUrlPrefetch'
 import { requestMsg } from '@/utils/message'
 import { getRandom } from '@/utils/common'
 import { filterList } from './utils'
@@ -99,15 +100,26 @@ const getPrioritySourceMusic = async(musicInfo: LX.Music.MusicInfo | LX.Download
  * 挑到并开始播放返回 true，否则返回 false（调用方走原有兜底：报错/跳歌）
  */
 export const autoToggleSourceReplay = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListItem): Promise<boolean> => {
-  if (global.lx.isPlayedStop || diffCurrentMusicInfo(musicInfo)) return false
+  if (global.lx.isPlayedStop) return false
   const rawInfo = 'progress' in musicInfo ? musicInfo.metadata.musicInfo : musicInfo
   if (!ONLINE_SOURCES.includes(rawInfo.source)) return false
+  // 只允许「换的仍是当前这首歌」：歌已被切走/换掉时放弃。
+  // 注意不要用 diffCurrentMusicInfo 做守卫——刷新正常收尾后 gettingUrlId 会被清空，
+  // 它会把这种常规场景误判成「信息已变化」导致换源永远不生效
+  if (playerState.playMusicInfo.musicInfo?.id != rawInfo.id) return false
   try {
     const candidates = await getOtherSource(musicInfo)
-    const target = candidates.find(c => c.source != rawInfo.source && !AUTO_TOGGLE_SKIP_SOURCES.includes(c.source))
+    const toggleSource = rawInfo.meta.toggleMusicInfo?.source
+    const target = candidates.find(c =>
+      c.source != rawInfo.source && c.source != toggleSource && !AUTO_TOGGLE_SKIP_SOURCES.includes(c.source))
     if (!target) return false
     setStatusText(global.i18n.t('toggle_source_try'))
-    setMusicUrl(target, true)
+    // 换源身份记在「这首歌」上：getMusicPlayUrl 本就优先 meta.toggleMusicInfo，
+    // 重播仍以原歌身份走 setMusicUrl——所有 diff 检查、UI、进度、通知栏保持不变。
+    // （不能直接 setMusicUrl(target)：target.id != 当前歌 id 会被 getMusicPlayUrl 的收尾
+    // 检查丢弃，表现是「换了源但什么都没播」，也不排跳歌，卡到超时兜底）
+    rawInfo.meta.toggleMusicInfo = target
+    setMusicUrl(musicInfo, true)
     return true
   } catch {
     return false
@@ -392,8 +404,12 @@ export const resetRandomNextMusicInfo = () => {
  */
 export const getNextPlayMusicInfo = async(isManual = false): Promise<LX.Player.PlayMusicInfo | null> => {
   const info = await fetchNextPlayMusicInfo(isManual)
-  // 决定歌的瞬间就预热封面（滑动预览 / 自动切歌都在这里）：切歌前 URL 已开始取，避免封面空窗
-  if (info) prefetchMusicPicUrl(info.musicInfo)
+  // 决定歌的瞬间就预热封面与音频 URL（滑动预览 / 自动切歌都在这里）：
+  // 切歌前两者都已开始取——避免封面空窗，也把原来切歌后 1~3s 的等链接压在切歌之前
+  if (info) {
+    prefetchMusicPicUrl(info.musicInfo)
+    prefetchMusicUrl(info.musicInfo)
+  }
   return info
 }
 

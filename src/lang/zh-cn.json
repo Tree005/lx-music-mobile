@@ -237,6 +237,7 @@
   "player__buffering": "缓冲中...",
   "player__end": "播放完毕",
   "player__error": "音频加载出错，5 秒后切换下一首",
+  "player__error_skipped": "「{name}」播放失败，已自动跳过",
   "player__getting_url": "歌曲链接获取中...",
   "player__getting_url_delay_retry": "服务器繁忙，{time} 秒后重试...",
   "player__loading": "音乐加载中...",

@@ -10,8 +10,8 @@ import SongInfo from '@/screens/PlayDetail/Vertical/SongInfo'
 import Player from '@/screens/PlayDetail/Vertical/Player'
 import MorePopup, { type MorePopupType } from '@/screens/PlayDetail/Vertical/components/MorePopup'
 import { getAiRadioNext, getAiRadioPrev, playAiRadioMusic } from '@/core/aiRadio'
+import { useBelowCoverHeight } from '@/screens/PlayDetail/hooks/useBelowCoverHeight'
 import { usePlayerMusicInfo } from '@/store/player/hook'
-import { useDebouncedValue } from '@/utils/hooks'
 import { useNavActiveId } from '@/store/common/hook'
 import { screenkeepAwake, screenUnkeepAwake } from '@/utils/nativeModules/utils'
 import commonState from '@/store/common/state'
@@ -26,8 +26,9 @@ export default memo(() => {
   const [pagerHeight, setPagerHeight] = useState(0)
   const [belowCoverHeightRaw, setBelowCoverHeightRaw] = useState(0)
   // 防抖过滤瞬时波动：切歌/歌词折行时「歌词+信息区」的实测高度会跳动，
-  // 直接应用会让封面尺寸/位置反复变化——稳定后（300ms 无变化）才生效
-  const belowCoverHeight = useDebouncedValue(belowCoverHeightRaw, 300)
+  // 直接应用会让封面尺寸/位置反复变化——稳定后（300ms 无变化）才生效；
+  // 细节（0=隐藏折叠假值、首次/恢复立即应用）见 useBelowCoverHeight
+  const belowCoverHeight = useBelowCoverHeight(belowCoverHeightRaw)
   const [coverSize, setCoverSize] = useState(0)
   const [showLyric, setShowLyric] = useState(false)
   // 翻页轨道位移：PageSlider 与封面卡共享，让封面跟着上滑手势一起翻走
