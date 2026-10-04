@@ -11,7 +11,7 @@ export interface SearchInputProps {
 
 export interface SearchInputType {
   setText: (text: string) => void
-  // getText: () => string
+  getText: () => string
   focus: () => void
   blur: () => void
 }
@@ -22,11 +22,11 @@ export default forwardRef<SearchInputType, SearchInputProps>(({ onChangeText, on
   const inputRef = useRef<InputType>(null)
 
   useImperativeHandle(ref, () => ({
-    // getText() {
-    //   return text.trim()
-    // },
     setText(text) {
       setText(text)
+    },
+    getText() {
+      return text.trim()
     },
     focus() {
       inputRef.current?.focus()

@@ -27,6 +27,8 @@ export default () => {
   const searchInfo = useRef<SearchInfo>({ temp_source: 'kw', source: 'kw', searchType: 'music' })
   // 当前搜索源：初始跟随主音源，用户在选择器里切换后只在本页生效（不写回设置）
   const [source, setSource] = useState<LX.OnlineSource | 'all'>(() => getMainSource())
+  // 是否处于空态（无搜索词）：控制「单曲/歌单」切换行只在结果页显示
+  const [isBlank, setIsBlank] = useState(true)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
@@ -36,6 +38,7 @@ export default () => {
       searchInfo.current.source = mainSource
       searchInfo.current.searchType = info.type
       setSource(mainSource)
+      setIsBlank(!searchState.searchText)
       switch (info.type) {
         case 'music':
           headerBarRef.current?.setSourceList(searchMusicState.sources, mainSource)
@@ -88,6 +91,7 @@ export default () => {
     searchTipListRef.current?.search(text, layoutHeightRef.current)
     headerBarRef.current?.setText(text)
     headerBarRef.current?.blur()
+    setIsBlank(!text)
     void addHistoryWord(text)
     listRef.current?.loadList(text, searchInfo.current.source, searchInfo.current.searchType)
   }
@@ -107,6 +111,7 @@ export default () => {
         onSearch={handleSearch}
         onHideTipList={handleHideTipList}
         onShowTipList={handleShowTipList}
+        showTypeBar={!isBlank}
       />
       <View style={styles.content} onLayout={handleLayout}>
         <TipList ref={searchTipListRef} onSearch={handleSearch} />
