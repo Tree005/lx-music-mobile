@@ -59,7 +59,7 @@ interface Layer { uri: string, settled: boolean }
 // 显示中的图层保持挂载不挪动（挪动 = 换组件实例 = RN Image 清空重载 = 闪空白帧），
 // 新层淡入完成后才裁掉更早的层。uri 为 null（封面地址还没取到）时保持当前显示的层不动。
 // 淡入不依赖 RN Image 的 fadeDuration——图在缓存里时它会被跳过（切回已加载的歌就没了过渡）
-export default memo(({ uri, style, blurRadius, duration = 600, allowFastSkip = true, onError }: {
+export default memo(({ uri, style, blurRadius, duration = 600, allowFastSkip = true, onError, onSettled }: {
   /** 目标图片地址；null = 等待中（保持当前显示的层），'' = 明确无封面（清空显示占位） */
   uri: string | null
   /** 容器定位/尺寸样式（内部图层铺满它） */
@@ -70,14 +70,23 @@ export default memo(({ uri, style, blurRadius, duration = 600, allowFastSkip = t
   allowFastSkip?: boolean
   /** 某个图层加载失败的回调（该层会被丢弃；调用方可据此退回兜底显示） */
   onError?: (uri: string) => void
+  /** 新顶层「完成显示」（淡入完成 或 缓存命中直接显示）时回调；调用方用它等「新图已上屏」再执行复位类操作 */
+  onSettled?: (uri: string) => void
 }) => {
   const [layers, setLayers] = useState<Layer[]>(uri ? [{ uri, settled: true }] : [])
+  const onSettledRef = useRef(onSettled)
+  onSettledRef.current = onSettled
+  // 供 effect 里同步判断「目标层是否已在栈内」（state 闭包拿不到最新值）
+  const layersRef = useRef(layers)
+  layersRef.current = layers
 
   useEffect(() => {
     // 空字符串 = 明确无封面（取不到）：清空层栈，露出占位——宁可空也不显示上一首的错封面；
     // null = 等待中：保持当前显示的层不动
     if (uri === '') {
       setLayers([])
+      // 目标已决（清空完成）：等图类调用方不必再等
+      onSettledRef.current?.('')
       return
     }
     if (!uri) return
@@ -90,6 +99,10 @@ export default memo(({ uri, style, blurRadius, duration = 600, allowFastSkip = t
       if (lastSettled?.uri === uri) return [lastSettled]
       return [{ uri, settled: false }, ...(lastSettled ? [lastSettled] : [])]
     })
+    // 目标层已在栈内（顶层已显示 / 垫底层切换本就瞬时、无动画）：不会有新层 settle 事件，立即上报
+    if (layersRef.current.some(l => l.uri === uri)) {
+      onSettledRef.current?.(uri)
+    }
   }, [uri])
 
   // 顶层（新图）淡入完成：层栈裁剪到它自己——旧层已被完全盖住，撤掉省一份渲染/模糊运算，
@@ -99,6 +112,8 @@ export default memo(({ uri, style, blurRadius, duration = 600, allowFastSkip = t
       const layer = prev.find(l => l.uri === layerUri)
       return layer ? [{ ...layer, settled: true }] : prev
     })
+    // onLoaded 只在「未 settle 的新层」完成时触发：此刻新图已可见，通知调用方
+    onSettledRef.current?.(layerUri)
   }, [])
 
   // 某个图层加载失败：丢弃它（不留「永远透明的层」），并上报给调用方

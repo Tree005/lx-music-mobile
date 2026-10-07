@@ -57,51 +57,58 @@ const prefetchPreviewPic = (info: LX.Music.MusicInfo | null) => {
 
 /** 相邻歌的封面卡片：完整一张停在封面位置上，整卡跟手位移（滑出/滑入）；
  * 封面地址没就绪（还没取到/没加载完）时不渲染任何内容——不显示占位块（半透明框观感很差） */
-const SlideCard = memo(({ pic, coverSize, coverBottomSpace, translateX }: {
+const SlideCard = memo(({ pic, coverSize, coverBottomSpace, translateX, coverScale }: {
   pic: string | null
   coverSize: number
   coverBottomSpace: number
   translateX: Animated.AnimatedInterpolation<number> | Animated.Value
+  coverScale?: Animated.Value
 }) => {
   if (!pic) return null
   return (
     <View pointerEvents="none" style={styles.layer}>
       <View style={[styles.previewCoverBox, { paddingBottom: coverBottomSpace }]}>
         <Animated.View style={{ transform: [{ translateX }] }}>
-          {/* 用原生 Image 而不是共享组件：图加载失败时保持空白（透出背景），不显示浅色占位框 */}
-          <Image
-            source={{ uri: pic, headers: defaultHeaders }}
-            resizeMode="cover"
-            style={{ width: coverSize, height: coverSize, borderRadius: PREVIEW_BORDER_RADIUS }}
-          />
+          {/* 缩放与位移分开两层：transform 组合顺序不受数组写法影响 */}
+          <Animated.View style={coverScale ? { transform: [{ scale: coverScale }] } : null}>
+            {/* 用原生 Image 而不是共享组件：图加载失败时保持空白（透出背景），不显示浅色占位框 */}
+            <Image
+              source={{ uri: pic, headers: defaultHeaders }}
+              resizeMode="cover"
+              style={{ width: coverSize, height: coverSize, borderRadius: PREVIEW_BORDER_RADIUS }}
+            />
+          </Animated.View>
         </Animated.View>
       </View>
     </View>
   )
-}, (p, n) => p.pic == n.pic && p.coverSize == n.coverSize && p.coverBottomSpace == n.coverBottomSpace)
+}, (p, n) => p.pic == n.pic && p.coverSize == n.coverSize && p.coverBottomSpace == n.coverBottomSpace && p.coverScale == n.coverScale)
 
 /** 当前封面的卡片：常驻显示（封面唯一的显示层），crossfade 内置——
  * 切歌/封面回填的淡入过渡都在它内部完成；「图加载极快（缓存命中）」时直接显示跳过淡入，
  * 滑动切歌就是「同一块封面直接停到位置」，无任何二次渲染/交接
  * （没封面传空串：uri=null 内部会保持当前显示的层，等新图） */
-const CurrentCard = memo(({ pic, coverSize, coverBottomSpace, translateX }: {
+const CurrentCard = memo(({ pic, coverSize, coverBottomSpace, translateX, coverScale, onSettled, onError }: {
   pic: string
   coverSize: number
   coverBottomSpace: number
   translateX: Animated.AnimatedInterpolation<number> | Animated.Value
+  coverScale?: Animated.Value
+  onSettled?: (uri: string) => void
+  onError?: (uri: string) => void
 }) => {
   return (
     <View pointerEvents="none" style={styles.layer}>
       <View style={[styles.previewCoverBox, { paddingBottom: coverBottomSpace }]}>
         <Animated.View style={{ transform: [{ translateX }] }}>
-          <View style={{ width: coverSize, height: coverSize, borderRadius: PREVIEW_BORDER_RADIUS, overflow: 'hidden' }}>
-            <CrossfadeImage uri={pic || null} style={StyleSheet.absoluteFill} duration={CURRENT_FADE_DURATION} />
-          </View>
+          <Animated.View style={[{ width: coverSize, height: coverSize, borderRadius: PREVIEW_BORDER_RADIUS, overflow: 'hidden' }, coverScale ? { transform: [{ scale: coverScale }] } : null]}>
+            <CrossfadeImage uri={pic || null} style={StyleSheet.absoluteFill} duration={CURRENT_FADE_DURATION} onSettled={onSettled} onError={onError} />
+          </Animated.View>
         </Animated.View>
       </View>
     </View>
   )
-}, (p, n) => p.pic == n.pic && p.coverSize == n.coverSize && p.coverBottomSpace == n.coverBottomSpace)
+}, (p, n) => p.pic == n.pic && p.coverSize == n.coverSize && p.coverBottomSpace == n.coverBottomSpace && p.coverScale == n.coverScale)
 
 export interface SwipeSongContainerProps {
   children: ReactNode
@@ -124,6 +131,10 @@ export interface SwipeSongContainerProps {
   canSwipe?: boolean
   /** 翻页轨道的纵向位移值（与 PageSlider 共享，让封面卡跟随翻页一起上移；不传则不跟随） */
   pageOffset?: Animated.Value
+  /** 封面缩放动画值（暂停/滑动时缩小）；不传则不缩放 */
+  coverScale?: Animated.Value
+  /** 拖拽态变化回调：调用方用它把「拖动中」合成进缩放条件（拖动中就缩小） */
+  onDragStateChange?: (dragging: boolean) => void
 }
 
 export interface SwipeSongContainerType {
@@ -143,12 +154,21 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
   currentPic,
   canSwipe = true,
   pageOffset,
+  coverScale,
+  onDragStateChange,
 }, ref) => {
   const { width } = useWindowSize()
   const [nextMusic, setNextMusic] = useState<LX.Music.MusicInfo | null>(null)
   const [prevMusic, setPrevMusic] = useState<LX.Music.MusicInfo | null>(null)
   // 预览层只在拖动期间挂载（平时不占渲染开销、不请求相邻歌封面）
   const [dragActive, setDragActive] = useState(false)
+  // 统一拖拽态入口：同步通知调用方（替代 setDragActive 直接调用；调用的缩放条件要用「拖动中」）
+  const onDragStateChangeRef = useRef(onDragStateChange)
+  onDragStateChangeRef.current = onDragStateChange
+  const setDrag = useCallback((v: boolean) => {
+    setDragActive(v)
+    onDragStateChangeRef.current?.(v)
+  }, [])
 
   const dragX = useRef(new Animated.Value(0)).current
   const startXRef = useRef(0)
@@ -180,6 +200,17 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
   const prevPic = useMusicPic(prevMusic ?? undefined)
   stateRef.current.nextPic = nextPic
   stateRef.current.prevPic = prevPic
+
+  // 切歌交接的「等图复位」（修复切歌一闪）：commit 后让「滑进来的卡」直接停在中位充当当前封面，
+  // 等当前卡的新封面真正上屏（CrossfadeImage onSettled）再复位——复位时新图已在，旧图没有露脸窗口。
+  // sealedPreview = 冻结的滑入卡内容（等图期间预览刷新不改它），direction 决定停在哪一侧
+  const [sealedPreview, setSealedPreview] = useState<{ music: LX.Music.MusicInfo, direction: 1 | -1 } | null>(null)
+  const sealedPic = useMusicPic(sealedPreview?.music)
+  const pendingRevealRef = useRef(false)
+  // commit 时读取当时视觉上占中位的预览歌（不依赖 state，避免重建 panResponder）
+  const sealSourceRef = useRef({ next: null as LX.Music.MusicInfo | null, prev: null as LX.Music.MusicInfo | null })
+  sealSourceRef.current.next = nextMusic
+  sealSourceRef.current.prev = prevMusic
 
   // 滑动方向（0=没在滑）：方向一确定就把「将要滑进来的那张封面」上报给背景，
   // 让背景提前开始慢渐变（把变化摊开在滑动过程里）；回弹 / 切歌完成后清空、回落真实封面
@@ -229,42 +260,68 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
     })
   }, [dragX])
 
-  // 容器滑到位后真正切歌；等歌曲变化（currentKey）再把位移复位——
-  // 此时新歌内容已经渲染，复位在视觉上等于「停在原位」。
-  // 复位时同步把手势基值归零：若此刻手指还按着（快速连滑），后续 move 会从 0 重新跟手，不会跳变
-  const commit = useCallback((direction: 1 | -1) => {
-    if (committedRef.current) return
-    committedRef.current = true
-    lastCommitTimeRef.current = Date.now()
-    if (commitTimerRef.current) clearTimeout(commitTimerRef.current)
-    commitTimerRef.current = setTimeout(() => {
-      commitTimerRef.current = null
-      if (!committedRef.current) return
-      committedRef.current = false
-      setDragActive(false)
-      clearPreview()
-      dragX.setValue(0)
-      startXRef.current = 0
-    }, COMMIT_TIMEOUT)
-    if (direction == 1) onSwipeNext()
-    else onSwipePrev()
-  }, [dragX, onSwipeNext, onSwipePrev, clearPreview])
-
-  // 歌变了：复位（提交切歌后，新内容在视觉上就「停」在中间位置）
-  useLayoutEffect(() => {
-    if (!committedRef.current) return
-    committedRef.current = false
-    setDragActive(false)
+  // 复位（滑动交接的收尾）：位移归零、拖拽态落下、清背景预览上报、清 seal。
+  // 幂等：等图复位（onSettled）、currentKey 复位、commit 兜底三条路径共用
+  const revealNow = useCallback(() => {
+    pendingRevealRef.current = false
     if (commitTimerRef.current) {
       clearTimeout(commitTimerRef.current)
       commitTimerRef.current = null
     }
+    committedRef.current = false
+    setSealedPreview(null)
+    setDrag(false)
     dragX.stopAnimation()
     dragX.setValue(0)
     startXRef.current = 0
     // 切歌已落地：清掉背景的预览上报（此时背景目标自然接到新歌的真实封面）
     clearPreview()
-  }, [currentKey, dragX, clearPreview])
+  }, [dragX, clearPreview, setDrag])
+
+  // 容器滑到位后真正切歌；等当前卡的新封面就绪（或超时）再把位移复位——
+  // 此刻新图已上屏，复位在视觉上等于「同一张封面停在原位」，旧图没有露脸窗口。
+  // 复位时同步把手势基值归零：若此刻手指还按着（快速连滑），后续 move 会从 0 重新跟手，不会跳变
+  const commit = useCallback((direction: 1 | -1) => {
+    if (committedRef.current) return
+    committedRef.current = true
+    lastCommitTimeRef.current = Date.now()
+    // 冻结滑入卡：仅当此刻中位真的停着一张封面（有图）才走「等图复位」；
+    // 无图时（地址没取到/列表到头）立即复位更快，维持原行为
+    const sealMusic = direction == 1 ? sealSourceRef.current.next : sealSourceRef.current.prev
+    const sealPicNow = direction == 1 ? stateRef.current.nextPic : stateRef.current.prevPic
+    if (sealMusic && sealPicNow) {
+      pendingRevealRef.current = true
+      setSealedPreview({ music: sealMusic, direction })
+    }
+    if (commitTimerRef.current) clearTimeout(commitTimerRef.current)
+    // 总兜底：歌曲信息迟迟不落地 / 新图迟迟不就绪（或同图无 settle 事件），也要把位移复位
+    commitTimerRef.current = setTimeout(() => {
+      if (!committedRef.current) return
+      revealNow()
+    }, COMMIT_TIMEOUT)
+    if (direction == 1) onSwipeNext()
+    else onSwipePrev()
+  }, [onSwipeNext, onSwipePrev, revealNow])
+
+  // 歌变了：通常在此刻复位（提交切歌后，新内容在视觉上就「停」在中间位置）——
+  // 但提交切歌且中位停着滑入卡时，推迟到「当前卡新图已上屏」（onSettled 或兜底超时），避免交接间隙露旧图
+  useLayoutEffect(() => {
+    if (!committedRef.current) return
+    if (pendingRevealRef.current) return
+    revealNow()
+  }, [currentKey, revealNow])
+
+  // 当前卡的新封面完成显示（淡入完成或缓存直显）：等图复位在此提前收尾
+  const handleCurrentSettled = useCallback(() => {
+    if (!pendingRevealRef.current) return
+    revealNow()
+  }, [revealNow])
+
+  // 当前卡的新封面加载失败（层被丢弃，等也有不了）：等图复位也在此收尾（露出垫底/占位）
+  const handleCurrentError = useCallback(() => {
+    if (!pendingRevealRef.current) return
+    revealNow()
+  }, [revealNow])
 
   useEffect(() => () => {
     if (commitTimerRef.current) clearTimeout(commitTimerRef.current)
@@ -290,7 +347,7 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
     setPreviewDir(direction)
     // 同步冻结卡片的尺寸/位置（用触发瞬间的实测值）
     frozenRef.current = { size: stateRef.current.coverSize, space: stateRef.current.coverSpace }
-    setDragActive(true)
+    setDrag(true)
     const target = direction == 1 ? -w : w
     Animated.timing(dragX, {
       toValue: target,
@@ -300,7 +357,7 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
     }).start(({ finished }) => {
       if (finished) commit(direction)
     })
-  }, [commit, dragX, refreshNext, refreshPrev])
+  }, [commit, dragX, refreshNext, refreshPrev, setDrag])
 
   useImperativeHandle(ref, () => ({ triggerSwipe }), [triggerSwipe])
 
@@ -318,7 +375,7 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
         refreshPrev()
         // 同步冻结卡片的尺寸/位置（用按下瞬间的实测值）
         frozenRef.current = { size: stateRef.current.coverSize, space: stateRef.current.coverSpace }
-        setDragActive(true)
+        setDrag(true)
         dragX.stopAnimation((value: number) => { startXRef.current = value })
       },
       onPanResponderMove: (_, g) => {
@@ -343,15 +400,15 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
         else {
           // 没滑够（回弹）：背景的预览渐变也回退
           clearPreview()
-          settle(0, () => { setDragActive(false) })
+          settle(0, () => { setDrag(false) })
         }
       },
       onPanResponderTerminate: () => {
         clearPreview()
-        settle(0, () => { setDragActive(false) })
+        settle(0, () => { setDrag(false) })
       },
     })
-  }, [dragX, refreshNext, refreshPrev, commit, settle, clearPreview])
+  }, [dragX, refreshNext, refreshPrev, commit, settle, clearPreview, setDrag])
 
   // 封面卡片的位移（整卡滑动，位移幅度 = 屏宽，卡片盖着内容区经过，露出屏外自然裁掉）：
   // 左滑（dragX 0 → -w）：下一首的卡片从右侧屏外滑到封面位（translateX +w → 0）
@@ -383,9 +440,38 @@ export default memo(forwardRef<SwipeSongContainerType, SwipeSongContainerProps>(
               pointerEvents="none"
               style={[styles.layer, pageOffset ? { transform: [{ translateY: pageOffset }] } : null]}
             >
-              <CurrentCard pic={currentPic} coverSize={cardSize} coverBottomSpace={cardSpace} translateX={dragX} />
-              {nextMusic ? <SlideCard pic={nextPic} coverSize={cardSize} coverBottomSpace={cardSpace} translateX={nextCardX} /> : null}
-              {prevMusic ? <SlideCard pic={prevPic} coverSize={cardSize} coverBottomSpace={cardSpace} translateX={prevCardX} /> : null}
+              <CurrentCard
+                pic={currentPic}
+                coverSize={cardSize}
+                coverBottomSpace={cardSpace}
+                translateX={dragX}
+                coverScale={coverScale}
+                onSettled={handleCurrentSettled}
+                onError={handleCurrentError}
+              />
+              {/* 等图复位期间（sealedPreview 存在）：中位卡片用冻结的内容（刚滑进来的那首），预览刷新不改它 */}
+              {nextMusic != null || sealedPreview?.direction === 1
+                ? (
+                    <SlideCard
+                      pic={sealedPreview?.direction === 1 ? sealedPic : nextPic}
+                      coverSize={cardSize}
+                      coverBottomSpace={cardSpace}
+                      translateX={nextCardX}
+                      coverScale={coverScale}
+                    />
+                  )
+                : null}
+              {prevMusic != null || sealedPreview?.direction === -1
+                ? (
+                    <SlideCard
+                      pic={sealedPreview?.direction === -1 ? sealedPic : prevPic}
+                      coverSize={cardSize}
+                      coverBottomSpace={cardSpace}
+                      translateX={prevCardX}
+                      coverScale={coverScale}
+                    />
+                  )
+                : null}
             </Animated.View>
           )
         : null}

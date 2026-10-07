@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { StyleSheet, TouchableOpacity, View } from 'react-native'
-import { MusicNote } from 'phosphor-react-native'
+import { Animated, TouchableOpacity, View } from 'react-native'
 // import { useLayout } from '@/utils/hooks'
 import { createStyle } from '@/utils/tools'
 import { useWindowSize } from '@/utils/hooks'
@@ -8,7 +7,6 @@ import { NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
 import { useNavigationComponentDidAppear } from '@/navigation'
 import { HEADER_HEIGHT } from './components/Header'
 import StatusBar from '@/components/common/StatusBar'
-import { PhIcon } from '@/components/common/PhIcon'
 import commonState from '@/store/common/state'
 import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
 
@@ -34,7 +32,7 @@ const EntryAppearListener = ({ componentId, onAppear }: { componentId: string, o
 // 单层显示避免「图片层 + 卡片层」双层协调带来的交接闪烁/残影。
 // 兜底占位常驻在卡片下方：封面「没取到 / 等待中 / 图片在设备侧加载失败（外链 CDN 限制）」
 // 时露出的都是这块暗色占位——有图时被卡片完全遮住，任何情况都不会出现空白框
-export default ({ componentId, pagerHeight, belowCoverHeight, onPress, onCoverSize }: {
+export default ({ componentId, pagerHeight, belowCoverHeight, onPress, onCoverSize, coverScale }: {
   /** 全屏播放页的 componentId；复用组件时不传（不注册入场动画） */
   componentId?: string
   /** 页面（PagerView）实测高度，0 = 还没量到 */
@@ -44,6 +42,8 @@ export default ({ componentId, pagerHeight, belowCoverHeight, onPress, onCoverSi
   onPress: () => void
   /** 上报实际渲染的封面边长（跟手滑动的预览封面按它对齐，减少切换跳变） */
   onCoverSize?: (size: number) => void
+  /** 封面缩放动画值（暂停/拖动收缩）：与封面卡共用同一个值，保证同步、同心 */
+  coverScale?: Animated.Value
 }) => {
   const { width: winWidth, height: winHeight } = useWindowSize()
   // 用设备固定值（store 里的状态栏高度会抖动，见 Header.tsx 的说明）
@@ -75,12 +75,14 @@ export default ({ componentId, pagerHeight, belowCoverHeight, onPress, onCoverSi
   return (
     <TouchableOpacity style={styles.container} activeOpacity={1} onPress={onPress}>
       <View style={{ ...styles.content, elevation: animated ? 3 : 0 }}>
-        {/* nativeID 挂在容器上（共享元素转场对容器做动画，尺寸与封面一致） */}
-        <View nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={{ ...style, overflow: 'hidden' }}>
-          <View style={[StyleSheet.absoluteFill, styles.emptyCover]}>
-            <PhIcon Icon={MusicNote} size={style.width * 0.42} color="rgba(255, 255, 255, 0.22)" />
-          </View>
-        </View>
+        {/* nativeID 挂在容器上（共享元素转场对容器做动画，尺寸与封面一致）；
+            缩放与封面卡共用同一个动画值（暂停/拖动时同步收缩，两者同心对齐）。
+            兜底占位已移除（用户要求无色不可见）：封面未就绪/失败/无封面时透出底层
+            模糊背景（Background 自身带深色兜底），不再出现淡色方块 */}
+        <Animated.View
+          nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic}
+          style={[{ ...style, overflow: 'hidden' }, coverScale ? { transform: [{ scale: coverScale }] } : null]}
+        />
       </View>
       {componentId ? <EntryAppearListener componentId={componentId} onAppear={() => { setAnimated(true) }} /> : null}
     </TouchableOpacity>
@@ -102,11 +104,5 @@ const styles = createStyle({
     borderRadius: BORDER_RADIUS,
     // 与下方歌词的间距，让封面整体上移一点（计算封面可用高度时也要扣掉）
     marginBottom: COVER_BOTTOM_MARGIN,
-  },
-  emptyCover: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    // 暗色播放页上的无封面占位：很淡的白蒙层，与暗底融合（不用主题色——浅色块在暗底上太扎眼）
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
 })

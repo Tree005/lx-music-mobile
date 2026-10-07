@@ -15,8 +15,9 @@ import SwipeSongContainer, { type SwipeSongContainerType } from '../components/S
 import PageSlider from '../components/PageSlider'
 import { useAdjacentMusic } from '../hooks/useAdjacentMusic'
 import { useBelowCoverHeight } from '../hooks/useBelowCoverHeight'
+import useCoverScale from '../hooks/useCoverScale'
 import { playNext, playPrev } from '@/core/player/player'
-import { usePlayerMusicInfo } from '@/store/player/hook'
+import { usePlayerMusicInfo, useIsPlay } from '@/store/player/hook'
 import { screenkeepAwake, screenUnkeepAwake } from '@/utils/nativeModules/utils'
 import commonState, { type InitState as CommonState } from '@/store/common/state'
 import { createStyle } from '@/utils/tools'
@@ -86,6 +87,10 @@ export default memo(({ componentId }: { componentId: string }) => {
   // 封面实测尺寸（跟手滑动的预览封面按它对齐）
   const [coverSize, setCoverSize] = useState(0)
   const musicInfo = usePlayerMusicInfo()
+  const isPlay = useIsPlay()
+  const [dragging, setDragging] = useState(false)
+  // 暂停 / 滑动拖动中：封面收缩；恢复播放 / 滑动落定：展开（封面卡与占位共用同一动画值）
+  const coverScale = useCoverScale(!isPlay || dragging)
 
   // 左右滑动切歌：预览与实际播放保证一致（随机播放见 useAdjacentMusic 的说明）
   const { fetchNext, fetchPrev } = useAdjacentMusic()
@@ -119,6 +124,8 @@ export default memo(({ componentId }: { componentId: string }) => {
           currentPic={musicInfo.pic ?? ''}
           canSwipe={!showLyric}
           pageOffset={pageTrackY}
+          coverScale={coverScale}
+          onDragStateChange={setDragging}
         >
           <PageSlider
             page={showLyric ? 1 : 0}
@@ -134,6 +141,7 @@ export default memo(({ componentId }: { componentId: string }) => {
                 belowCoverHeight={belowCoverHeight}
                 onPress={showFullLyric}
                 onCoverSize={setCoverSize}
+                coverScale={coverScale}
               />
               <View onLayout={({ nativeEvent }) => { setBelowCoverHeightRaw(nativeEvent.layout.height) }}>
                 <LyricInline onPress={showFullLyric} />

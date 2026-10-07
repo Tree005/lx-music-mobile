@@ -12,6 +12,7 @@ import Player from '@/screens/PlayDetail/Vertical/Player'
 import MorePopup, { type MorePopupType } from '@/screens/PlayDetail/Vertical/components/MorePopup'
 import { getAiRadioNext, getAiRadioPrev, playAiRadioMusic, resumeSession, type AiRadioSnapshot } from '@/core/aiRadio'
 import { useBelowCoverHeight } from '@/screens/PlayDetail/hooks/useBelowCoverHeight'
+import useCoverScale from '@/screens/PlayDetail/hooks/useCoverScale'
 import { useMusicPic } from '@/utils/hooks/useMusicPic'
 import { formatPlayTime2 } from '@/utils'
 import { useNavActiveId } from '@/store/common/hook'
@@ -35,6 +36,8 @@ export default memo(({ snapshot, lyricLines }: {
   const belowCoverHeight = useBelowCoverHeight(belowCoverHeightRaw)
   const [coverSize, setCoverSize] = useState(0)
   const [showLyric, setShowLyric] = useState(false)
+  // 挂起态 = 暂停态的呈现：封面恒收缩（恢复播放即切回活跃态、由那里的播放状态展开）
+  const coverScale = useCoverScale(true)
   // 翻页轨道位移：PageSlider 与封面卡共享，让封面跟着上滑手势一起翻走
   const pageTrackY = useRef(new Animated.Value(0)).current
   const pic = useMusicPic(snapshot.musicInfo)
@@ -131,6 +134,7 @@ export default memo(({ snapshot, lyricLines }: {
           currentPic={pic ?? ''}
           canSwipe={!showLyric}
           pageOffset={pageTrackY}
+          coverScale={coverScale}
         >
           <PageSlider
             page={showLyric ? 1 : 0}
@@ -145,6 +149,7 @@ export default memo(({ snapshot, lyricLines }: {
                 belowCoverHeight={belowCoverHeight}
                 onPress={showFullLyric}
                 onCoverSize={setCoverSize}
+                coverScale={coverScale}
               />
               <View onLayout={({ nativeEvent }) => { setBelowCoverHeightRaw(nativeEvent.layout.height) }}>
                 <LyricInline lines={lyricLines} line={0} onPress={showFullLyric} />

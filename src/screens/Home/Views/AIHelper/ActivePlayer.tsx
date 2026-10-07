@@ -11,7 +11,8 @@ import Player from '@/screens/PlayDetail/Vertical/Player'
 import MorePopup, { type MorePopupType } from '@/screens/PlayDetail/Vertical/components/MorePopup'
 import { getAiRadioNext, getAiRadioPrev, playAiRadioMusic } from '@/core/aiRadio'
 import { useBelowCoverHeight } from '@/screens/PlayDetail/hooks/useBelowCoverHeight'
-import { usePlayerMusicInfo } from '@/store/player/hook'
+import useCoverScale from '@/screens/PlayDetail/hooks/useCoverScale'
+import { usePlayerMusicInfo, useIsPlay } from '@/store/player/hook'
 import { useNavActiveId } from '@/store/common/hook'
 import { screenkeepAwake, screenUnkeepAwake } from '@/utils/nativeModules/utils'
 import commonState from '@/store/common/state'
@@ -22,6 +23,10 @@ import { createStyle } from '@/utils/tools'
 // 与全屏播放页的差异（按需求）：不显示底部工具栏；⋯ 移到评论旁；无返回栏；左右滑切歌走心动流
 export default memo(() => {
   const musicInfo = usePlayerMusicInfo()
+  const isPlay = useIsPlay()
+  const [dragging, setDragging] = useState(false)
+  // 暂停 / 滑动拖动中：封面收缩；恢复播放 / 滑动落定：展开（封面卡与占位共用同一动画值）
+  const coverScale = useCoverScale(!isPlay || dragging)
   const morePopupRef = useRef<MorePopupType>(null)
   const [pagerHeight, setPagerHeight] = useState(0)
   const [belowCoverHeightRaw, setBelowCoverHeightRaw] = useState(0)
@@ -102,6 +107,8 @@ export default memo(() => {
           currentPic={musicInfo.pic ?? ''}
           canSwipe={!showLyric}
           pageOffset={pageTrackY}
+          coverScale={coverScale}
+          onDragStateChange={setDragging}
         >
           <PageSlider
             page={showLyric ? 1 : 0}
@@ -116,6 +123,7 @@ export default memo(() => {
                 belowCoverHeight={belowCoverHeight}
                 onPress={showFullLyric}
                 onCoverSize={setCoverSize}
+                coverScale={coverScale}
               />
               <View onLayout={({ nativeEvent }) => { setBelowCoverHeightRaw(nativeEvent.layout.height) }}>
                 <LyricInline onPress={showFullLyric} />
