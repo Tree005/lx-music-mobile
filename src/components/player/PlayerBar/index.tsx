@@ -54,8 +54,9 @@ const styles = createStyle({
     borderRadius: BAR_HEIGHT / 2,
     flexDirection: 'row',
     alignItems: 'center',
-    // 很浅的阴影：页面是纯白底，给「条」一点可辨识度（比原来重阴影轻很多）
-    elevation: 3,
+    // 不加 elevation：阴影轮廓层在「渐隐/转场」的透明度动画中会掉队，
+    // 半透明帧里留下一条横贯的轮廓线残影（用户反馈的"进度线残影"）；
+    // 条的白底与页面白底本来也接近，去掉后观感几乎无差
   },
   center: {
     flexGrow: 1,
