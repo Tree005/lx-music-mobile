@@ -87,7 +87,7 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onSourceChange, onTi
             </TouchableOpacity>
         }
         <View style={styles.selector}>
-          <SourceSelector ref={sourceSelectorRef} onSourceChange={onSourceChange} center circle={!isHorizontal} />
+          <SourceSelector ref={sourceSelectorRef} onSourceChange={onSourceChange} circle={!isHorizontal} />
         </View>
         <SearchInput
           ref={searchInputRef}

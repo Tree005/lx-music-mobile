@@ -62,6 +62,7 @@ const Component = <S extends Sources>({ fontSize = 15, center, circle = false, o
       onPress={handleChangeSource}
       fontSize={fontSize}
       activeId={source}
+      menuMinWidth={90}
     >
       {
         circle

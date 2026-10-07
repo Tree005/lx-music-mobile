@@ -46,10 +46,10 @@ export default memo(({ isHome = false }: { isHome?: boolean }) => {
 const styles = createStyle({
   container: {
     height: BAR_HEIGHT,
-    marginHorizontal: scaleSizeW(10),
+    marginHorizontal: scaleSizeW(18),
     marginTop: BAR_MARGIN_TOP,
     marginBottom: BAR_MARGIN_BOTTOM,
-    // 封面（比条略大）贴左端，把条的圆角端盖住、不留白缝
+    // 封面与条等高（42dp）且贴住条左端：圆形封面与条的左端圆角完全重合，不会露白缝
     paddingLeft: 0,
     borderRadius: BAR_HEIGHT / 2,
     flexDirection: 'row',

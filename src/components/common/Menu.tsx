@@ -102,7 +102,6 @@ const Menu = ({
       width: number
       top: number
       left?: number
-      right?: number
     } = {
       height: menuHeight,
       top: showInBottom ? buttonPosition.y + buttonPosition.h : buttonPosition.y - menuHeight,
@@ -111,7 +110,10 @@ const Menu = ({
     if (showInRight) {
       frameStyle.left = buttonPosition.x
     } else {
-      frameStyle.right = windowSize.width - buttonPosition.x - buttonPosition.w
+      // 菜单比触发器宽时（如搜索页圆形源按钮 + 菜单最小宽度 240），原先的「右对齐」
+      // 会把菜单整体推出屏幕左侧、只露一条白边且文字全在屏外；
+      // 钳制在屏幕内：优先对齐按钮左缘，右缘不出屏、左缘不小于 0
+      frameStyle.left = Math.max(0, Math.min(buttonPosition.x, windowSize.width - menuWidth))
     }
     return frameStyle
   }, [menus.length, menuItemStyle, buttonPosition, windowSize])

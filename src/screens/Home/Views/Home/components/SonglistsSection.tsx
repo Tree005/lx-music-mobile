@@ -36,8 +36,12 @@ export default () => {
       }
       try {
         const { sortId } = await getSongListSetting()
-        // tabId 传空串表示「推荐」，sortId 沿用用户上次在歌单页选择的值
-        const result = await getList(mainSource, '', sortId, 1)
+        // 存储的 sortId 是「用户在歌单页的选择」，可能属于其他源（如 kg 的 5 拿到 kw 请求会返回空数据）；
+        // 校验无效时回退到当前主音源的第一个排序（kw=new / kg、tx、mg=推荐 / wy=最热）
+        const sorts = songlistState.sortList[mainSource] ?? []
+        const validSortId = sorts.some(s => s.id === sortId) ? sortId : (sorts[0]?.id ?? '')
+        // tabId 传空串表示「推荐」
+        const result = await getList(mainSource, '', validSortId, 1)
         if (isUnmountedRef.current) return
         if (!result?.list?.length) {
           setStatus('empty')

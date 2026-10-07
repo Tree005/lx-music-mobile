@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Animated, Easing, View } from 'react-native'
 import { BOTTOM_TABS, LIST_IDS, type NAV_ID_Type } from '@/config/constant'
 import Content from './Content'
@@ -14,9 +14,10 @@ import Background from '@/screens/PlayDetail/components/Background'
 import { createStyle } from '@/utils/tools'
 import { HEARTBEAT_RELEASE_DELAY } from '@/components/transitions/constants'
 
-// 播放条在这些子页面里保留显示（歌单详情页可以边听边看歌单）
+// 播放条在这些子页面里保留显示（歌单详情页可以边听边看歌单；搜索页搜歌/点榜单时也要能操作播放）
 const PLAYER_BAR_VISIBLE_SUB_PAGES: Partial<Record<NAV_ID_Type, true>> = {
   nav_songlist_detail: true,
+  nav_search: true,
 }
 
 // 播放条显隐动画：300ms 淡入淡出 + 从下方 24dp 滑入/滑出（进出统一）
@@ -51,19 +52,25 @@ export default () => {
   //   表现为切页后上下各一条窄黑条一闪（真机复现过）
   // - 目标是子页面：有 150ms 横滑转场 → 延迟释放，防止心动页滑出期间失去背景白闪
   const [heartbeatUi, setHeartbeatUi] = useState(navActiveId == 'nav_ai')
-  useEffect(() => {
+  // 用 layout effect（绘制前执行）：离开心动去 Tab 的「立即释放」必须与目标页同帧生效，
+  // 普通 effect 会晚一帧（JS 忙时跨帧），切页瞬间能从上下两条缝里透出残留深色
+  useLayoutEffect(() => {
     if (navActiveId == 'nav_ai') {
       setHeartbeatUi(true)
       return
     }
-    if (BOTTOM_TABS.some(tab => tab.id == navActiveId)) {
+    if (BOTTOM_TABS.some(tab => tab.id === navActiveId)) {
       setHeartbeatUi(false)
       return
     }
+    // 延迟释放分支：当前导航图下不可达（nav_ai 仅 TabBar 出口，心动页内没有子页面入口），
+    // 为将来给心动页加页面入口时保留（有 150ms 横滑转场时需要它防转场白闪）
     const timer = setTimeout(() => { setHeartbeatUi(false) }, HEARTBEAT_RELEASE_DELAY + 60)
     return () => { clearTimeout(timer) }
   }, [navActiveId])
   const isAiRadioActive = playInfo.playerListId == LIST_IDS.AI_RADIO
+  // 暗底（模糊背景）是否可见；底栏透明态也跟随它——无暗底时保持正常底色，
+  // 避免透明底栏上的白字落在浅色背景上不可读（EmptyState 场景用户报过）
   const heartbeatBgVisible = heartbeatUi && (isAiRadioActive || !!aiSession.snapshot)
   const heartbeatPic = isAiRadioActive ? musicInfo.pic : (snapshotPic ?? null)
 
@@ -137,7 +144,7 @@ export default () => {
           )
         : null}
       {/* 播放条悬浮在内容之上（不再独占一行）：内容可以滑到条的后面，
-          条的上下（3dp）与左右（10dp）外边距处能看到内容；
+          条的上下（3dp）与左右（18dp）外边距处能看到内容；
           需要滚动到底的页面统一预留了 PLAYER_BAR_SPACE 的底部空间 */}
       <View style={styles.content}>
         <Content onNavIdChange={handleNavIdChange} />
@@ -164,7 +171,8 @@ export default () => {
           : null}
       </View>
       {tabBarVisible
-        ? <TabBar heartbeat={heartbeatUi} />
+        // 底栏透明态跟随「暗底是否存在」（heartbeatBgVisible）：无暗底时保持正常底色可读
+        ? <TabBar heartbeat={heartbeatBgVisible} />
         // 无底栏时（子页面）用背景色补上系统导航栏安全区，避免内容被手势条压住
         : <View style={{ height: navigationBarHeight, backgroundColor: theme['c-content-background'] }} />}
     </>
