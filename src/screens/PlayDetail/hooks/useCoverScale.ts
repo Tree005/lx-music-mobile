@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Animated, Easing } from 'react-native'
 
 // 封面「收缩/展开」动画（暂停、滑动拖动时收缩；播放态展开）。
-// 缩小幅度按用户确认的 0.85；封面卡与 Pic 兜底占位同尺寸同位置，
+// 缩小幅度按用户确认的 0.85；封面卡与 Pic 占位盒同尺寸同位置，
 // 用同一个动画值缩放后保持同心，不会露出错位边框。
 const SCALE_SHRUNK = 0.85
 const SCALE_EXPANDED = 1

@@ -24,7 +24,7 @@ import { createStyle } from '@/utils/tools'
 // import { useTheme } from '@/store/theme/hook'
 
 // global.iskeep = false
-export default memo(({ componentId }: { componentId: string }) => {
+export default memo(() => {
   // const theme = useTheme()
   // 竖向两页：封面页（封面 + 两行歌词 + 歌曲信息）与全屏歌词页。
   // 翻页由 PageSlider（纯 JS）承担：上滑看歌词、点封面/嵌入歌词进、点歌词页回
@@ -136,7 +136,6 @@ export default memo(({ componentId }: { componentId: string }) => {
           >
             <View style={{ height: pagerHeight > 0 ? pagerHeight : undefined }}>
               <Pic
-                componentId={componentId}
                 pagerHeight={pagerHeight}
                 belowCoverHeight={belowCoverHeight}
                 onPress={showFullLyric}

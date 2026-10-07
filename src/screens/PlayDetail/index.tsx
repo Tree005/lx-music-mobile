@@ -39,7 +39,7 @@ export default ({ componentId }: { componentId: string }) => {
       {
         isHorizontalMode
           ? <Horizontal componentId={componentId} />
-          : <Vertical componentId={componentId} />
+          : <Vertical />
       }
     </PageContent>
   )
