@@ -1,6 +1,7 @@
 import { memo, useEffect } from 'react'
 import { Animated, Easing, type StyleProp, type ViewStyle } from 'react-native'
 import { useTheme } from '@/store/theme/hook'
+import { DURATION } from '@/theme/motion'
 
 // 所有骨架块共享同一个呼吸动画值：保证同步，也避免每块各跑一个循环动画
 const pulse = new Animated.Value(1)
@@ -10,8 +11,8 @@ const startPulse = () => {
   isPulseRunning = true
   Animated.loop(
     Animated.sequence([
-      Animated.timing(pulse, { toValue: 0.45, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-      Animated.timing(pulse, { toValue: 1, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      Animated.timing(pulse, { toValue: 0.45, duration: DURATION.slow, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      Animated.timing(pulse, { toValue: 1, duration: DURATION.slow, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
     ]),
   ).start()
 }

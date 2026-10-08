@@ -14,6 +14,7 @@ import { NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
 import { getStatusBarStyle } from './utils'
 import { windowSizeTools } from '@/utils/windowSizeTools'
 import { type ListInfoItem } from '@/store/songlist/state'
+import { DURATION } from '@/theme/motion'
 
 // const store = getStore()
 // const getTheme = () => getter('common', 'theme')(store.getState())
@@ -169,7 +170,7 @@ export function pushPlayDetailScreen(componentId: string, skipAnimation = false)
                 translationX: {
                   from: 0,
                   to: windowSizeTools.getSize().width,
-                  duration: 300,
+                  duration: DURATION.enter,
                 },
               },
             },
@@ -222,11 +223,11 @@ export function pushSonglistDetailScreen(componentId: string, info: ListInfoItem
                   id: NAV_SHEAR_NATIVE_IDS.songlistDetail_title,
                   alpha: {
                     from: 0, // We don't declare 'to' value as that is the element's current alpha value, here we're essentially animating from 0 to 1
-                    duration: 300,
+                    duration: DURATION.enter,
                   },
                   translationX: {
                     from: 16, // Animate translationX from 16dp to 0dp
-                    duration: 300,
+                    duration: DURATION.enter,
                   },
                 },
               ],
@@ -261,11 +262,11 @@ export function pushSonglistDetailScreen(componentId: string, info: ListInfoItem
                   id: NAV_SHEAR_NATIVE_IDS.songlistDetail_title,
                   alpha: {
                     to: 0, // We don't declare 'to' value as that is the element's current alpha value, here we're essentially animating from 0 to 1
-                    duration: 300,
+                    duration: DURATION.enter,
                   },
                   translationX: {
                     to: 16, // Animate translationX from 16dp to 0dp
-                    duration: 300,
+                    duration: DURATION.enter,
                   },
                 },
               ],
@@ -349,7 +350,7 @@ export function pushCommentScreen(componentId: string, musicInfo?: LX.Music.Musi
                 translationX: {
                   from: windowSizeTools.getSize().width,
                   to: 0,
-                  duration: 300,
+                  duration: DURATION.enter,
                 },
               },
             },
@@ -358,7 +359,7 @@ export function pushCommentScreen(componentId: string, musicInfo?: LX.Music.Musi
                 translationX: {
                   from: 0,
                   to: windowSizeTools.getSize().width,
-                  duration: 300,
+                  duration: DURATION.enter,
                 },
               },
             },

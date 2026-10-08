@@ -8,6 +8,7 @@ import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import { createStyle } from '@/utils/tools'
 import { BorderWidths } from '@/theme'
+import { DURATION } from '@/theme/motion'
 
 interface SearchInputProps {
   onSearch: (keywork: string) => void
@@ -79,12 +80,12 @@ export default forwardRef<ListSearchBarType, ListSearchBarProps>(({ onSearch, on
       Animated.parallel([
         Animated.timing(animFade, {
           toValue: 0.92,
-          duration: 200,
+          duration: DURATION.base,
           useNativeDriver: true,
         }),
         Animated.timing(animTranslateY, {
           toValue: 0,
-          duration: 200,
+          duration: DURATION.base,
           useNativeDriver: true,
         }),
       ]).start(() => {
@@ -98,12 +99,12 @@ export default forwardRef<ListSearchBarType, ListSearchBarProps>(({ onSearch, on
     Animated.parallel([
       Animated.timing(animFade, {
         toValue: 0,
-        duration: 200,
+        duration: DURATION.base,
         useNativeDriver: true,
       }),
       Animated.timing(animTranslateY, {
         toValue: -20,
-        duration: 200,
+        duration: DURATION.base,
         useNativeDriver: true,
       }),
     ]).start(finished => {

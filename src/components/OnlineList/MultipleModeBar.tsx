@@ -7,6 +7,7 @@ import { useTheme } from '@/store/theme/hook'
 import { createStyle } from '@/utils/tools'
 import { BorderWidths } from '@/theme'
 import { scaleSizeH } from '@/utils/pixelRatio'
+import { DURATION } from '@/theme/motion'
 
 export type SelectMode = 'single' | 'range'
 
@@ -59,12 +60,12 @@ export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({ onSelect
       Animated.parallel([
         Animated.timing(animFade, {
           toValue: 0.92,
-          duration: 200,
+          duration: DURATION.base,
           useNativeDriver: true,
         }),
         Animated.timing(animTranslateY, {
           toValue: 0,
-          duration: 200,
+          duration: DURATION.base,
           useNativeDriver: true,
         }),
       ]).start(() => {
@@ -78,12 +79,12 @@ export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({ onSelect
     Animated.parallel([
       Animated.timing(animFade, {
         toValue: 0,
-        duration: 200,
+        duration: DURATION.base,
         useNativeDriver: true,
       }),
       Animated.timing(animTranslateY, {
         toValue: 20,
-        duration: 200,
+        duration: DURATION.base,
         useNativeDriver: true,
       }),
     ]).start(finished => {

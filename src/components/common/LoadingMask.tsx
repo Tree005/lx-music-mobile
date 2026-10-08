@@ -3,6 +3,7 @@ import { Animated } from 'react-native'
 import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import { createStyle } from '@/utils/tools'
+import { DURATION } from '@/theme/motion'
 import Loading from './Loading'
 
 // interface LoadingMaskProps {
@@ -33,7 +34,7 @@ export default forwardRef<LoadingMaskType, {}>((props, ref) => {
     Animated.parallel([
       Animated.timing(animFade, {
         toValue: 1,
-        duration: 200,
+        duration: DURATION.base,
         useNativeDriver: true,
       }),
     ]).start()
@@ -45,7 +46,7 @@ export default forwardRef<LoadingMaskType, {}>((props, ref) => {
     Animated.parallel([
       Animated.timing(animFade, {
         toValue: 0,
-        duration: 300,
+        duration: DURATION.enter,
         useNativeDriver: true,
       }),
     ]).start((finished) => {

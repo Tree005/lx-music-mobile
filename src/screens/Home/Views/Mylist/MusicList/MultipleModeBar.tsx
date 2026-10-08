@@ -6,6 +6,7 @@ import Button from '@/components/common/Button'
 import { useTheme } from '@/store/theme/hook'
 import { createStyle } from '@/utils/tools'
 import { BorderWidths } from '@/theme'
+import { DURATION } from '@/theme/motion'
 
 export type SelectMode = 'single' | 'range'
 
@@ -62,12 +63,12 @@ export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({ onSelect
         Animated.timing(animFade, {
           // 1 而不是 0.92：内嵌场景下多选条压在列表行上，半透明会透出下面的文字
           toValue: 1,
-          duration: 200,
+          duration: DURATION.base,
           useNativeDriver: true,
         }),
         Animated.timing(animTranslateY, {
           toValue: 0,
-          duration: 200,
+          duration: DURATION.base,
           useNativeDriver: true,
         }),
       ]).start(() => {
@@ -81,12 +82,12 @@ export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({ onSelect
     Animated.parallel([
       Animated.timing(animFade, {
         toValue: 0,
-        duration: 200,
+        duration: DURATION.base,
         useNativeDriver: true,
       }),
       Animated.timing(animTranslateY, {
         toValue: -20,
-        duration: 200,
+        duration: DURATION.base,
         useNativeDriver: true,
       }),
     ]).start(finished => {

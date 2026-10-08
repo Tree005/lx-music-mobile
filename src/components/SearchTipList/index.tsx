@@ -4,6 +4,7 @@ import { StyleSheet, View, Animated } from 'react-native'
 // import { AppColors } from '@/theme'
 import { useTheme } from '@/store/theme/hook'
 import List, { type ItemT, type ListProps, type ListType } from './List'
+import { DURATION } from '@/theme/motion'
 // import InsetShadow from 'react-native-inset-shadow'
 
 export interface SearchTipListProps<T> extends ListProps<T> {
@@ -59,12 +60,12 @@ const Component = <T extends ItemT<T>>({ onPressBg = noop, ...props }: SearchTip
       // }),
         Animated.timing(translateY, {
           toValue: 0,
-          duration: 300,
+          duration: DURATION.enter,
           useNativeDriver: true,
         }),
         Animated.timing(scaleY, {
           toValue: 1,
-          duration: 300,
+          duration: DURATION.enter,
           useNativeDriver: true,
         }),
       ]).start(() => {
@@ -83,12 +84,12 @@ const Component = <T extends ItemT<T>>({ onPressBg = noop, ...props }: SearchTip
       // }),
       Animated.timing(translateY, {
         toValue: -heightRef.current / 2,
-        duration: 300,
+        duration: DURATION.enter,
         useNativeDriver: true,
       }),
       Animated.timing(scaleY, {
         toValue: 0,
-        duration: 300,
+        duration: DURATION.enter,
         useNativeDriver: true,
       }),
     ]).start((finished) => {
