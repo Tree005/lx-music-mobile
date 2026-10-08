@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react'
 
-import SelectItem from '../../components/SelectItem'
+import SelectItem from '@/components/common/SelectItem'
 import { useI18n } from '@/lang'
 import { setFontSize } from '@/core/common'
 import { useFontSize } from '@/store/common/hook'

@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react'
 
-import SelectItem, { type SelectItemOption } from '../../components/SelectItem'
+import SelectItem, { type SelectItemOption } from '@/components/common/SelectItem'
 import { updateSetting } from '@/core/common'
 import { useMainSource } from '@/core/mainSource'
 import { useI18n } from '@/lang'

@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react'
 
 import Section from '../../components/Section'
-import SelectItem, { type SelectItemOption } from '../../components/SelectItem'
+import SelectItem, { type SelectItemOption } from '@/components/common/SelectItem'
 import { useSettingValue } from '@/store/setting/hook'
 import { useI18n } from '@/lang'
 import { updateSetting } from '@/core/common'

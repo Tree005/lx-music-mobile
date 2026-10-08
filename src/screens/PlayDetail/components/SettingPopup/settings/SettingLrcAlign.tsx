@@ -1,12 +1,9 @@
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 
-import { View } from 'react-native'
-import Text from '@/components/common/Text'
+import SelectItem, { type SelectItemOption } from '@/components/common/SelectItem'
 import { useSettingValue } from '@/store/setting/hook'
 import { updateSetting } from '@/core/common'
 import { useI18n } from '@/lang'
-import styles from './style'
-import CheckBox from '@/components/common/CheckBox'
 
 type Align_Type = LX.AppSetting['playDetail.style.align']
 
@@ -16,42 +13,21 @@ const ALIGN_LIST = [
   'right',
 ] as const
 
-const useActive = (id: Align_Type) => {
-  const x = useSettingValue('playDetail.style.align')
-  const isActive = useMemo(() => x == id, [x, id])
-  return isActive
-}
-
-const Item = ({ id, name, change }: {
-  id: Align_Type
-  name: string
-  change: (id: Align_Type) => void
-}) => {
-  const isActive = useActive(id)
-  // const [toggleCheckBox, setToggleCheckBox] = useState(false)
-  return <CheckBox marginBottom={3} check={isActive} label={name} onChange={() => { change(id) }} need />
-}
-
-export default () => {
+// 歌词对齐方式：行显示当前对齐，点开弹层选择（与其他选择型设置统一）
+export default memo(() => {
   const t = useI18n()
-  const list = useMemo(() => {
-    return ALIGN_LIST.map(id => ({ id, name: t(`play_detail_setting_lrc_align_${id}`) }))
-  }, [t])
-
-  const setPosition = (id: Align_Type) => {
-    updateSetting({ 'playDetail.style.align': id })
-  }
+  const align = useSettingValue('playDetail.style.align')
+  const options = useMemo<SelectItemOption<Align_Type>[]>(
+    () => ALIGN_LIST.map(id => ({ value: id, label: t(`play_detail_setting_lrc_align_${id}`) })),
+    [t],
+  )
 
   return (
-    <View style={styles.container}>
-      <Text>{t('play_detail_setting_lrc_align')}</Text>
-      <View style={styles.content}>
-        <View style={styles.list}>
-          {
-            list.map(({ id, name }) => <Item name={name} id={id} key={id} change={setPosition} />)
-          }
-        </View>
-      </View>
-    </View>
+    <SelectItem
+      label={t('play_detail_setting_lrc_align')}
+      value={align}
+      options={options}
+      onChange={(v) => { updateSetting({ 'playDetail.style.align': v }) }}
+    />
   )
-}
+})
