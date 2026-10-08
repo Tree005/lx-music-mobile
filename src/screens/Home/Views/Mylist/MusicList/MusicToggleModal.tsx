@@ -7,7 +7,7 @@ import { scaleSizeH } from '@/utils/pixelRatio'
 import { useTheme } from '@/store/theme/hook'
 import { Play, ShareNetwork } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
-import { useHorizontalMode, useUnmounted } from '@/utils/hooks'
+import { useUnmounted } from '@/utils/hooks'
 import { useI18n } from '@/lang'
 import Button from '@/components/common/Button'
 import { useSourceListI18n } from '@/components/SourceSelector'
@@ -163,69 +163,9 @@ const List = ({ source, lists, onPlay }: {
 
 const SourceDetail = ({ info, onConfirm, toggleSource }: { info: LX.Music.MusicInfo, onConfirm: (info: LX.Music.MusicInfoOnline) => void, toggleSource: LX.Music.MusicInfoOnline | null }) => {
   const theme = useTheme()
-  const isHorizontalMode = useHorizontalMode()
   const t = useI18n()
 
-  return isHorizontalMode ? (
-    <View style={styles.detailContainer}>
-      <View style={styles.detailContainerX}>
-      <View style={styles.detailInfo}>
-        <View style={styles.detailInfoName}>
-          <Text style={styles.detailInfoNameText} color={theme['c-font']} size={13} numberOfLines={2}>
-            {info.name}
-          </Text>
-          <Text style={styles.detailInfoLabelText} size={12} color={theme['c-primary']}>{info.source}</Text>
-          <Text style={styles.detailInfoLabelText} size={12} color={theme['c-primary']}>{info.interval}</Text>
-        </View>
-        <View style={styles.listItemAlbum}>
-          <Text color={theme['c-font']} size={12} numberOfLines={1}>
-            {info.singer}
-            {
-              info.meta.albumName ? (
-                <Text color={theme['c-font-label']} size={12} numberOfLines={1}> ({info.meta.albumName})</Text>
-              ) : null
-            }
-          </Text>
-        </View>
-      </View>
-      {
-        toggleSource ? (
-          <>
-            <Text>→</Text>
-            <View style={styles.detailInfo}>
-              <View style={styles.detailInfoName}>
-                <Text style={styles.detailInfoNameText} color={theme['c-font']} size={13} numberOfLines={2}>
-                  {toggleSource.name}
-                </Text>
-                <Text style={styles.detailInfoLabelText} size={12} color={theme['c-primary']}>{toggleSource.source}</Text>
-                <Text style={styles.detailInfoLabelText} size={12} color={theme['c-primary']}>{toggleSource.interval}</Text>
-              </View>
-              <View style={styles.listItemAlbum}>
-                <Text color={theme['c-font']} size={12} numberOfLines={1}>
-                  {toggleSource.singer}
-                  {
-                    toggleSource.meta.albumName ? (
-                      <Text color={theme['c-font-label']} size={12} numberOfLines={1}> ({toggleSource.meta.albumName})</Text>
-                    ) : null
-                  }
-                </Text>
-              </View>
-            </View>
-          </>
-        ) : null
-      }
-      </View>
-      <Button
-        onPress={() => {
-          onConfirm(toggleSource!)
-        }}
-        style={{ ...styles.button, backgroundColor: theme['c-button-background'] }}
-        disabled={!toggleSource}
-      >
-        <Text color={theme['c-button-font']}>{t('music_toggle__confirm')}</Text>
-      </Button>
-    </View>
-  ) : (
+  return (
     <View style={styles.detailContainer}>
       <View style={styles.detailContainerY}>
         <View style={styles.detailInfo}>
@@ -493,13 +433,6 @@ const styles = createStyle({
     flexGrow: 1,
     flexShrink: 1,
     gap: 5,
-  },
-  detailContainerX: {
-    flexDirection: 'row',
-    flexGrow: 1,
-    flexShrink: 1,
-    gap: 5,
-    alignItems: 'center',
   },
   detailInfo: {
     flexGrow: 0,

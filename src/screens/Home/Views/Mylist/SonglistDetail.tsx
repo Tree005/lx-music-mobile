@@ -14,7 +14,6 @@ import { createStyle } from '@/utils/tools'
 import { getListMusics } from '@/core/list'
 import { playList } from '@/core/player/player'
 import { setNavActiveId } from '@/core/common'
-import { useHorizontalMode } from '@/utils/hooks'
 import { useMusicPic } from '@/utils/hooks/useMusicPic'
 import { useSonglistOnlineInfo } from '@/utils/hooks/useSonglistOnlineInfo'
 import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
@@ -44,7 +43,6 @@ const Action = ({ Icon, label, color, weight, onPress }: {
 export default () => {
   const t = useI18n()
   const theme = useTheme()
-  const isHorizontalMode = useHorizontalMode()
   const listInfo = listState.userList.find(l => l.id === global.lx.songlistDetailListId)
   const [firstMusic, setFirstMusic] = useState<LX.Music.MusicInfo | undefined>()
   // 收藏/导入的歌单用源歌单的封面与描述（本地只存了歌曲）；自建歌单没有源，用里面第一首歌的封面
@@ -65,10 +63,10 @@ export default () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listInfo?.id])
 
-  // 横屏没有「我的」页，退回「我的列表」
+  // 退回「我的」Tab（歌单详情入口在我的列表里）
   const handleBack = useCallback(() => {
-    setNavActiveId(isHorizontalMode ? 'nav_love' : 'nav_mine')
-  }, [isHorizontalMode])
+    setNavActiveId('nav_mine')
+  }, [])
 
   const handlePlayAll = useCallback(() => {
     if (!listInfo) return

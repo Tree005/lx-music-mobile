@@ -4,7 +4,6 @@ import Section from '../../components/Section'
 import IsShowBackBtn from '../Basic/IsShowBackBtn'
 import IsShowExitBtn from '../Basic/IsShowExitBtn'
 import IsAutoHidePlayBar from '../Basic/IsAutoHidePlayBar'
-import IsEnableHorizontal from '../Basic/IsEnableHorizontal'
 import IsAllowProgressBarSeek from '../Basic/IsAllowProgressBarSeek'
 import IsUseSystemFileSelector from '../Basic/IsUseSystemFileSelector'
 import IsAlwaysKeepStatusbarHeight from '../Basic/IsAlwaysKeepStatusbarHeight'
@@ -19,7 +18,6 @@ export default memo(() => {
       <IsShowBackBtn />
       <IsShowExitBtn />
       <IsAutoHidePlayBar />
-      <IsEnableHorizontal />
       <IsAllowProgressBarSeek />
       <IsUseSystemFileSelector />
       <IsAlwaysKeepStatusbarHeight />

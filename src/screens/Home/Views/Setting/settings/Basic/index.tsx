@@ -11,7 +11,6 @@ import IsStartupAutoPlay from './IsStartupAutoPlay'
 import IsStartupPushPlayDetailScreen from './IsStartupPushPlayDetailScreen'
 import IsAutoHidePlayBar from './IsAutoHidePlayBar'
 // import IsHomePageScroll from './IsHomePageScroll'  // 已隐藏：tab 切换统一走底部栏，左右滑动切页已禁用
-import IsEnableHorizontal from './IsEnableHorizontal'
 import IsAllowProgressBarSeek from './IsAllowProgressBarSeek'
 import IsUseSystemFileSelector from './IsUseSystemFileSelector'
 import IsAlwaysKeepStatusbarHeight from './IsAlwaysKeepStatusbarHeight'
@@ -32,7 +31,6 @@ export default memo(() => {
       <IsAutoHidePlayBar />
       {/* 已隐藏：tab 切换统一走底部栏（横滑手势让给页面内的切歌） */}
       {/* <IsHomePageScroll /> */}
-      <IsEnableHorizontal />
       <IsAllowProgressBarSeek />
       <IsUseSystemFileSelector />
       <IsAlwaysKeepStatusbarHeight />

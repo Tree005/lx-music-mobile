@@ -16,7 +16,6 @@ import { PhIcon } from '@/components/common/PhIcon'
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
-import { useHorizontalMode } from '@/utils/hooks'
 import { setNavActiveId } from '@/core/common'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import { HEADER_HEIGHT } from '@/config/constant'
@@ -53,8 +52,6 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onSourceChange, onTi
   const searchInputRef = useRef<SearchInputType>(null)
   const theme = useTheme()
   const t = useI18n()
-  // 横屏页面结构由 Horizontal 那套单独实现（切换器在它的标题栏上），这里保持上游原样
-  const isHorizontal = useHorizontalMode()
 
   useImperativeHandle(ref, () => ({
     setSourceList(list, source) {
@@ -78,17 +75,14 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onSourceChange, onTi
   }
 
   return (
-    <View style={{ ...styles.container, backgroundColor: isHorizontal ? undefined : theme['c-content-background'] }}>
-      {/* 第一行：返回 + 源选择（圆形）+ 搜索框 + 搜索按钮（竖屏） */}
+    <View style={{ ...styles.container, backgroundColor: theme['c-content-background'] }}>
+      {/* 第一行：返回 + 源选择（圆形）+ 搜索框 + 搜索按钮 */}
       <View style={{ ...styles.searchBar, borderBottomColor: theme['c-border-background'] }}>
-        {isHorizontal
-          ? null
-          : <TouchableOpacity style={styles.backBtn} activeOpacity={PRESS_OPACITY} onPress={handleCancel}>
-              <PhIcon Icon={CaretLeft} size={22} color={theme['c-font']} />
-            </TouchableOpacity>
-        }
+        <TouchableOpacity style={styles.backBtn} activeOpacity={PRESS_OPACITY} onPress={handleCancel}>
+          <PhIcon Icon={CaretLeft} size={22} color={theme['c-font']} />
+        </TouchableOpacity>
         <View style={styles.selector}>
-          <SourceSelector ref={sourceSelectorRef} onSourceChange={onSourceChange} circle={!isHorizontal} />
+          <SourceSelector ref={sourceSelectorRef} onSourceChange={onSourceChange} circle={true} />
         </View>
         <SearchInput
           ref={searchInputRef}
@@ -97,15 +91,12 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onSourceChange, onTi
           onBlur={onHideTipList}
           onTouchStart={onShowTipList}
         />
-        {isHorizontal
-          ? null
-          : <TouchableOpacity style={styles.searchBtn} activeOpacity={PRESS_OPACITY} onPress={handleSearchPress}>
-              <Text color={theme['c-primary-font']} size={15}>{t('search_action')}</Text>
-            </TouchableOpacity>
-        }
+        <TouchableOpacity style={styles.searchBtn} activeOpacity={PRESS_OPACITY} onPress={handleSearchPress}>
+          <Text color={theme['c-primary-font']} size={15}>{t('search_action')}</Text>
+        </TouchableOpacity>
       </View>
-      {/* 第二行：单曲 / 歌单 切换（仅竖屏，且只在结果列表显示时出现） */}
-      {isHorizontal || !showTypeBar
+      {/* 第二行：单曲 / 歌单 切换（只在结果列表显示时出现） */}
+      {!showTypeBar
         ? null
         : <View style={styles.typeBar}>
             <SearchTypeSelector />

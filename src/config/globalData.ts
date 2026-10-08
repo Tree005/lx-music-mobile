@@ -57,7 +57,6 @@ global.lx = {
 
   jumpMyListPosition: false,
 
-  settingActiveId: 'basic',
 
   songlistDetailListId: '',
 

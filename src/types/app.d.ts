@@ -5,7 +5,6 @@ import type { DislikeEventTypes } from '@/event/dislikeEvent'
 import type { StateEventTypes } from '@/event/stateEvent'
 import type { I18n } from '@/lang/i18n'
 import type { Buffer as _Buffer } from 'buffer'
-import type { SettingScreenIds } from '@/screens/Home/Views/Setting'
 
 // interface Process {
 //   env: {
@@ -40,7 +39,6 @@ interface GlobalData {
 
   jumpMyListPosition: boolean
 
-  settingActiveId: SettingScreenIds
 
   /**
    * 歌单详情页当前查看的歌单 id（歌单详情是独立子页面，靠它传参）

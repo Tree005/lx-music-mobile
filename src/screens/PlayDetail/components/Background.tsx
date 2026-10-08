@@ -50,7 +50,7 @@ const DitherNoise = memo(() => {
 // 播放器整页暗色模糊底：当前封面模糊铺底 + 黑色遮罩，封面切换时背景跟着变
 // crossfade 由 CrossfadeImage 负责：显示中的旧图保持挂载不重载、新图淡入盖上，任何时刻不露白
 // （对齐网易云的滑动切歌观感；新图 URL 未取到时背景保持上一张）
-// 竖屏（Vertical）与横屏（Horizontal）共用；传入 pic 时用它做背景（心动页显示非当前播放歌的快照），不传时跟随全局当前播放歌
+// 播放页（竖屏）与心动页共用；传入 pic 时用它做背景（心动页显示非当前播放歌的快照），不传时跟随全局当前播放歌
 export default memo(({ pic: picOverride }: { pic?: string | null } = {}) => {
   const playerPic = usePlayerMusicInfo().pic
   // 滑动切歌的预览封面（滑动方向确定时由 SwipeSongContainer 上报，含按钮触发的滑动）：

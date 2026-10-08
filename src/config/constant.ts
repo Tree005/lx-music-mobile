@@ -103,17 +103,6 @@ export const storageDataPrefixOld = {
 export const APP_PROVIDER_NAME = 'cn.toside.music.mobile.provider'
 
 
-// 横屏侧栏（Horizontal/Aside）菜单，也是所有「子页面」nav id 的来源
-export const NAV_MENUS = [
-  { id: 'nav_search', icon: 'search-2' },
-  { id: 'nav_songlist', icon: 'album' },
-  { id: 'nav_top', icon: 'leaderboard' },
-  { id: 'nav_love', icon: 'love' },
-  { id: 'nav_download', icon: 'download' },
-  { id: 'nav_history', icon: 'history' },
-  { id: 'nav_setting', icon: 'setting' },
-] as const
-
 // 竖屏底部三 Tab（顺序即显示顺序），icon 使用 MaterialCommunityIcons 图标名
 export const BOTTOM_TABS = [
   { id: 'nav_home', icon: 'home' },
@@ -121,13 +110,20 @@ export const BOTTOM_TABS = [
   { id: 'nav_mine', icon: 'account' },
 ] as const
 
-// 不在横屏侧栏里出现的子页面 nav id（带参数、只从页面里跳进去）
+// 带参数、只从页面里跳进去的子页面 nav id
 export const HIDDEN_NAV_IDS = [
   'nav_songlist_detail',
 ] as const
 
 export type NAV_ID_Type =
-  | typeof NAV_MENUS[number]['id']
+  // 子页面 nav id（原横屏侧栏菜单项；竖屏下这些页面仍由跳转进入）
+  | 'nav_search'
+  | 'nav_songlist'
+  | 'nav_top'
+  | 'nav_love'
+  | 'nav_download'
+  | 'nav_history'
+  | 'nav_setting'
   | typeof BOTTOM_TABS[number]['id']
   | typeof HIDDEN_NAV_IDS[number]
 export type NAV_TAB_Type = typeof BOTTOM_TABS[number]['id']

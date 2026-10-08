@@ -1,15 +1,12 @@
 import { useCallback, useEffect } from 'react'
 import { AppState } from 'react-native'
 import { Navigation } from 'react-native-navigation'
-import { useHorizontalMode } from '@/utils/hooks'
 import PageContent from '@/components/PageContent'
 import { setComponentId } from '@/core/common'
 import { COMPONENT_IDS } from '@/config/constant'
 import Vertical from './Vertical'
-import Horizontal from './Horizontal'
 import { navigations } from '@/navigation'
 import settingState from '@/store/setting/state'
-import { useSettingValue } from '@/store/setting/hook'
 import { useNavigationComponentDidAppear, useNavigationComponentWillAppear } from '@/navigation/hooks'
 import { setEdgeToEdge, setOrientationLock } from '@/utils/nativeModules/utils'
 
@@ -20,9 +17,6 @@ interface Props {
 
 
 export default ({ componentId }: Props) => {
-  const isHorizontalMode = useHorizontalMode()
-  const isEnableHorizontal = useSettingValue('common.isEnableHorizontal')
-
   // 全应用沉浸式：窗口内容延伸到系统栏后面 + 系统导航栏透明
   // ⚠️ RNN 应用页面 options（navigationBar.visible 默认 true）时会把窗口设回「非沉浸」，
   //    且 mergeOptions 本身也会触发一次 options 应用——所以这里只做 setEdgeToEdge，
@@ -45,12 +39,12 @@ export default ({ componentId }: Props) => {
     }
   }, [])
 
-  // 「启用横屏」关闭时锁定竖屏方向（开启时恢复系统默认、跟随设备旋转）
+  // 恒定锁定竖屏方向
   useEffect(() => {
-    setOrientationLock(!isEnableHorizontal)
+    setOrientationLock(true)
     // setRequestedOrientation 会让系统重置窗口状态（edge-to-edge 失效、底部被顶起），随即恢复
     applyEdgeToEdgeWindowStyle()
-  }, [isEnableHorizontal, applyEdgeToEdgeWindowStyle])
+  }, [applyEdgeToEdgeWindowStyle])
 
   // 兜底：回到前台时恢复窗口状态（后台期间系统/RNN 可能重置），避免退出播放页等场景底部栏被顶起
   useEffect(() => {
@@ -75,11 +69,7 @@ export default ({ componentId }: Props) => {
 
   return (
     <PageContent>
-      {
-        isHorizontalMode
-          ? <Horizontal />
-          : <Vertical />
-      }
+      <Vertical />
     </PageContent>
   )
 }
