@@ -6,6 +6,7 @@ import { useI18n } from '@/lang'
 import { setNavActiveId } from '@/core/common'
 import { scaleSizeW } from '@/utils/pixelRatio'
 import Text from '@/components/common/Text'
+import FadeInView from '@/components/common/FadeInView'
 import SkeletonBlock from '@/components/common/Skeleton'
 import { CaretRight } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
@@ -84,29 +85,31 @@ export default () => {
           : status == 'loading'
             ? <BoardsSkeleton />
             : (
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.scrollContent}
-                >
-                  {
-                    list.map((item, index) => (
-                      <TouchableOpacity
-                        key={item.id}
-                        activeOpacity={PRESS_OPACITY}
-                        style={styles.card}
-                        onPress={handleBoardPress}
-                      >
-                        <View
-                          style={{ ...styles.boardCard, backgroundColor: BOARD_CARD_COLORS[index % BOARD_CARD_COLORS.length] }}
+                <FadeInView>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.scrollContent}
+                  >
+                    {
+                      list.map((item, index) => (
+                        <TouchableOpacity
+                          key={item.id}
+                          activeOpacity={PRESS_OPACITY}
+                          style={styles.card}
+                          onPress={handleBoardPress}
                         >
-                          <Text size={13} color="#fff" numberOfLines={2} style={styles.boardCardText}>{item.name}</Text>
-                        </View>
-                        <Text size={13} numberOfLines={1} style={styles.boardName}>{item.name}</Text>
-                      </TouchableOpacity>
-                    ))
-                  }
-                </ScrollView>
+                          <View
+                            style={{ ...styles.boardCard, backgroundColor: BOARD_CARD_COLORS[index % BOARD_CARD_COLORS.length] }}
+                          >
+                            <Text size={13} color="#fff" numberOfLines={2} style={styles.boardCardText}>{item.name}</Text>
+                          </View>
+                          <Text size={13} numberOfLines={1} style={styles.boardName}>{item.name}</Text>
+                        </TouchableOpacity>
+                      ))
+                    }
+                  </ScrollView>
+                </FadeInView>
               )
       }
     </View>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ScrollView, TouchableOpacity, View } from 'react-native'
 import { createStyle } from '@/utils/tools'
+import FadeInView from '@/components/common/FadeInView'
 import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import { setNavActiveId } from '@/core/common'
@@ -90,26 +91,28 @@ export default () => {
           : status == 'loading'
             ? <SonglistsSkeleton />
             : (
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.scrollContent}
-                >
-                  {
-                    list.map(item => (
-                      <TouchableOpacity key={item.id} activeOpacity={PRESS_OPACITY} style={styles.card} onPress={handleSonglistPress}>
-                        <View style={styles.coverWrap}>
-                          <Image url={item.img} style={styles.cover} />
-                          {/* 封面右下角播放按钮：仅作视觉提示，点击整卡进入歌单页 */}
-                          <View style={styles.playBtn}>
-                            <PhIcon Icon={Play} size={18} weight="fill" color="#fff" />
+                <FadeInView>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.scrollContent}
+                  >
+                    {
+                      list.map(item => (
+                        <TouchableOpacity key={item.id} activeOpacity={PRESS_OPACITY} style={styles.card} onPress={handleSonglistPress}>
+                          <View style={styles.coverWrap}>
+                            <Image url={item.img} style={styles.cover} />
+                            {/* 封面右下角播放按钮：仅作视觉提示，点击整卡进入歌单页 */}
+                            <View style={styles.playBtn}>
+                              <PhIcon Icon={Play} size={18} weight="fill" color="#fff" />
+                            </View>
                           </View>
-                        </View>
-                        <Text style={styles.cardName} numberOfLines={2} size={13}>{item.name}</Text>
-                      </TouchableOpacity>
-                    ))
-                  }
-                </ScrollView>
+                          <Text style={styles.cardName} numberOfLines={2} size={13}>{item.name}</Text>
+                        </TouchableOpacity>
+                      ))
+                    }
+                  </ScrollView>
+                </FadeInView>
               )
       }
     </View>

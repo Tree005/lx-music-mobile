@@ -7,6 +7,7 @@ import { useI18n } from '@/lang'
 import { scaleSizeW, scaleSizeH } from '@/utils/pixelRatio'
 import Text from '@/components/common/Text'
 import Image from '@/components/common/Image'
+import FadeInView from '@/components/common/FadeInView'
 import SkeletonBlock from '@/components/common/Skeleton'
 import { PhIcon } from '@/components/common/PhIcon'
 import { getBoardsList, getListDetail } from '@/core/leaderboard'
@@ -129,39 +130,41 @@ export default () => {
           : status == 'loading'
             ? <HotSongsSkeleton />
             : (
-                <ScrollView
-                  horizontal
-                  pagingEnabled
-                  showsHorizontalScrollIndicator={false}
-                  onMomentumScrollEnd={handleScrollEnd}
-                >
-                  {
-                    pages.map((pageItems, pageIndex) => (
-                      <View key={pageIndex} style={{ width }}>
-                        {
-                          pageItems.map((item, i) => {
-                            const index = pageIndex * PAGE_SIZE + i
-                            return (
-                              <TouchableOpacity
-                                key={item.id}
-                                activeOpacity={PRESS_OPACITY}
-                                style={styles.row}
-                                onPress={() => { void handlePlay(index) }}
-                              >
-                                <Image url={item.meta.picUrl} style={styles.cover} />
-                                <View style={styles.info}>
-                                  <Text size={15} numberOfLines={1} style={styles.name}>{item.name}</Text>
-                                  <Text size={12} color={theme['c-font-label']} numberOfLines={1} style={styles.singer}>{item.singer}</Text>
-                                </View>
-                                <PhIcon Icon={PlayCircle} size={26} weight="light" color={theme['c-font-label']} />
-                              </TouchableOpacity>
-                            )
-                          })
-                        }
-                      </View>
-                    ))
-                  }
-                </ScrollView>
+                <FadeInView>
+                  <ScrollView
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    onMomentumScrollEnd={handleScrollEnd}
+                  >
+                    {
+                      pages.map((pageItems, pageIndex) => (
+                        <View key={pageIndex} style={{ width }}>
+                          {
+                            pageItems.map((item, i) => {
+                              const index = pageIndex * PAGE_SIZE + i
+                              return (
+                                <TouchableOpacity
+                                  key={item.id}
+                                  activeOpacity={PRESS_OPACITY}
+                                  style={styles.row}
+                                  onPress={() => { void handlePlay(index) }}
+                                >
+                                  <Image url={item.meta.picUrl} style={styles.cover} />
+                                  <View style={styles.info}>
+                                    <Text size={15} numberOfLines={1} style={styles.name}>{item.name}</Text>
+                                    <Text size={12} color={theme['c-font-label']} numberOfLines={1} style={styles.singer}>{item.singer}</Text>
+                                  </View>
+                                  <PhIcon Icon={PlayCircle} size={26} weight="light" color={theme['c-font-label']} />
+                                </TouchableOpacity>
+                              )
+                            })
+                          }
+                        </View>
+                      ))
+                    }
+                  </ScrollView>
+                </FadeInView>
               )
       }
     </View>
