@@ -7,7 +7,7 @@ import { useDrag } from '@/utils/hooks'
 // 注意：Circle 在 phosphor-react-native 中只以 CircleIcon 导出
 import { CircleIcon } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
-// import {  AppColors, BorderRadius } from '@/theme'
+import { BorderRadius } from '@/theme'
 
 
 const DefaultBar = memo(({ color }: { color: string }) => {

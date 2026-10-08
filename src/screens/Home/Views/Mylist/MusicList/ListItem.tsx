@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef, useState } from 'react'
 import { View, TouchableOpacity } from 'react-native'
 import { LIST_IDS, LIST_ITEM_HEIGHT } from '@/config/constant'
-// import {  BorderWidths, BorderRadius } from '@/theme'
+import { BorderRadius } from '@/theme'
 import { DotsThreeVertical, Heart, PlayCircle, Trash } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
 import Image from '@/components/common/Image'
