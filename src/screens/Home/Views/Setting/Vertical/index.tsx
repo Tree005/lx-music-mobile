@@ -3,8 +3,10 @@ import { Animated, FlatList, View, type FlatListProps } from 'react-native'
 
 import Header from './Header'
 import Home from './Home'
-import Basic from '../settings/Basic'
+import Startup from '../settings/Startup'
 import Player from '../settings/Player'
+import Display from '../settings/Display'
+import Appearance from '../settings/Appearance'
 import LyricDesktop from '../settings/LyricDesktop'
 import List from '../settings/List'
 import Sync from '../settings/Sync'
@@ -23,27 +25,31 @@ import { setNavActiveId } from '@/core/common'
 import { TAB_OF_ID } from '@/config/constant'
 
 // 竖屏设置页：两级结构
-// - 主页：入口列表（数据同步 / 应用设置 / 自定义音源 / 检测更新 / 清除缓存）
+// - 主页：入口列表（播放 / 显示与歌词 / 列表 / 数据同步 / 备份与恢复 / 自定义音源 / 缓存与更新）
 // - 二级页：单页纵向堆叠该入口的分区，没有分区导航（返回栏见 Header.tsx）
 // 两级之间走横滑转场（与 NavStack 同一套模式）：home → 二级 = forward（新页从右侧滑入、
 // 主页左移视差），二级 → home = backward（二级页右滑出、主页从视差位滑回）；
 // 每页各渲染一份 Header，标题随页滑动
 const PAGE_SECTIONS = {
-  // 应用设置：除有独立入口的「数据同步 / 检测更新」外的所有分区
-  app: ['basic', 'player', 'lyric_desktop', 'list', 'backup', 'other'],
+  // 一级入口 → 二级页包含的分区
+  play: ['startup', 'player'],
+  display: ['display', 'appearance', 'lyric_desktop'],
+  list: ['list'],
   sync: ['sync'],
+  backup: ['backup'],
   source: ['source', 'source_name'],
-  version: ['version'],
-  cache: ['other'],
+  update: ['other', 'version'],
 } as const
 
 // 二级页标题用的 i18n key
 const PAGE_TITLES = {
-  app: 'setting_app',
+  play: 'setting_player',
+  display: 'setting_display_lyric',
+  list: 'setting_list',
   sync: 'setting_sync',
+  backup: 'setting_backup',
   source: 'setting_basic_source',
-  version: 'setting_version',
-  cache: 'setting_cache',
+  update: 'setting_cache_update',
 } as const satisfies Record<SettingPageIds, string>
 
 type SectionId = typeof PAGE_SECTIONS[keyof typeof PAGE_SECTIONS][number]
@@ -56,16 +62,18 @@ type FlatListType = FlatListProps<SectionId>
 
 const SectionItem = memo(({ id }: { id: SectionId }) => {
   switch (id) {
-    case 'basic': return <Basic />
+    case 'startup': return <Startup />
     case 'player': return <Player />
+    case 'display': return <Display />
+    case 'appearance': return <Appearance />
     case 'lyric_desktop': return <LyricDesktop />
     case 'list': return <List />
     case 'sync': return <Sync />
     case 'backup': return <Backup />
-    case 'other': return <Other />
-    case 'version': return <Version />
     case 'source': return <Source />
     case 'source_name': return <SourceName />
+    case 'other': return <Other />
+    case 'version': return <Version />
   }
 }, () => true)
 
@@ -116,7 +124,7 @@ const PageView = ({ id, role, dir, progress, width, onOpenPage, onGoHome, onBack
 
   return (
     <Animated.View
-      style={[styles.fill, { backgroundColor: theme['c-content-background'] }, { transform: [{ translateX }] }]}
+      style={[styles.fill, { backgroundColor: theme['c-100'] }, { transform: [{ translateX }] }]}
       pointerEvents={role === 'settled' ? 'auto' : 'none'}
     >
       <Header

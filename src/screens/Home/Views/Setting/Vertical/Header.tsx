@@ -26,7 +26,8 @@ export default ({ title, onBack }: {
       // 高度叠加状态栏，并将内容下推避免被状态栏遮挡
       height: HEADER_HEIGHT_SIZE + statusBarHeight,
       paddingTop: statusBarHeight,
-      backgroundColor: theme['c-content-background'],
+      // 背景透明：让页面浅灰底色透上来
+      backgroundColor: 'transparent',
     }}>
       <TouchableOpacity style={styles.btn} onPress={onBack}>
         <PhIcon Icon={CaretLeft} size={20} color={theme['c-font']} />

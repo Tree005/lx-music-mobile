@@ -2,7 +2,7 @@ import { memo, useMemo } from 'react'
 
 import { StyleSheet, View } from 'react-native'
 
-import SubTitle from '../../components/SubTitle'
+import Section from '../../components/Section'
 import CheckBox from '@/components/common/CheckBox'
 import { useSettingValue } from '@/store/setting/hook'
 import { useI18n } from '@/lang'
@@ -46,13 +46,13 @@ export default memo(() => {
   }, [t])
 
   return (
-    <SubTitle title={t('setting_basic_sourcename')}>
+    <Section title={t('setting_basic_sourcename')}>
       <View style={styles.list}>
         {
           list.map(({ id, name }) => <Item name={name} id={id} key={id} />)
         }
       </View>
-    </SubTitle>
+    </Section>
   )
 })
 
@@ -60,5 +60,7 @@ const styles = StyleSheet.create({
   list: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    // 原 SubTitle 提供的内边距，改用 Section 后由内容自己提供
+    paddingHorizontal: 20,
   },
 })

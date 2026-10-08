@@ -7,6 +7,7 @@ import { useI18n } from '@/lang'
 import { scaleSizeW, scaleSizeH } from '@/utils/pixelRatio'
 import Text from '@/components/common/Text'
 import Image from '@/components/common/Image'
+import SkeletonBlock from '@/components/common/Skeleton'
 import { PhIcon } from '@/components/common/PhIcon'
 import { getBoardsList, getListDetail } from '@/core/leaderboard'
 import { useMainSource } from '@/core/mainSource'
@@ -124,7 +125,7 @@ export default () => {
               <Text style={styles.empty} size={13} color={theme['c-font-label']}>{t('no_item')}</Text>
             )
           : status == 'loading'
-            ? null
+            ? <HotSongsSkeleton />
             : (
                 <ScrollView
                   horizontal
@@ -164,6 +165,22 @@ export default () => {
     </View>
   )
 }
+
+// 加载骨架：3 行歌曲行（复用真实行的结构与尺寸：封面块 + 两行文字条 + 右侧圆块）
+const HotSongsSkeleton = () => (
+  <View>
+    {[0, 1, 2].map(i => (
+      <View key={i} style={styles.row}>
+        <SkeletonBlock width={scaleSizeW(48)} height={scaleSizeW(48)} radius={4} />
+        <View style={styles.info}>
+          <SkeletonBlock height={14} width="65%" />
+          <SkeletonBlock height={12} width="40%" style={styles.skeletonLine2} />
+        </View>
+        <SkeletonBlock width={26} height={26} radius={13} />
+      </View>
+    ))}
+  </View>
+)
 
 const styles = createStyle({
   header: {
@@ -216,5 +233,8 @@ const styles = createStyle({
   },
   singer: {
     marginTop: 3,
+  },
+  skeletonLine2: {
+    marginTop: 8,
   },
 })

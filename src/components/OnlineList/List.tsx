@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, forwardRef, useImperativeHandle } from 'react'
-import { FlatList, type FlatListProps, RefreshControl, View } from 'react-native'
+import { FlatList, type FlatListProps, RefreshControl, View, type ViewStyle } from 'react-native'
 
 // import { useMusicList } from '@/store/list/hook'
 import ListItem, { ITEM_HEIGHT, PIC_ITEM_HEIGHT } from './ListItem'
@@ -11,8 +11,10 @@ import settingState from '@/store/setting/state'
 import { MULTI_SELECT_BAR_HEIGHT } from './MultipleModeBar'
 import { useI18n } from '@/lang'
 import Text from '@/components/common/Text'
+import SkeletonBlock from '@/components/common/Skeleton'
 import { handlePlay } from './listAction'
 import { useSettingValue } from '@/store/setting/hook'
+import { windowSizeTools } from '@/utils/windowSizeTools'
 
 type FlatListType = FlatListProps<LX.Music.MusicInfoOnline>
 
@@ -214,6 +216,8 @@ const List = forwardRef<ListType, ListProps>(({
       onRefresh={onRefresh} />
   ), [status, onRefresh, theme])
   const footerComponent = useMemo(() => {
+    // 空列表处于加载中：由行骨架填充，不再显示底部文字
+    if (!currentList.length && status == 'loading') return null
     let label: FooterLabel
     switch (status) {
       case 'refreshing': return null
@@ -235,7 +239,7 @@ const List = forwardRef<ListType, ListProps>(({
         <Footer label={label} onLoadMore={onLoadMore} />
       </View>
     )
-  }, [onLoadMore, status, visibleMultiSelect])
+  }, [onLoadMore, status, visibleMultiSelect, currentList.length])
 
   return (
     <FlatList
@@ -259,10 +263,36 @@ const List = forwardRef<ListType, ListProps>(({
       progressViewOffset={progressViewOffset}
       ListHeaderComponent={ListHeaderComponent}
       refreshControl={refreshControl}
+      ListEmptyComponent={status == 'loading' ? <ListSkeleton showPic={showPic} rowWidth={rowInfo.current.rowWidth} /> : null}
       ListFooterComponent={footerComponent}
     />
   )
 })
+
+// 空列表加载骨架：行结构与真实行对齐（行高、封面/序号布局与 ListItem 一致），
+// 数据到达后原地替换；横屏双列模式下宽度跟随 rowWidth 自动并排
+const ListSkeleton = ({ showPic, rowWidth }: { showPic?: boolean, rowWidth: ViewStyle['width'] }) => {
+  const rowHeight = showPic ? PIC_ITEM_HEIGHT : ITEM_HEIGHT
+  // 行数按屏幕高度计算：填满一屏多一点
+  const count = Math.ceil(windowSizeTools.getSize().height / rowHeight) + 1
+  return (
+    <View style={styles.skeletonWrap}>
+      {Array.from({ length: count }).map((_, i) => (
+        <View key={i} style={{ ...styles.skeletonRow, width: rowWidth, height: rowHeight }}>
+          {
+            showPic
+              ? <SkeletonBlock width={44} height={44} radius={4} style={styles.skeletonPic} />
+              : <SkeletonBlock width={14} height={12} style={styles.skeletonSn} />
+          }
+          <View style={styles.skeletonInfo}>
+            <SkeletonBlock height={14} width="58%" />
+            <SkeletonBlock height={11} width="38%" style={styles.skeletonLine2} />
+          </View>
+        </View>
+      ))}
+    </View>
+  )
+}
 
 type FooterLabel = 'list_loading' | 'list_end' | 'list_error' | null
 const Footer = ({ label, onLoadMore }: {
@@ -297,6 +327,31 @@ const styles = createStyle({
   footer: {
     textAlign: 'center',
     padding: 10,
+  },
+  skeletonWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  skeletonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingRight: 2,
+  },
+  skeletonPic: {
+    marginLeft: 20,
+    marginRight: 14,
+  },
+  skeletonSn: {
+    marginLeft: 12,
+    marginRight: 12,
+  },
+  skeletonInfo: {
+    flexGrow: 1,
+    flexShrink: 1,
+    paddingRight: 2,
+  },
+  skeletonLine2: {
+    marginTop: 4,
   },
 })
 

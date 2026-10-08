@@ -2,7 +2,7 @@ import { memo, useCallback, useMemo, useRef } from 'react'
 
 import { View } from 'react-native'
 
-import SubTitle from '../../components/SubTitle'
+import Section from '../../components/Section'
 import CheckBox from '@/components/common/CheckBox'
 import { createStyle } from '@/utils/tools'
 import { setApiSource } from '@/core/apiSource'
@@ -96,7 +96,7 @@ export default memo(() => {
   }
 
   return (
-    <SubTitle title={t('setting_basic_source')}>
+    <Section title={t('setting_basic_source')}>
       <View style={styles.list}>
         {
           list.map(({ id, name }) => <Item name={name} id={id} key={id} change={setApiSourceId} />)
@@ -109,7 +109,7 @@ export default memo(() => {
         <Button onPress={handleShow}>{t('setting_basic_source_user_api_btn')}</Button>
       </View>
       <UserApiEditModal ref={modalRef} />
-    </SubTitle>
+    </Section>
   )
 })
 
@@ -117,12 +117,15 @@ const styles = createStyle({
   list: {
     flexGrow: 0,
     flexShrink: 1,
+    // 原 SubTitle 提供的内边距，改用 Section 后由内容自己提供
+    paddingHorizontal: 20,
     // flexDirection: 'row',
     // flexWrap: 'wrap',
   },
   btn: {
     marginTop: 10,
     flexDirection: 'row',
+    paddingHorizontal: 20,
   },
   sourceLabel: {
 

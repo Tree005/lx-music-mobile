@@ -28,7 +28,7 @@ const Row = memo(({ label, value, onPress }: {
   )
 })
 
-// 设置主页：只放入口，点进去是各个二级页
+// 设置主页：单卡片 7 个一级入口，点进去是各个二级页
 export default ({ onOpenPage }: {
   /** 打开某个入口对应的二级页 */
   onOpenPage: (id: SettingPageIds) => void
@@ -37,14 +37,14 @@ export default ({ onOpenPage }: {
 
   return (
     <View style={styles.container}>
-      <Section title={t('setting_basic')}>
+      <Section>
+        <Row label={t('setting_player')} onPress={() => { onOpenPage('play') }} />
+        <Row label={t('setting_display_lyric')} onPress={() => { onOpenPage('display') }} />
+        <Row label={t('setting_list')} onPress={() => { onOpenPage('list') }} />
         <Row label={t('setting_sync')} onPress={() => { onOpenPage('sync') }} />
-        <Row label={t('setting_app')} onPress={() => { onOpenPage('app') }} />
+        <Row label={t('setting_backup')} onPress={() => { onOpenPage('backup') }} />
         <Row label={t('setting_basic_source')} onPress={() => { onOpenPage('source') }} />
-      </Section>
-      <Section title={t('setting_about')}>
-        <Row label={t('setting_version')} onPress={() => { onOpenPage('version') }} />
-        <Row label={t('setting_cache')} onPress={() => { onOpenPage('cache') }} />
+        <Row label={t('setting_cache_update')} onPress={() => { onOpenPage('update') }} />
       </Section>
     </View>
   )

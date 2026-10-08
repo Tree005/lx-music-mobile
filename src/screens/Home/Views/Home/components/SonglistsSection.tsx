@@ -7,6 +7,7 @@ import { setNavActiveId } from '@/core/common'
 import { useMainSource } from '@/core/mainSource'
 import { scaleSizeW, setSpText } from '@/utils/pixelRatio'
 import Text from '@/components/common/Text'
+import SkeletonBlock from '@/components/common/Skeleton'
 import { CaretRight, Play } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
 import Image from '@/components/common/Image'
@@ -85,7 +86,7 @@ export default () => {
               <Text style={styles.empty} size={13} color={theme['c-font-label']}>{t('no_item')}</Text>
             )
           : status == 'loading'
-            ? null
+            ? <SonglistsSkeleton />
             : (
                 <ScrollView
                   horizontal
@@ -112,6 +113,19 @@ export default () => {
     </View>
   )
 }
+
+// 加载骨架：3 张卡片（封面方块 + 两行文字条），宽度复用真实卡片样式
+const SonglistsSkeleton = () => (
+  <View style={styles.skeletonWrap}>
+    {[0, 1, 2].map(i => (
+      <View key={i} style={styles.card}>
+        <SkeletonBlock style={styles.skeletonCover} radius={8} />
+        <SkeletonBlock height={13} style={styles.skeletonLine1} />
+        <SkeletonBlock height={13} width="62%" style={styles.skeletonLine2} />
+      </View>
+    ))}
+  </View>
+)
 
 const styles = createStyle({
   header: {
@@ -168,5 +182,21 @@ const styles = createStyle({
   cardName: {
     marginTop: 8,
     lineHeight: setSpText(18),
+  },
+  skeletonWrap: {
+    flexDirection: 'row',
+    paddingLeft: 20,
+    gap: 12,
+    overflow: 'hidden',
+  },
+  skeletonCover: {
+    width: '100%',
+    aspectRatio: 1,
+  },
+  skeletonLine1: {
+    marginTop: 10,
+  },
+  skeletonLine2: {
+    marginTop: 7,
   },
 })

@@ -50,10 +50,13 @@ export default ({ pagerHeight, belowCoverHeight, onPress, onCoverSize, coverScal
     }
   }, [statusBarHeight, winHeight, winWidth, pagerHeight, belowCoverHeight])
 
-  // 上报封面尺寸（跟手滑动的预览封面按它对齐）
+  // 上报封面尺寸（跟手滑动的预览封面按它对齐）：
+  // 只在实测数据就绪后上报——兜底公式有误差，且这个阶段「封面以下预留空间」还是 0，
+  // 封面卡会先渲染在错误尺寸、贴底位置（盖住歌词与信息行）再弹回正确位置。
+  // 等实测就绪再上报：进页面时封面晚一两帧出现（位置直接正确），换掉「先错后弹」的中间态
   useEffect(() => {
-    if (style.width > 0) onCoverSize?.(style.width)
-  }, [style.width, onCoverSize])
+    if (pagerHeight > 0 && belowCoverHeight > 0 && style.width > 0) onCoverSize?.(style.width)
+  }, [pagerHeight, belowCoverHeight, style.width, onCoverSize])
 
   return (
     <TouchableOpacity style={styles.container} activeOpacity={1} onPress={onPress}>

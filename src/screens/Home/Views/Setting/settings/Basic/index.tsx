@@ -17,7 +17,6 @@ import IsUseSystemFileSelector from './IsUseSystemFileSelector'
 import IsAlwaysKeepStatusbarHeight from './IsAlwaysKeepStatusbarHeight'
 import IsShowBackBtn from './IsShowBackBtn'
 import IsShowExitBtn from './IsShowExitBtn'
-import DrawerLayoutPosition from './DrawerLayoutPosition'
 import { useI18n } from '@/lang/i18n'
 
 export default memo(() => {
@@ -38,7 +37,6 @@ export default memo(() => {
       <IsUseSystemFileSelector />
       <IsAlwaysKeepStatusbarHeight />
       <Theme />
-      <DrawerLayoutPosition />
       <Language />
       <FontSize />
       <ShareType />

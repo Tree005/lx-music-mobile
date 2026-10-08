@@ -6,6 +6,7 @@ import { useI18n } from '@/lang'
 import { setNavActiveId } from '@/core/common'
 import { scaleSizeW } from '@/utils/pixelRatio'
 import Text from '@/components/common/Text'
+import SkeletonBlock from '@/components/common/Skeleton'
 import { CaretRight } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
 import { getBoardsList } from '@/core/leaderboard'
@@ -79,7 +80,7 @@ export default () => {
               <Text style={styles.empty} size={13} color={theme['c-font-label']}>{t('no_item')}</Text>
             )
           : status == 'loading'
-            ? null
+            ? <BoardsSkeleton />
             : (
                 <ScrollView
                   horizontal
@@ -109,6 +110,18 @@ export default () => {
     </View>
   )
 }
+
+// 加载骨架：一行 4 张小卡（色块 + 一行文字条），宽度复用真实卡片样式
+const BoardsSkeleton = () => (
+  <View style={styles.skeletonWrap}>
+    {[0, 1, 2, 3].map(i => (
+      <View key={i} style={styles.card}>
+        <SkeletonBlock style={styles.skeletonCover} radius={8} />
+        <SkeletonBlock height={13} width="80%" style={styles.skeletonLine} />
+      </View>
+    ))}
+  </View>
+)
 
 const styles = createStyle({
   header: {
@@ -155,5 +168,19 @@ const styles = createStyle({
   boardName: {
     marginTop: 7,
     textAlign: 'center',
+  },
+  skeletonWrap: {
+    flexDirection: 'row',
+    paddingLeft: 20,
+    gap: 12,
+    overflow: 'hidden',
+  },
+  skeletonCover: {
+    width: '100%',
+    aspectRatio: 1,
+  },
+  skeletonLine: {
+    marginTop: 10,
+    alignSelf: 'center',
   },
 })
