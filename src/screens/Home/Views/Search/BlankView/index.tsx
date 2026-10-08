@@ -7,6 +7,7 @@ import { createStyle } from '@/utils/tools'
 import HistorySearch from './HistorySearch'
 import HotSearch from './HotSearch'
 import RankList from './RankList'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 type TabId = 'hot' | 'rank_hot' | 'rank_new'
 
@@ -45,7 +46,7 @@ export default ({ source, onSearch }: BlankViewProps) => {
             <TouchableOpacity
               key={item.id}
               style={styles.tabItem}
-              activeOpacity={0.7}
+              activeOpacity={PRESS_OPACITY}
               onPress={() => { handleTabChange(item.id) }}
             >
               <Text size={15} color={tab == item.id ? theme['c-primary'] : theme['c-font-label']} style={tab == item.id ? styles.tabLabelActive : null}>{item.label}</Text>

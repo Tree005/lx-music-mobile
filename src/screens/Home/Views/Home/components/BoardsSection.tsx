@@ -12,6 +12,7 @@ import { PhIcon } from '@/components/common/PhIcon'
 import { getBoardsList } from '@/core/leaderboard'
 import { useMainSource } from '@/core/mainSource'
 import leaderboardState, { type BoardItem } from '@/store/leaderboard/state'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 // 首页排行榜：横向滚动小卡片，最多取 6 个
 const MAX_BOARD_NUM = 6
@@ -69,7 +70,7 @@ export default () => {
     <View>
       <View style={styles.header}>
         <Text size={18} style={styles.title}>{t('home_section_boards')}</Text>
-        <TouchableOpacity style={styles.more} activeOpacity={0.7} onPress={handleMore}>
+        <TouchableOpacity style={styles.more} activeOpacity={PRESS_OPACITY} onPress={handleMore}>
           <Text size={13} color={theme['c-primary']}>{t('home_more')}</Text>
           <PhIcon Icon={CaretRight} size={13} color={theme['c-primary']} />
         </TouchableOpacity>
@@ -91,7 +92,7 @@ export default () => {
                     list.map((item, index) => (
                       <TouchableOpacity
                         key={item.id}
-                        activeOpacity={0.7}
+                        activeOpacity={PRESS_OPACITY}
                         style={styles.card}
                         onPress={handleBoardPress}
                       >

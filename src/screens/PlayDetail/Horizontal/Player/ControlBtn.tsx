@@ -8,6 +8,7 @@ import { useIsPlay } from '@/store/player/hook'
 import { useLayout } from '@/utils/hooks'
 import { marginLeft } from '../constant'
 import { BTN_WIDTH } from '../MoreBtn/Btn'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 // const WIDTH = scaleSizeW(48)
 // 整页是暗色模糊底，播放控制图标统一白色
@@ -18,7 +19,7 @@ const PrevBtn = ({ size }: { size: number }) => {
     void playPrev()
   }
   return (
-    <TouchableOpacity style={{ ...styles.cotrolBtn, width: size, height: size }} activeOpacity={0.5} onPress={handlePlayPrev}>
+    <TouchableOpacity style={{ ...styles.cotrolBtn, width: size, height: size }} activeOpacity={PRESS_OPACITY} onPress={handlePlayPrev}>
       <PhIcon Icon={SkipBack} color={ICON_COLOR} size={size * 0.7} weight="fill" />
     </TouchableOpacity>
   )
@@ -28,7 +29,7 @@ const NextBtn = ({ size }: { size: number }) => {
     void playNext()
   }
   return (
-    <TouchableOpacity style={{ ...styles.cotrolBtn, width: size, height: size }} activeOpacity={0.5} onPress={handlePlayNext}>
+    <TouchableOpacity style={{ ...styles.cotrolBtn, width: size, height: size }} activeOpacity={PRESS_OPACITY} onPress={handlePlayNext}>
       <PhIcon Icon={SkipForward} color={ICON_COLOR} size={size * 0.7} weight="fill" />
     </TouchableOpacity>
   )
@@ -37,7 +38,7 @@ const NextBtn = ({ size }: { size: number }) => {
 const TogglePlayBtn = ({ size }: { size: number }) => {
   const isPlay = useIsPlay()
   return (
-    <TouchableOpacity style={{ ...styles.cotrolBtn, width: size, height: size }} activeOpacity={0.5} onPress={togglePlay}>
+    <TouchableOpacity style={{ ...styles.cotrolBtn, width: size, height: size }} activeOpacity={PRESS_OPACITY} onPress={togglePlay}>
       <PhIcon Icon={isPlay ? Pause : Play} color={ICON_COLOR} size={size * 0.7} weight="fill" />
     </TouchableOpacity>
   )

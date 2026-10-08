@@ -4,6 +4,7 @@ import { type IconProps } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
 import { createStyle } from '@/utils/tools'
 import { scaleSizeW } from '@/utils/pixelRatio'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 export const BTN_WIDTH = scaleSizeW(32)
 export const BTN_ICON_SIZE = 22
@@ -18,7 +19,7 @@ export default ({ icon, color, onPress }: {
   onPress: () => void
 }) => {
   return (
-    <TouchableOpacity style={{ ...styles.cotrolBtn, width: BTN_WIDTH, height: BTN_WIDTH }} activeOpacity={0.5} onPress={onPress}>
+    <TouchableOpacity style={{ ...styles.cotrolBtn, width: BTN_WIDTH, height: BTN_WIDTH }} activeOpacity={PRESS_OPACITY} onPress={onPress}>
       <PhIcon Icon={icon} color={color ?? ICON_COLOR} size={BTN_ICON_SIZE} />
     </TouchableOpacity>
   )

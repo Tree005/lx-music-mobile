@@ -6,6 +6,7 @@ import { useI18n } from '@/lang'
 import { setNavActiveId } from '@/core/common'
 import Text from '@/components/common/Text'
 import { PhIcon } from '@/components/common/PhIcon'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 // 顶部搜索框：固定浅色胶囊 + 左侧放大镜 + 提示文字
 // 整条可点，点击进入搜索页
@@ -22,7 +23,7 @@ export default () => {
 
   return (
     <TouchableOpacity
-      activeOpacity={0.7}
+      activeOpacity={PRESS_OPACITY}
       style={{ ...styles.container, backgroundColor: BACKGROUND_COLOR }}
       onPress={handlePress}
     >

@@ -7,6 +7,7 @@ import { useI18n } from '@/lang'
 import { clearHistoryList, getSearchHistory, removeHistoryWord } from '@/core/search/search'
 import { Eraser } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 
 interface HistorySearchProps {
@@ -53,7 +54,7 @@ export default ({ onSearch }: HistorySearchProps) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text size={13} color={theme['c-font-label']}>{t('search_history_search')}</Text>
-        <TouchableOpacity onPress={handleClear} style={styles.clearBtn} activeOpacity={0.7}>
+        <TouchableOpacity onPress={handleClear} style={styles.clearBtn} activeOpacity={PRESS_OPACITY}>
           <PhIcon Icon={Eraser} size={14} color={theme['c-300']} />
         </TouchableOpacity>
       </View>
@@ -64,7 +65,7 @@ export default ({ onSearch }: HistorySearchProps) => {
             <TouchableOpacity
               key={keyword}
               style={{ ...styles.button, backgroundColor: theme['c-button-background'] }}
-              activeOpacity={0.7}
+              activeOpacity={PRESS_OPACITY}
               onPress={() => { onSearch(keyword) }}
               onLongPress={() => { handleRemove(keyword) }}
             >

@@ -10,6 +10,7 @@ import Text from '@/components/common/Text'
 import { PhIcon } from '@/components/common/PhIcon'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import { type SettingPageIds } from './index'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 // 主页入口行：标题 +（可选副值）+ 右箭头，纯文字不带图标
 const Row = memo(({ label, value, onPress }: {
@@ -20,7 +21,7 @@ const Row = memo(({ label, value, onPress }: {
   const theme = useTheme()
 
   return (
-    <TouchableOpacity style={styles.row} activeOpacity={0.7} onPress={onPress}>
+    <TouchableOpacity style={styles.row} activeOpacity={PRESS_OPACITY} onPress={onPress}>
       <Text style={styles.rowLabel} size={15}>{label}</Text>
       {value ? <Text size={13} color={theme['c-font-label']} style={styles.rowValue}>{value}</Text> : null}
       <PhIcon Icon={CaretRight} size={14} color={theme['c-font-label']} />

@@ -13,6 +13,7 @@ import { LIST_IDS } from '@/config/constant'
 import { navigations } from '@/navigation'
 import commonState from '@/store/common/state'
 import { createStyle } from '@/utils/tools'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 // 整页是暗色模糊底，信息行文字统一用白色
 const TITLE_COLOR = '#fff'
@@ -90,15 +91,15 @@ export default memo(({ musicInfoOverride, showMore = false, onMore, onComment }:
         <Text numberOfLines={1} size={20} color={TITLE_COLOR} style={styles.name}>{musicInfo.name}</Text>
         <Text numberOfLines={1} size={14} color={SINGER_COLOR} style={styles.singer}>{musicInfo.singer}</Text>
       </View>
-      <TouchableOpacity style={styles.actionBtn} activeOpacity={0.6} onPress={handleToggleLove}>
+      <TouchableOpacity style={styles.actionBtn} activeOpacity={PRESS_OPACITY} onPress={handleToggleLove}>
         <PhIcon Icon={Heart} size={24} weight={loved ? 'fill' : 'regular'} color={loved ? theme['c-primary'] : TITLE_COLOR} />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.actionBtn} activeOpacity={0.6} onPress={handleShowComment}>
+      <TouchableOpacity style={styles.actionBtn} activeOpacity={PRESS_OPACITY} onPress={handleShowComment}>
         <PhIcon Icon={ChatCircle} size={23} color={TITLE_COLOR} />
       </TouchableOpacity>
       {showMore
         ? (
-            <TouchableOpacity style={styles.actionBtn} activeOpacity={0.6} onPress={onMore}>
+            <TouchableOpacity style={styles.actionBtn} activeOpacity={PRESS_OPACITY} onPress={onMore}>
               <PhIcon Icon={DotsThree} size={23} color={TITLE_COLOR} />
             </TouchableOpacity>
           )

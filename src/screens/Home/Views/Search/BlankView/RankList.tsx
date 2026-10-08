@@ -8,6 +8,7 @@ import { getBoardsList, getListDetail } from '@/core/leaderboard'
 import { setTempList } from '@/core/list'
 import { playList } from '@/core/player/player'
 import { LIST_IDS } from '@/config/constant'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 // 榜单歌曲最多显示 10 首（点任意一首播放整榜）
 const MAX_RANK_SONG_NUM = 10
@@ -89,7 +90,7 @@ export default ({ source, type }: RankListProps) => {
           <TouchableOpacity
             key={`${item.id}_${index}`}
             style={styles.row}
-            activeOpacity={0.7}
+            activeOpacity={PRESS_OPACITY}
             onPress={() => { void handlePlay(index) }}
           >
             <Text size={15} color={index < 3 ? theme['c-primary'] : theme['c-font-label']} style={styles.index}>{index + 1}</Text>

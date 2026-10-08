@@ -13,6 +13,7 @@ import { scaleSizeH } from '@/utils/pixelRatio'
 import { CaretRight } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
 import ImageBackground from '@/components/common/ImageBackground'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 const useActive = (id: string) => {
   const activeThemeId = useSettingValue('theme.id')
@@ -33,7 +34,7 @@ const ThemeItem = ({ id, name, color, image, setTheme, showAll }: {
 
   return (
     showAll || isActive ? (
-      <TouchableOpacity style={{ ...styles.item, width: scaleSizeH(ITEM_HEIGHT) }} activeOpacity={0.5} onPress={() => { setTheme(id) }}>
+      <TouchableOpacity style={{ ...styles.item, width: scaleSizeH(ITEM_HEIGHT) }} activeOpacity={PRESS_OPACITY} onPress={() => { setTheme(id) }}>
         <View style={{ ...styles.colorContent, width: scaleSizeH(COLOR_ITEM_HEIGHT), borderColor: isActive ? color : 'transparent' }}>
           {
             image
@@ -59,7 +60,7 @@ const MoreBtn = ({ showAll, setShowAll }: {
   return (
     showAll ? null
       : (
-          <TouchableOpacity style={styles.moreBtn} activeOpacity={0.5} onPress={() => { setShowAll(!showAll) }}>
+          <TouchableOpacity style={styles.moreBtn} activeOpacity={PRESS_OPACITY} onPress={() => { setShowAll(!showAll) }}>
             <Text size={14} color={theme['c-primary-font']} numberOfLines={1}>{t('setting_basic_theme_more_btn_show')}</Text>
             <PhIcon Icon={CaretRight} size={12} color={theme['c-primary-font']} />
           </TouchableOpacity>

@@ -14,6 +14,7 @@ import playerState from '@/store/player/state'
 import { useSettingValue } from '@/store/setting/hook'
 import { createStyle } from '@/utils/tools'
 import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 export interface MorePopupType {
   show: () => void
@@ -91,7 +92,7 @@ export default forwardRef<MorePopupType, {}>((_, ref) => {
               {
                 moreItems.length
                   ? moreItems.map(({ icon, label, color, onPress }, index) => (
-                      <TouchableOpacity key={index} style={styles.item} activeOpacity={0.6} onPress={() => {
+                      <TouchableOpacity key={index} style={styles.item} activeOpacity={PRESS_OPACITY} onPress={() => {
                         popupRef.current?.setVisible(false)
                         onPress()
                       }}>

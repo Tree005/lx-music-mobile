@@ -8,6 +8,7 @@ import { useTheme } from '@/store/theme/hook'
 import Text from '../Text'
 import { Question } from 'phosphor-react-native'
 import { PhIcon } from '../PhIcon'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 export interface CheckBoxProps {
   check: boolean
@@ -84,7 +85,7 @@ export default ({ check, label, children, onChange, helpTitle, helpDesc, disable
       : (
           <View style={contentStyle}>
             <CheckBox status={check ? 'checked' : 'unchecked'} disabled={isDisabled} onPress={handleLabelPress} tintColors={tintColors} size={size} />
-            <TouchableOpacity style={labelStyle} activeOpacity={0.3} onPress={handleLabelPress}>
+            <TouchableOpacity style={labelStyle} activeOpacity={PRESS_OPACITY} onPress={handleLabelPress}>
               {label ? <Text style={styles.name} size={15 * size}>{label}</Text> : children}
             </TouchableOpacity>
             {helpComponent}

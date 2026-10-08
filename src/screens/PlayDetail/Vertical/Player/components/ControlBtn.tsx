@@ -13,6 +13,7 @@ import { updateSetting } from '@/core/common'
 import { scaleSizeW } from '@/utils/pixelRatio'
 
 import PlayQueuePopup from '@/components/player/PlayQueuePopup'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 // 全屏播放器整页是暗色模糊底，控制区图标统一用白色
 const ICON_COLOR = '#fff'
@@ -72,7 +73,7 @@ const PlayModeBtn = () => {
   }, [togglePlayMethod])
 
   return (
-    <TouchableOpacity style={styles.sideBtn} activeOpacity={0.5} onPress={toggleNextPlayMode}>
+    <TouchableOpacity style={styles.sideBtn} activeOpacity={PRESS_OPACITY} onPress={toggleNextPlayMode}>
       <PhIcon Icon={playModeIcon} color={ICON_COLOR} size={20} />
     </TouchableOpacity>
   )
@@ -84,7 +85,7 @@ const QueueBtn = () => {
 
   return (
     <>
-      <TouchableOpacity style={styles.sideBtn} activeOpacity={0.5} onPress={() => { setVisible(true) }}>
+      <TouchableOpacity style={styles.sideBtn} activeOpacity={PRESS_OPACITY} onPress={() => { setVisible(true) }}>
         <PhIcon Icon={Queue} color={ICON_COLOR} size={20} />
       </TouchableOpacity>
       <PlayQueuePopup visible={visible} onClose={() => { setVisible(false) }} />
@@ -124,7 +125,7 @@ const PrevBtn = ({ size, onPrev }: { size: number, onPrev?: () => void }) => {
   return (
     <TouchableOpacity
       style={{ ...styles.cotrolBtn, width: size, height: size }}
-      activeOpacity={0.5}
+      activeOpacity={PRESS_OPACITY}
       onPress={handlePlayPrev}
       onPressIn={() => { prevTouchAt = Date.now() }}
     >
@@ -142,7 +143,7 @@ const NextBtn = ({ size, onNext }: { size: number, onNext?: () => void }) => {
   return (
     <TouchableOpacity
       style={{ ...styles.cotrolBtn, width: size, height: size }}
-      activeOpacity={0.5}
+      activeOpacity={PRESS_OPACITY}
       onPress={handlePlayNext}
       onPressIn={() => { nextTouchAt = Date.now() }}
     >
@@ -163,7 +164,7 @@ const TogglePlayBtn = ({ size, isPlay: isPlayOverride, onTogglePlay }: { size: n
   return (
     <TouchableOpacity
       style={{ ...styles.cotrolBtn, width: size, height: size }}
-      activeOpacity={0.5}
+      activeOpacity={PRESS_OPACITY}
       onPress={handleTogglePlay}
       onPressIn={() => { playTouchAt = Date.now() }}
     >

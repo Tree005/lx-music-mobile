@@ -5,6 +5,7 @@ import { memo } from 'react'
 import { StyleSheet, View, TouchableOpacity } from 'react-native'
 
 import SubTitle from '../../components/SubTitle'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 const themes = [
   ['#08e664', 'rgba(0,0,0,0.6)'],
@@ -24,7 +25,7 @@ const ThemeItem = ({ color, change }: {
   change: (color: Theme) => void
 }) => {
   return (
-    <TouchableOpacity style={styles.item} activeOpacity={0.5} onPress={() => { change(color) }}>
+    <TouchableOpacity style={styles.item} activeOpacity={PRESS_OPACITY} onPress={() => { change(color) }}>
       <View style={styles.colorContent}>
         <View style={{ ...styles.image, backgroundColor: color[0] }}></View>
       </View>

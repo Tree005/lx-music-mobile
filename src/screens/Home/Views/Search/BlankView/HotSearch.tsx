@@ -5,6 +5,7 @@ import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import { getList } from '@/core/hotSearch'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 // 热搜词最多显示 10 条
 const MAX_HOT_WORD_NUM = 10
@@ -52,7 +53,7 @@ export default ({ source, onSearch }: HotSearchProps) => {
           <TouchableOpacity
             key={`${word}_${index}`}
             style={styles.row}
-            activeOpacity={0.7}
+            activeOpacity={PRESS_OPACITY}
             onPress={() => { onSearch(word) }}
           >
             <Text size={15} color={index < 3 ? theme['c-primary'] : theme['c-font-label']} style={styles.index}>{index + 1}</Text>

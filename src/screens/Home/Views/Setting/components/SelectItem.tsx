@@ -56,7 +56,7 @@ function SelectItem<V extends string>({ label, value, options, onChange, pickerT
                 <TouchableOpacity
                   key={o.value}
                   style={styles.option}
-                  activeOpacity={0.7}
+                  activeOpacity={PRESS_OPACITY}
                   onPress={() => { handleSelect(o.value) }}
                 >
                   <Text style={styles.optionLabel} size={15} color={active ? theme['c-primary'] : theme['c-font']}>{o.label}</Text>

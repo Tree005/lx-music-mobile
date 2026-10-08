@@ -18,6 +18,7 @@ import { useMusicPic } from '@/utils/hooks/useMusicPic'
 import { useSonglistOnlineInfo } from '@/utils/hooks/useSonglistOnlineInfo'
 import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
 import { BorderWidths } from '@/theme'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 type FlatListType = FlatListProps<LX.List.UserListInfo>
 
@@ -66,7 +67,7 @@ const ListItem = memo(({ item, onPress, onRemove }: {
   return (
     <TouchableOpacity
       style={{ ...styles.listItem, borderBottomColor: theme['c-border-background'] }}
-      activeOpacity={0.7}
+      activeOpacity={PRESS_OPACITY}
       onPress={() => { onPress(item) }}
     >
       <Image style={styles.pic} url={picUrl} />

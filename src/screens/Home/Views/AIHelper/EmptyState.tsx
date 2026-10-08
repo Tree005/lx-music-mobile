@@ -8,6 +8,7 @@ import { startSession } from '@/core/aiRadio'
 import { useI18n } from '@/lang'
 import { useTheme } from '@/store/theme/hook'
 import { createStyle } from '@/utils/tools'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 // 心动页 · 空态：
 // - 正在构建推歌池（进页面自动开始）→ 转圈；
@@ -41,7 +42,7 @@ export default memo(({ starting, poolEmpty }: {
                       : (
                           <TouchableOpacity
                             style={[styles.btn, { backgroundColor: theme['c-primary'] }]}
-                            activeOpacity={0.7}
+                            activeOpacity={PRESS_OPACITY}
                             onPress={handleStart}
                           >
                             <Text size={15} color="#fff">{t('ai_radio_start')}</Text>

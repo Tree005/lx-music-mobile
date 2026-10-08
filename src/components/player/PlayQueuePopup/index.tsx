@@ -18,6 +18,7 @@ import { clearListMusics, removeListMusics, updateListMusicPosition } from '@/co
 import { updateSetting } from '@/core/common'
 import { MUSIC_TOGGLE_MODE, MUSIC_TOGGLE_MODE_LIST } from '@/config/constant'
 import QueueItem, { ITEM_HEIGHT } from './QueueItem'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 const styles = createStyle({
   centeredView: {
@@ -136,7 +137,7 @@ const PlayModeBtn = () => {
   }
 
   return (
-    <TouchableOpacity style={styles.headerBtn} activeOpacity={0.6} onPress={handleToggle}>
+    <TouchableOpacity style={styles.headerBtn} activeOpacity={PRESS_OPACITY} onPress={handleToggle}>
       <PhIcon Icon={icon} size={20} color={theme['c-font']} />
     </TouchableOpacity>
   )
@@ -273,7 +274,7 @@ export default memo(({ visible, onClose }: PlayQueuePopupProps) => {
   const renderTab = (id: TabId, label: string) => {
     const active = tab == id
     return (
-      <TouchableOpacity style={styles.tab} activeOpacity={0.7} onPress={() => { setTab(id) }}>
+      <TouchableOpacity style={styles.tab} activeOpacity={PRESS_OPACITY} onPress={() => { setTab(id) }}>
         <View style={styles.tabInner}>
           <Text size={16} color={active ? theme['c-font'] : theme['c-font-label']} style={active ? styles.tabTextActive : null}>{label}</Text>
           {active ? <View style={[styles.tabIndicator, { backgroundColor: theme['c-font'] }]} /> : null}
@@ -297,7 +298,7 @@ export default memo(({ visible, onClose }: PlayQueuePopupProps) => {
                   ? (
                       <>
                         <PlayModeBtn />
-                        <TouchableOpacity style={styles.headerBtn} activeOpacity={0.6} onPress={handleClear}>
+                        <TouchableOpacity style={styles.headerBtn} activeOpacity={PRESS_OPACITY} onPress={handleClear}>
                           <PhIcon Icon={Trash} size={20} color={theme['c-font']} />
                         </TouchableOpacity>
                       </>

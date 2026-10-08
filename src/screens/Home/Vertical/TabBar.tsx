@@ -9,6 +9,7 @@ import { setNavActiveId } from '@/core/common'
 import Text from '@/components/common/Text'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import { useNavigationBarHeight } from '@/utils/hooks'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 // 底栏内容区高度（不含系统导航栏安全区）
 const TAB_BAR_HEIGHT = scaleSizeH(44)
@@ -44,7 +45,7 @@ const TabItem = ({ id, onPress, heartbeat }: {
     : (active ? theme['c-primary'] : theme['c-font-label'])
 
   return (
-    <TouchableOpacity style={styles.item} activeOpacity={0.7} onPress={() => { onPress(id) }}>
+    <TouchableOpacity style={styles.item} activeOpacity={PRESS_OPACITY} onPress={() => { onPress(id) }}>
       <Text size={15} color={color}>{t(id)}</Text>
     </TouchableOpacity>
   )

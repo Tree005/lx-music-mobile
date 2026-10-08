@@ -6,6 +6,7 @@ import Text from '@/components/common/Text'
 import { createStyle } from '@/utils/tools'
 import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
 import { useTheme } from '@/store/theme/hook'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 /** 队列行高，拖拽时按它换算目标下标 */
 export const ITEM_HEIGHT = scaleSizeH(52)
@@ -111,11 +112,11 @@ export default memo(({
         : active ? { backgroundColor: theme['c-050'] } : null,
       { transform: [{ translateY }] },
     ]}>
-      <TouchableOpacity style={styles.main} activeOpacity={0.6} onPress={() => { onPress(index) }}>
+      <TouchableOpacity style={styles.main} activeOpacity={PRESS_OPACITY} onPress={() => { onPress(index) }}>
         <Text size={15} numberOfLines={1} style={styles.name}>{item.name}</Text>
         <Text size={12} color={theme['c-font-label']} numberOfLines={1} style={styles.singer}> · {item.singer}</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.action} activeOpacity={0.6} onPress={() => { onRemove(index) }}>
+      <TouchableOpacity style={styles.action} activeOpacity={PRESS_OPACITY} onPress={() => { onRemove(index) }}>
         <PhIcon Icon={X} size={16} color={theme['c-font-label']} />
       </TouchableOpacity>
       <View style={styles.handle} {...panResponder.panHandlers}>

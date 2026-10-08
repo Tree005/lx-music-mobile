@@ -15,6 +15,7 @@ import leaderboardState from '@/store/leaderboard/state'
 import { setTempList } from '@/core/list'
 import { playList } from '@/core/player/player'
 import { LIST_IDS } from '@/config/constant'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 // 榜单歌曲最多取 20 首
 const MAX_HOT_SONG_NUM = 20
@@ -142,7 +143,7 @@ export default () => {
                             return (
                               <TouchableOpacity
                                 key={item.id}
-                                activeOpacity={0.7}
+                                activeOpacity={PRESS_OPACITY}
                                 style={styles.row}
                                 onPress={() => { void handlePlay(index) }}
                               >

@@ -11,6 +11,7 @@ import { handleCollect, handlePlay } from './listAction'
 import songlistState from '@/store/songlist/state'
 import listState from '@/store/list/state'
 import { useListInfo } from './state'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 const Action = ({ Icon, label, color, weight, onPress }: {
   Icon: ComponentType<IconProps>
@@ -20,7 +21,7 @@ const Action = ({ Icon, label, color, weight, onPress }: {
   onPress?: () => void
 }) => {
   return (
-    <TouchableOpacity style={styles.action} activeOpacity={0.7} onPress={onPress}>
+    <TouchableOpacity style={styles.action} activeOpacity={PRESS_OPACITY} onPress={onPress}>
       <PhIcon Icon={Icon} size={28} color={color} weight={weight} />
       <Text style={styles.actionLabel} size={14}>{label}</Text>
     </TouchableOpacity>

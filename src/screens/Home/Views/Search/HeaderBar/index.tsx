@@ -22,6 +22,7 @@ import { scaleSizeH } from '@/utils/pixelRatio'
 import { HEADER_HEIGHT } from '@/config/constant'
 import { type Source as MusicSource } from '@/store/search/music/state'
 import { type Source as SonglistSource } from '@/store/search/songlist/state'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 type Sources = Readonly<Array<MusicSource | SonglistSource>>
 type SourceSelectorProps = _SourceSelectorProps<Sources>
@@ -82,7 +83,7 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onSourceChange, onTi
       <View style={{ ...styles.searchBar, borderBottomColor: theme['c-border-background'] }}>
         {isHorizontal
           ? null
-          : <TouchableOpacity style={styles.backBtn} activeOpacity={0.7} onPress={handleCancel}>
+          : <TouchableOpacity style={styles.backBtn} activeOpacity={PRESS_OPACITY} onPress={handleCancel}>
               <PhIcon Icon={CaretLeft} size={22} color={theme['c-font']} />
             </TouchableOpacity>
         }
@@ -98,7 +99,7 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onSourceChange, onTi
         />
         {isHorizontal
           ? null
-          : <TouchableOpacity style={styles.searchBtn} activeOpacity={0.7} onPress={handleSearchPress}>
+          : <TouchableOpacity style={styles.searchBtn} activeOpacity={PRESS_OPACITY} onPress={handleSearchPress}>
               <Text color={theme['c-primary-font']} size={15}>{t('search_action')}</Text>
             </TouchableOpacity>
         }

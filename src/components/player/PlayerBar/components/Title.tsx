@@ -13,6 +13,7 @@ import Text from '@/components/common/Text'
 import { LIST_IDS } from '@/config/constant'
 import { getListMusicSync } from '@/utils/listManage'
 import { createStyle } from '@/utils/tools'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 // 跑马灯滚动速度（px/秒）与循环接续的间隙
 // （网易云实测约 100px/s，用户反馈偏快：先 70 再调到 55）
@@ -297,7 +298,7 @@ export default ({ isHome }: { isHome: boolean }) => {
 
   return (
     <View style={styles.outer} {...panResponder.panHandlers}>
-      <TouchableOpacity style={styles.container} onLongPress={handleLongPress} onPress={handlePress} activeOpacity={0.7}>
+      <TouchableOpacity style={styles.container} onLongPress={handleLongPress} onPress={handlePress} activeOpacity={PRESS_OPACITY}>
         <View
           style={styles.viewport}
           onLayout={({ nativeEvent }) => { setWidth(nativeEvent.layout.width) }}

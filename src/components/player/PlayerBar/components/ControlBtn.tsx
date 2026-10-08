@@ -9,6 +9,7 @@ import { togglePlay } from '@/core/player/player'
 import { createStyle } from '@/utils/tools'
 import { scaleSizeW } from '@/utils/pixelRatio'
 import PlayQueuePopup from '@/components/player/PlayQueuePopup'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 // 播放键外套的圆形进度环尺寸
 const RING_SIZE = scaleSizeW(31)
@@ -25,7 +26,7 @@ const TogglePlayBtn = () => {
   const dashOffset = RING_CIRCUMFERENCE * (1 - clampedProgress)
 
   return (
-    <TouchableOpacity style={styles.controlBtn} activeOpacity={0.5} onPress={togglePlay}>
+    <TouchableOpacity style={styles.controlBtn} activeOpacity={PRESS_OPACITY} onPress={togglePlay}>
       <Svg width={RING_SIZE} height={RING_SIZE}>
         <Circle
           cx={RING_SIZE / 2}
@@ -63,7 +64,7 @@ export default () => {
   return (
     <>
       <TogglePlayBtn />
-      <TouchableOpacity style={styles.controlBtn} activeOpacity={0.5} onPress={() => { setQueueVisible(true) }}>
+      <TouchableOpacity style={styles.controlBtn} activeOpacity={PRESS_OPACITY} onPress={() => { setQueueVisible(true) }}>
         <PhIcon Icon={Playlist} color={theme['c-font']} size={20} />
       </TouchableOpacity>
       <PlayQueuePopup visible={queueVisible} onClose={() => { setQueueVisible(false) }} />

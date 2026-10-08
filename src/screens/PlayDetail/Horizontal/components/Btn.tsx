@@ -6,6 +6,7 @@ import { createStyle } from '@/utils/tools'
 import { scaleSizeW } from '@/utils/pixelRatio'
 
 import { HEADER_HEIGHT } from '@/config/constant'
+import { PRESS_OPACITY } from '@/theme/motion'
 export const BTN_WIDTH = scaleSizeW(HEADER_HEIGHT)
 export const BTN_ICON_SIZE = 20
 
@@ -21,7 +22,7 @@ export default ({ icon, size, color, onPress, onLongPress }: {
   onLongPress?: () => void
 }) => {
   return (
-    <TouchableOpacity style={{ ...styles.cotrolBtn, width: BTN_WIDTH, height: BTN_WIDTH }} activeOpacity={0.5} onPress={onPress} onLongPress={onLongPress}>
+    <TouchableOpacity style={{ ...styles.cotrolBtn, width: BTN_WIDTH, height: BTN_WIDTH }} activeOpacity={PRESS_OPACITY} onPress={onPress} onLongPress={onLongPress}>
       <PhIcon Icon={icon} color={color ?? ICON_COLOR} size={size ?? BTN_ICON_SIZE} />
     </TouchableOpacity>
   )

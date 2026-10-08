@@ -16,6 +16,7 @@ import { useNavActiveId } from '@/store/common/hook'
 import commonState from '@/store/common/state'
 import { LIST_IDS } from '@/config/constant'
 import { SLIDE_DURATION_STACK } from '@/components/transitions/constants'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 // 顶部宫格入口（as const 保证 labelKey 是字面量类型，能被 t() 接受）
 const GRID_ENTRIES = [
@@ -32,7 +33,7 @@ const GridItem = ({ icon, label, onPress }: {
   const theme = useTheme()
 
   return (
-    <TouchableOpacity style={styles.gridItem} activeOpacity={0.7} onPress={onPress}>
+    <TouchableOpacity style={styles.gridItem} activeOpacity={PRESS_OPACITY} onPress={onPress}>
       <PhIcon Icon={icon} size={28} color={theme['c-primary']} />
       <Text style={styles.gridLabel} size={14}>{label}</Text>
     </TouchableOpacity>

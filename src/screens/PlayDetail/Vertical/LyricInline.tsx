@@ -6,6 +6,7 @@ import { type Line, useLrcPlay, useLrcSet } from '@/plugins/lyric'
 import { useI18n } from '@/lang'
 import { createStyle } from '@/utils/tools'
 import { setSpText } from '@/utils/pixelRatio'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 // 整页是暗色模糊底，歌词用白色；下一行降透明度区分主次
 const CURRENT_COLOR = '#fff'
@@ -35,7 +36,7 @@ export default memo(({ onPress, lines: linesOverride, line: lineOverride }: {
   const nextText = hasLrc ? lines[activeIndex + 1]?.text ?? '' : ''
 
   return (
-    <TouchableOpacity style={styles.container} activeOpacity={0.6} onPress={onPress}>
+    <TouchableOpacity style={styles.container} activeOpacity={PRESS_OPACITY} onPress={onPress}>
       <Text numberOfLines={1} size={16} color={CURRENT_COLOR} style={styles.currentLine}>{currentText}</Text>
       <Text numberOfLines={1} size={15} color={NEXT_COLOR} style={styles.nextLine}>{nextText || ' '}</Text>
     </TouchableOpacity>

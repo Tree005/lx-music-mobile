@@ -10,6 +10,7 @@ import { useCallback, useMemo } from 'react'
 import { useSpinOnPlay } from '@/utils/hooks'
 import { setLoadErrorPicUrl, setMusicInfo } from '@/core/player/playInfo'
 import { createStyle } from '@/utils/tools'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 // 黑胶唱片：黑色圆盘 + 中间的专辑图（仿网易云——黑色盘面在白色条上做视觉缓冲）。
 // 盘面直径和胶囊条等高（42dp）并贴在条左端（条的 paddingLeft 为 0），
@@ -71,7 +72,7 @@ export default ({ isHome }: { isHome: boolean }) => {
   }, [])
 
   return (
-    <TouchableOpacity style={styles.touch} onLongPress={handleLongPress} onPress={handlePress} activeOpacity={0.7} >
+    <TouchableOpacity style={styles.touch} onLongPress={handleLongPress} onPress={handlePress} activeOpacity={PRESS_OPACITY} >
       <Animated.View style={[styles.disc, spinStyle]}>
         <Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={styles.art} onError={handleError} />
       </Animated.View>

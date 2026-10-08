@@ -14,6 +14,7 @@ import Image from '@/components/common/Image'
 import { getList } from '@/core/songlist'
 import { getSongListSetting } from '@/utils/data'
 import songlistState, { type ListInfoItem } from '@/store/songlist/state'
+import { PRESS_OPACITY } from '@/theme/motion'
 
 // 首页推荐歌单：横向滚动大卡片，最多取 10 个
 const MAX_SONGLIST_NUM = 10
@@ -75,7 +76,7 @@ export default () => {
     <View>
       <View style={styles.header}>
         <Text size={18} style={styles.title}>{t('home_section_songlists')}</Text>
-        <TouchableOpacity style={styles.more} activeOpacity={0.7} onPress={handleMore}>
+        <TouchableOpacity style={styles.more} activeOpacity={PRESS_OPACITY} onPress={handleMore}>
           <Text size={13} color={theme['c-primary']}>{t('home_more')}</Text>
           <PhIcon Icon={CaretRight} size={13} color={theme['c-primary']} />
         </TouchableOpacity>
@@ -95,7 +96,7 @@ export default () => {
                 >
                   {
                     list.map(item => (
-                      <TouchableOpacity key={item.id} activeOpacity={0.7} style={styles.card} onPress={handleSonglistPress}>
+                      <TouchableOpacity key={item.id} activeOpacity={PRESS_OPACITY} style={styles.card} onPress={handleSonglistPress}>
                         <View style={styles.coverWrap}>
                           <Image url={item.img} style={styles.cover} />
                           {/* 封面右下角播放按钮：仅作视觉提示，点击整卡进入歌单页 */}
