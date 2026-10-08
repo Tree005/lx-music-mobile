@@ -5,6 +5,7 @@ import { CaretRight, Check } from 'phosphor-react-native'
 
 import Popup, { type PopupType } from '@/components/common/Popup'
 import { useTheme } from '@/store/theme/hook'
+import { PRESS_OPACITY } from '@/theme/motion'
 import { createStyle } from '@/utils/tools'
 import Text from '@/components/common/Text'
 import { PhIcon } from '@/components/common/PhIcon'
@@ -41,12 +42,12 @@ function SelectItem<V extends string>({ label, value, options, onChange, pickerT
 
   return (
     <>
-      <TouchableOpacity style={styles.row} activeOpacity={0.7} disabled={disabled} onPress={handlePress}>
+      <TouchableOpacity style={styles.row} activeOpacity={PRESS_OPACITY} disabled={disabled} onPress={handlePress}>
         <Text style={styles.label} size={15}>{label}</Text>
         <Text style={styles.value} size={13} color={theme['c-font-label']} numberOfLines={1}>{currentLabel}</Text>
         <PhIcon Icon={CaretRight} size={14} color={theme['c-font-label']} />
       </TouchableOpacity>
-      <Popup ref={popupRef} title={pickerTitle ?? label}>
+      <Popup ref={popupRef} title={pickerTitle ?? label} slide>
         <ScrollView keyboardShouldPersistTaps={'always'}>
           {
             options.map(o => {

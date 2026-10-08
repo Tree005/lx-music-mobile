@@ -1,9 +1,10 @@
 import { memo, useCallback, useEffect, useRef } from 'react'
 
-import { Animated, Easing, Pressable } from 'react-native'
+import { Animated, Pressable } from 'react-native'
 
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
+import { DURATION, EASING } from '@/theme/motion'
 
 interface Props {
   value: boolean
@@ -29,8 +30,8 @@ export default memo(({ value, onValueChange, disabled = false, size = 1 }: Props
   useEffect(() => {
     Animated.timing(progress, {
       toValue: value ? 1 : 0,
-      duration: 180,
-      easing: Easing.out(Easing.cubic),
+      duration: DURATION.base,
+      easing: EASING.standard,
       useNativeDriver: true,
     }).start()
   }, [value, progress])

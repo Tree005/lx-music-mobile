@@ -4,6 +4,7 @@ import { TouchableOpacity, View } from 'react-native'
 import { Question } from 'phosphor-react-native'
 
 import Switch from './Switch'
+import { PRESS_OPACITY } from '@/theme/motion'
 import { createStyle, tipDialog } from '@/utils/tools'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import { useTheme } from '@/store/theme/hook'
@@ -62,7 +63,7 @@ export default memo(({
     <View style={[styles.container, marginBottom ? { marginBottom: scaleSizeH(marginBottom) } : null]}>
       <TouchableOpacity
         style={styles.main}
-        activeOpacity={0.7}
+        activeOpacity={PRESS_OPACITY}
         disabled={isDisabled}
         onPress={handleSwitch}
       >

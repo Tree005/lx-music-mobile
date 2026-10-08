@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useMemo, useRef } from 'react'
-import { View, TouchableOpacity } from 'react-native'
+import { Animated, View, TouchableOpacity } from 'react-native'
 
 import Modal, { type ModalType } from './Modal'
 import { X } from 'phosphor-react-native'
@@ -9,6 +9,7 @@ import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import Text from './Text'
 import { useStatusbarHeight } from '@/store/common/hook'
+import { DURATION, EASING, SHEET_SLIDE_OFFSET, SPRING } from '@/theme/motion'
 
 const styles = createStyle({
   centeredView: {
@@ -55,6 +56,8 @@ export interface PopupProps {
   closeBtn?: boolean
   position?: 'top' | 'left' | 'right' | 'bottom'
   title?: string
+  /** 底部弹层滑入动画（spring；仅 position='bottom' 生效，默认关闭——存量弹层维持 fade） */
+  slide?: boolean
   children: React.ReactNode
 }
 
@@ -69,6 +72,7 @@ export default forwardRef<PopupType, PopupProps>(({
   closeBtn = true,
   position = 'bottom',
   title = '',
+  slide = false,
   children,
 }: PopupProps, ref) => {
   const theme = useTheme()
@@ -76,9 +80,24 @@ export default forwardRef<PopupType, PopupProps>(({
   const statusBarHeight = useStatusbarHeight()
 
   const modalRef = useRef<ModalType>(null)
+  // slide 动画值：0=藏于屏幕下方，1=就位。仅在 setVisible(true) 时 spring 滑入；
+  // 隐藏时 Modal 自身 fade 的同时滑回下方，背景变暗与滑出同步
+  const slideAnim = useRef(new Animated.Value(0)).current
+  const slideEnabled = slide && position === 'bottom'
+  const slideTransform = slideEnabled
+    ? [{ translateY: slideAnim.interpolate({ inputRange: [0, 1], outputRange: [SHEET_SLIDE_OFFSET, 0] }) }]
+    : []
 
   useImperativeHandle(ref, () => ({
     setVisible(visible: boolean) {
+      if (slideEnabled) {
+        if (visible) {
+          slideAnim.setValue(0)
+          Animated.spring(slideAnim, { toValue: 1, useNativeDriver: true, ...SPRING.sheet }).start()
+        } else {
+          Animated.timing(slideAnim, { toValue: 0, duration: DURATION.base, easing: EASING.standard, useNativeDriver: true }).start()
+        }
+      }
       modalRef.current?.setVisible(visible)
     },
   }))
@@ -172,13 +191,13 @@ export default forwardRef<PopupType, PopupProps>(({
   return (
     <Modal onHide={onHide} keyHide={keyHide} bgHide={bgHide} bgColor="rgba(50,50,50,.2)" ref={modalRef}>
       <View style={{ ...styles.centeredView, ...centeredViewStyle, paddingBottom: keyboardShown ? keyboardHeight : 0 }}>
-        <View style={{ ...styles.modalView, ...modalViewStyle, backgroundColor: theme['c-content-background'] }} onStartShouldSetResponder={() => true}>
+        <Animated.View style={{ ...styles.modalView, ...modalViewStyle, backgroundColor: theme['c-content-background'], transform: slideTransform }} onStartShouldSetResponder={() => true}>
           <View style={styles.header}>
             <Text size={13} style={styles.title} numberOfLines={1}>{title}</Text>
             {closeBtnComponent}
           </View>
           {children}
-        </View>
+        </Animated.View>
       </View>
     </Modal>
   )

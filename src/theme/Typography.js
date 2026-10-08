@@ -47,5 +47,9 @@ export const BorderWidths = {
 }
 
 export const BorderRadius = {
+  // 圆角三档（2026-10-08 约定）：小件/内嵌元素、按钮与输入框、卡片与大容器
+  small: 4,
   normal: 4,
+  medium: 8,
+  large: 16,
 }
