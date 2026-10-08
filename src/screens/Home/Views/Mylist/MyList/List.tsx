@@ -17,7 +17,7 @@ import { getListMusics } from '@/core/list'
 import { useMusicPic } from '@/utils/hooks/useMusicPic'
 import { useSonglistOnlineInfo } from '@/utils/hooks/useSonglistOnlineInfo'
 import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
-import { BorderWidths } from '@/theme'
+import {  BorderWidths, BorderRadius } from '@/theme'
 import { PRESS_OPACITY } from '@/theme/motion'
 
 type FlatListType = FlatListProps<LX.List.UserListInfo>
@@ -158,7 +158,7 @@ const styles = createStyle({
   pic: {
     width: scaleSizeW(48),
     height: scaleSizeW(48),
-    borderRadius: 6,
+    borderRadius: BorderRadius.medium,
   },
   info: {
     flexGrow: 1,

@@ -9,6 +9,7 @@ import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import Text from './Text'
 import { scaleSizeH } from '@/utils/pixelRatio'
+import { BorderRadius } from '@/theme'
 
 const HEADER_HEIGHT = 20
 const styles = createStyle({
@@ -22,7 +23,7 @@ const styles = createStyle({
     minWidth: '60%',
     maxHeight: '78%',
     // backgroundColor: 'white',
-    borderRadius: 4,
+    borderRadius: BorderRadius.small,
     // shadowColor: '#000',
     // shadowOffset: {
     //   width: 0,

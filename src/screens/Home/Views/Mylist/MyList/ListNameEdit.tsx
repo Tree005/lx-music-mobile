@@ -9,6 +9,7 @@ import { confirmDialog, createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import { scaleSizeH, setSpText } from '@/utils/pixelRatio'
+import { BorderRadius } from '@/theme'
 import listState from '@/store/list/state'
 
 interface NameInputType {
@@ -165,7 +166,7 @@ const styles = createStyle({
   input: {
     height: scaleSizeH(52),
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: BorderRadius.medium,
     paddingLeft: 12,
     paddingRight: 12,
     paddingTop: 0,
@@ -179,7 +180,7 @@ const styles = createStyle({
   btn: {
     flex: 1,
     height: scaleSizeH(52),
-    borderRadius: 8,
+    borderRadius: BorderRadius.medium,
     justifyContent: 'center',
     alignItems: 'center',
   },

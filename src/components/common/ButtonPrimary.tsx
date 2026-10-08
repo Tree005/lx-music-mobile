@@ -4,6 +4,7 @@ import Button, { type BtnProps } from '@/components/common/Button'
 import Text from '@/components/common/Text'
 import { useTheme } from '@/store/theme/hook'
 import { createStyle } from '@/utils/tools'
+import { BorderRadius } from '@/theme'
 
 export interface ButtonProps extends BtnProps {
   size?: number
@@ -23,7 +24,7 @@ const styles = createStyle({
   button: {
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 4,
+    borderRadius: BorderRadius.small,
     marginRight: 10,
   },
 })

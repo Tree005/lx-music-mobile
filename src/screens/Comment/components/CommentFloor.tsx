@@ -1,6 +1,6 @@
 import { memo, useState, useMemo, useCallback } from 'react'
 import { StyleSheet, View } from 'react-native'
-import { BorderWidths } from '@/theme'
+import {  BorderWidths, BorderRadius } from '@/theme'
 import { ThumbsUp } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
 import { createStyle } from '@/utils/tools'
@@ -157,7 +157,7 @@ const stylesRaw = StyleSheet.create({
   avatar: {
     height: avatarWidth,
     width: avatarWidth,
-    borderRadius: 4,
+    borderRadius: BorderRadius.small,
   },
 })
 

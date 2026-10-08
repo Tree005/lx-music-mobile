@@ -7,6 +7,7 @@ import Input, { type InputType } from '@/components/common/Input'
 import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import { createStyle } from '@/utils/tools'
+import { BorderRadius } from '@/theme'
 
 interface TitleType {
   updateTitle: (musicInfo: SelectInfo['musicInfo'], selectedList: SelectInfo['selectedList']) => void
@@ -150,7 +151,7 @@ const styles = createStyle({
     flexGrow: 1,
     flexShrink: 1,
     minWidth: 260,
-    borderRadius: 4,
+    borderRadius: BorderRadius.small,
     // paddingTop: 2,
     // paddingBottom: 2,
   },

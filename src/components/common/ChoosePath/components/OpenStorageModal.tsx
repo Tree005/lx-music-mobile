@@ -13,6 +13,7 @@ import { useUnmounted } from '@/utils/hooks'
 import { X } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
 import type { PathItem } from './ListItem'
+import { BorderRadius } from '@/theme'
 const filterFileName = /[\\:*?#"<>|]/
 
 
@@ -186,7 +187,7 @@ const styles = createStyle({
     flexGrow: 1,
     flexShrink: 1,
     minWidth: 240,
-    borderRadius: 4,
+    borderRadius: BorderRadius.small,
     paddingTop: 3,
     paddingBottom: 3,
     height: 'auto',

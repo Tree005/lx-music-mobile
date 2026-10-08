@@ -10,6 +10,7 @@ import ModalContent from './ModalContent'
 import syncState from '@/store/sync/state'
 import CheckBox from '@/components/common/CheckBox'
 import { setSyncModeComponentId } from '@/core/sync'
+import { BorderRadius } from '@/theme'
 
 
 const styles = createStyle({
@@ -49,7 +50,7 @@ const styles = createStyle({
     paddingLeft: 8,
     paddingRight: 8,
     alignItems: 'center',
-    borderRadius: 4,
+    borderRadius: BorderRadius.small,
     marginRight: 15,
     minWidth: 100,
   },

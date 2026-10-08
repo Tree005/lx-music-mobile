@@ -1,7 +1,7 @@
 import { View } from 'react-native'
 import Button from '@/components/common/Button'
 import Text from '@/components/common/Text'
-import { BorderWidths } from '@/theme'
+import {  BorderWidths, BorderRadius } from '@/theme'
 import { createStyle, toast } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { useMusicExistsList } from '@/store/list/hook'
@@ -47,7 +47,7 @@ export const styles = createStyle({
     paddingRight: 10,
     marginRight: 10,
     marginBottom: 10,
-    borderRadius: 4,
+    borderRadius: BorderRadius.small,
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',

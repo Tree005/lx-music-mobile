@@ -20,6 +20,7 @@ import { useSonglistOnlineInfo } from '@/utils/hooks/useSonglistOnlineInfo'
 import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
 import listState from '@/store/list/state'
 import { PRESS_OPACITY } from '@/theme/motion'
+import { BorderRadius } from '@/theme'
 
 const Action = ({ Icon, label, color, weight, onPress }: {
   Icon: ComponentType<IconProps>
@@ -138,7 +139,7 @@ const styles = createStyle({
   pic: {
     width: scaleSizeW(100),
     height: scaleSizeW(100),
-    borderRadius: 8,
+    borderRadius: BorderRadius.medium,
   },
   infoText: {
     flexGrow: 1,

@@ -11,6 +11,7 @@ import { useStatusbarHeight } from '@/store/common/hook'
 import NewFolderModal, { type NewFolderType } from './NewFolderModal'
 import OpenStorageModal, { type OpenDirModalType } from './OpenStorageModal'
 import type { PathItem } from './ListItem'
+import { BorderRadius } from '@/theme'
 
 
 export default memo(({
@@ -135,7 +136,7 @@ const styles = createStyle({
     flexGrow: 1,
     flexShrink: 1,
     minWidth: 240,
-    borderRadius: 4,
+    borderRadius: BorderRadius.small,
     paddingTop: 2,
     paddingBottom: 2,
   },

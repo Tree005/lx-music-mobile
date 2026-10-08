@@ -17,6 +17,7 @@ import { useTheme } from '@/store/theme/hook'
 import { useStatus } from '@/store/sync/hook'
 import Text from '@/components/common/Text'
 import { SYNC_CODE } from '@/plugins/sync/constants'
+import { BorderRadius } from '@/theme'
 
 const addressRxp = /^https?:\/\/\S+/i
 
@@ -208,7 +209,7 @@ const styles = createStyle({
     flexGrow: 1,
     flexShrink: 1,
     minWidth: 260,
-    borderRadius: 4,
+    borderRadius: BorderRadius.small,
     // paddingTop: 2,
     // paddingBottom: 2,
     // fontSize: 14,

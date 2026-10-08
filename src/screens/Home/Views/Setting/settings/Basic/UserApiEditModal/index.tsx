@@ -5,6 +5,7 @@ import { createStyle, openUrl } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import Dialog, { type DialogType } from '@/components/common/Dialog'
+import { BorderRadius } from '@/theme'
 import Button from '@/components/common/Button'
 import List from './List'
 import ImportBtn from './ImportBtn'
@@ -168,7 +169,7 @@ const styles = createStyle({
     flex: 1,
     padding: 10,
     alignItems: 'center',
-    borderRadius: 4,
+    borderRadius: BorderRadius.small,
     marginRight: 15,
   },
 })

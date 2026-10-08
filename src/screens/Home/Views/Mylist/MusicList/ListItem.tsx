@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef, useState } from 'react'
 import { View, TouchableOpacity } from 'react-native'
 import { LIST_IDS, LIST_ITEM_HEIGHT } from '@/config/constant'
-// import { BorderWidths } from '@/theme'
+// import {  BorderWidths, BorderRadius } from '@/theme'
 import { DotsThreeVertical, Heart, PlayCircle, Trash } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
 import Image from '@/components/common/Image'
@@ -191,7 +191,7 @@ const styles = createStyle({
   pic: {
     width: 44,
     height: 44,
-    borderRadius: 4,
+    borderRadius: BorderRadius.small,
     marginLeft: 20,
     marginRight: 14,
   },

@@ -15,6 +15,7 @@ import { getList } from '@/core/songlist'
 import { getSongListSetting } from '@/utils/data'
 import songlistState, { type ListInfoItem } from '@/store/songlist/state'
 import { PRESS_OPACITY } from '@/theme/motion'
+import { BorderRadius } from '@/theme'
 
 // 首页推荐歌单：横向滚动大卡片，最多取 10 个
 const MAX_SONGLIST_NUM = 10
@@ -161,13 +162,13 @@ const styles = createStyle({
   coverWrap: {
     width: '100%',
     aspectRatio: 1,
-    borderRadius: 8,
+    borderRadius: BorderRadius.medium,
     overflow: 'hidden',
   },
   cover: {
     width: '100%',
     height: '100%',
-    borderRadius: 8,
+    borderRadius: BorderRadius.medium,
   },
   playBtn: {
     position: 'absolute',
@@ -175,7 +176,7 @@ const styles = createStyle({
     bottom: 6,
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: BorderRadius.large,
     backgroundColor: 'rgba(0, 0, 0, 0.35)',
     justifyContent: 'center',
     alignItems: 'center',

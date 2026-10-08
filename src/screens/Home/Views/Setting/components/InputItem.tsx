@@ -6,6 +6,7 @@ import Input from '@/components/common/Input'
 import { useTheme } from '@/store/theme/hook'
 import Text from '@/components/common/Text'
 import { createStyle } from '@/utils/tools'
+import { BorderRadius } from '@/theme'
 
 
 export interface InputItemProps extends InputProps {
@@ -91,7 +92,7 @@ const styles = createStyle({
     backgroundColor: 'rgba(0,0,0,0.2)',
     flexGrow: 1,
     flexShrink: 1,
-    borderRadius: 4,
+    borderRadius: BorderRadius.small,
     // paddingTop: 3,
     // paddingBottom: 3,
     maxWidth: 300,

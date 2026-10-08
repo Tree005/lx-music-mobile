@@ -13,6 +13,7 @@ import { useI18n } from '@/lang'
 import { useVersionDownloadProgressUpdated, useVersionInfo, useVersionInfoIgnoreVersionUpdated } from '@/store/version/hook'
 import ModalContent from './ModalContent'
 import { checkUpdate, downloadUpdate, hideModal, setIgnoreVersion } from '@/core/version'
+import { BorderRadius } from '@/theme'
 
 const VersionItem = ({ version, desc }: VersionInfo) => {
   return (
@@ -254,7 +255,7 @@ const styles = createStyle({
     paddingLeft: 10,
     paddingRight: 10,
     alignItems: 'center',
-    borderRadius: 4,
+    borderRadius: BorderRadius.small,
     marginRight: 15,
   },
 })

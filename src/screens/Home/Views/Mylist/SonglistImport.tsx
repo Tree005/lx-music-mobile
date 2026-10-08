@@ -14,6 +14,7 @@ import { createList } from '@/core/list'
 import { getListDetail, getListDetailAll } from '@/core/songlist'
 import listState from '@/store/list/state'
 import { scaleSizeH } from '@/utils/pixelRatio'
+import { BorderRadius } from '@/theme'
 
 // 各平台歌单域名，用来从链接识别平台（纯歌单 ID 没有域名，识别不出来）
 const SOURCE_DOMAINS: Record<string, LX.OnlineSource> = {
@@ -201,7 +202,7 @@ const styles = createStyle({
   linkInput: {
     minHeight: 140,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: BorderRadius.medium,
     padding: 12,
     fontSize: 15,
   },
@@ -215,7 +216,7 @@ const styles = createStyle({
   btn: {
     flex: 1,
     height: 52,
-    borderRadius: 8,
+    borderRadius: BorderRadius.medium,
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -16,6 +16,7 @@ import { setTempList } from '@/core/list'
 import { playList } from '@/core/player/player'
 import { LIST_IDS } from '@/config/constant'
 import { PRESS_OPACITY } from '@/theme/motion'
+import { BorderRadius } from '@/theme'
 
 // 榜单歌曲最多取 20 首
 const MAX_HOT_SONG_NUM = 20
@@ -221,7 +222,7 @@ const styles = createStyle({
   cover: {
     width: scaleSizeW(48),
     height: scaleSizeW(48),
-    borderRadius: 4,
+    borderRadius: BorderRadius.small,
   },
   info: {
     flex: 1,

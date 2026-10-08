@@ -14,6 +14,7 @@ import commonState from '@/store/common/state'
 import { createStyle } from '@/utils/tools'
 import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
 import { useListInfo } from './state'
+import { BorderRadius } from '@/theme'
 
 const IMAGE_WIDTH = scaleSizeW(100)
 
@@ -121,7 +122,7 @@ const styles = createStyle({
   },
   pic: {
     flex: 1,
-    borderRadius: 8,
+    borderRadius: BorderRadius.medium,
   },
   infoText: {
     flexGrow: 1,

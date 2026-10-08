@@ -2,6 +2,7 @@ import { View } from 'react-native'
 
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
+import { BorderRadius } from '@/theme'
 import Text from '@/components/common/Text'
 
 interface Props {
@@ -38,7 +39,7 @@ const styles = createStyle({
   },
   card: {
     marginHorizontal: 12,
-    borderRadius: 12,
+    borderRadius: BorderRadius.large,
     paddingVertical: 8,
     // 裁剪内容，保证圆角下不出底
     overflow: 'hidden',

@@ -13,6 +13,7 @@ import { getBoardsList } from '@/core/leaderboard'
 import { useMainSource } from '@/core/mainSource'
 import leaderboardState, { type BoardItem } from '@/store/leaderboard/state'
 import { PRESS_OPACITY } from '@/theme/motion'
+import { BorderRadius } from '@/theme'
 
 // 首页排行榜：横向滚动小卡片，最多取 6 个
 const MAX_BOARD_NUM = 6
@@ -157,7 +158,7 @@ const styles = createStyle({
   boardCard: {
     width: '100%',
     aspectRatio: 1,
-    borderRadius: 8,
+    borderRadius: BorderRadius.medium,
     justifyContent: 'center',
     alignItems: 'center',
     paddingLeft: 6,

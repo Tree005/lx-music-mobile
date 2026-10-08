@@ -7,7 +7,7 @@ import { useDrag } from '@/utils/hooks'
 // 注意：Circle 在 phosphor-react-native 中只以 CircleIcon 导出
 import { CircleIcon } from 'phosphor-react-native'
 import { PhIcon } from '@/components/common/PhIcon'
-// import { AppColors } from '@/theme'
+// import {  AppColors, BorderRadius } from '@/theme'
 
 
 const DefaultBar = memo(({ color }: { color: string }) => {
@@ -170,7 +170,7 @@ const styles = createStyle({
   },
   progressBar: {
     height: progressHeight,
-    borderRadius: 4,
+    borderRadius: BorderRadius.small,
   },
   pressBar: {
     position: 'absolute',

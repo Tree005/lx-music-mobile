@@ -2,6 +2,7 @@ import { View } from 'react-native'
 import { useTheme } from '@/store/theme/hook'
 import { createStyle } from '@/utils/tools'
 // import { useWindowSize } from '@/utils/hooks'
+import { BorderRadius } from '@/theme'
 const HEADER_HEIGHT = 20
 
 interface Props {
@@ -34,7 +35,7 @@ const styles = createStyle({
     minWidth: '60%',
     maxHeight: '78%',
     // backgroundColor: 'white',
-    borderRadius: 4,
+    borderRadius: BorderRadius.small,
     // shadowColor: '#000',
     // shadowOffset: {
     //   width: 0,

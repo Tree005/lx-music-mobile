@@ -13,6 +13,7 @@ import { LIST_IDS, LIST_ITEM_HEIGHT } from '@/config/constant'
 import { createStyle, type RowInfo } from '@/utils/tools'
 import { useMusicPic } from '@/utils/hooks/useMusicPic'
 import { getListMusics } from '@/core/list'
+import { BorderRadius } from '@/theme'
 
 export const ITEM_HEIGHT = scaleSizeH(LIST_ITEM_HEIGHT)
 /** 歌单详情页的行：带封面，比列表模式高一些 */
@@ -173,7 +174,7 @@ const styles = createStyle({
   pic: {
     width: 44,
     height: 44,
-    borderRadius: 4,
+    borderRadius: BorderRadius.small,
     marginLeft: 20,
     marginRight: 14,
   },

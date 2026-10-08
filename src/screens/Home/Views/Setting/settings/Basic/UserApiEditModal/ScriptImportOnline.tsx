@@ -8,6 +8,7 @@ import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import { httpFetch } from '@/utils/request'
 import { handleImportScript } from './action'
+import { BorderRadius } from '@/theme'
 
 interface UrlInputType {
   setText: (text: string) => void
@@ -133,7 +134,7 @@ const styles = createStyle({
     flexGrow: 1,
     flexShrink: 1,
     minWidth: 290,
-    borderRadius: 4,
+    borderRadius: BorderRadius.small,
     // paddingTop: 2,
     // paddingBottom: 2,
   },
