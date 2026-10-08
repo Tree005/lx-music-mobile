@@ -29,6 +29,13 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.common.references.CloseableReference;
+import com.facebook.datasource.DataSource;
+import com.facebook.imagepipeline.core.ImagePipeline;
+import com.facebook.imagepipeline.datasource.BaseBitmapDataSubscriber;
+import com.facebook.imagepipeline.image.CloseableImage;
+import com.facebook.imagepipeline.request.ImageRequest;
+import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.facebook.react.bridge.WritableNativeArray;
 
 import java.io.File;
@@ -439,19 +446,43 @@ public class UtilsModule extends ReactContextBaseJavaModule {
   }
   @ReactMethod
   public void getBackgroundImage(String url, Promise promise) {
-    // 封面 → 预渲染背景位图：解码到极小尺寸（文字/细节在数学上消失）→ 双线性放大成平滑色雾
-    // → 亮度压缩（image*0.32 + base*0.68）→ 抖动噪声烘焙进位图（±2，打散 8bit 色阶环）
-    // → WebP 缓存。JS 侧直接显示成品位图：无运行时模糊开销、无噪点图层、无形状残留
+    // 封面 → 预渲染背景位图。优先走 Fresco 缓存取已解码位图（封面已显示在屏幕上，内存缓存秒出、不走网络，
+    // 避免移动网络下下载慢导致背景停留在上一首歌）；Fresco 未命中再回退到直接下载。
+    String key = Integer.toHexString(url.hashCode());
+    java.io.File outFile = new java.io.File(reactContext.getCacheDir(), "bgb2_" + key + ".webp");
+    if (outFile.exists() && outFile.length() > 0) {
+      promise.resolve(outFile.getAbsolutePath());
+      return;
+    }
+    try {
+      ImageRequest request = ImageRequestBuilder.newBuilderWithSource(android.net.Uri.parse(url)).build();
+      ImagePipeline pipeline = com.facebook.drawee.backends.pipeline.Fresco.getImagePipeline();
+      DataSource<CloseableReference<CloseableImage>> ds = pipeline.fetchDecodedImage(request, null);
+      ds.subscribe(new BaseBitmapDataSubscriber() {
+        @Override
+        public void onNewResultImpl(android.graphics.Bitmap bitmap) {
+          if (bitmap == null) {
+            downloadAndProcess(url, outFile, promise);
+            return;
+          }
+          android.graphics.Bitmap copy = bitmap.copy(android.graphics.Bitmap.Config.ARGB_8888, false);
+          processAndSave(copy, outFile, promise);
+        }
+        @Override
+        public void onFailureImpl(DataSource dataSource) {
+          downloadAndProcess(url, outFile, promise);
+        }
+      }, com.facebook.common.executors.UiThreadImmediateExecutorService.getInstance());
+    } catch (Exception err) {
+      promise.reject("background", err);
+    }
+  }
+
+  private void downloadAndProcess(String url, java.io.File outFile, Promise promise) {
     new Thread(new Runnable() {
       @Override
       public void run() {
         try {
-          String key = Integer.toHexString(url.hashCode());
-          java.io.File outFile = new java.io.File(reactContext.getCacheDir(), "bgb_" + key + ".webp");
-          if (outFile.exists() && outFile.length() > 0) {
-            promise.resolve(outFile.getAbsolutePath());
-            return;
-          }
           java.io.InputStream is;
           if (url.startsWith("file://")) {
             is = new java.io.FileInputStream(url.replace("file://", ""));
@@ -470,41 +501,52 @@ public class UtilsModule extends ReactContextBaseJavaModule {
             promise.reject("decode", "cover decode failed");
             return;
           }
-          // cover 模式铺满 1080x2340：两轮双线性放大（中间 0.5 倍率）→ 居中裁切，纵横比不变
-          int sw = small.getWidth();
-          int sh = small.getHeight();
-          float scale = Math.max(1080f / sw, 2340f / sh);
-          android.graphics.Bitmap mid = android.graphics.Bitmap.createScaledBitmap(small, Math.max(1080, Math.round(sw * scale * 0.5f)), Math.max(2340, Math.round(sh * scale * 0.5f)), true);
-          android.graphics.Bitmap full = android.graphics.Bitmap.createScaledBitmap(mid, Math.round(sw * scale), Math.round(sh * scale), true);
-          int cx = Math.max(0, (full.getWidth() - 1080) / 2);
-          int cy = Math.max(0, (full.getHeight() - 2340) / 2);
-          android.graphics.Bitmap bg = android.graphics.Bitmap.createBitmap(full, cx, cy, 1080, 2340);
-          int w = bg.getWidth();
-          int h = bg.getHeight();
-          int[] pixels = new int[w * h];
-          bg.getPixels(pixels, 0, w, 0, 0, w, h);
-          java.util.Random rnd = new java.util.Random(url.hashCode());
-          for (int i = 0; i < pixels.length; i++) {
-            int c = pixels[i];
-            float n = rnd.nextFloat() * 4f - 2f;
-            int r = (int) (((c >> 16) & 0xFF) * 0.32f + 26f * 0.68f + n);
-            int g = (int) (((c >> 8) & 0xFF) * 0.32f + 26f * 0.68f + n);
-            int b = (int) ((c & 0xFF) * 0.32f + 26f * 0.68f + n);
-            r = r < 0 ? 0 : (r > 255 ? 255 : r);
-            g = g < 0 ? 0 : (g > 255 ? 255 : g);
-            b = b < 0 ? 0 : (b > 255 ? 255 : b);
-            pixels[i] = 0xFF000000 | (r << 16) | (g << 8) | b;
-          }
-          bg.setPixels(pixels, 0, w, 0, 0, w, h);
-          java.io.FileOutputStream fos = new java.io.FileOutputStream(outFile);
-          bg.compress(android.graphics.Bitmap.CompressFormat.WEBP, 90, fos);
-          fos.close();
-          promise.resolve(outFile.getAbsolutePath());
+          android.graphics.Bitmap full = android.graphics.Bitmap.createScaledBitmap(small, small.getWidth() * 32, small.getHeight() * 32, true);
+          processAndSave(full, outFile, promise);
         } catch (Exception err) {
           promise.reject("background", err);
         }
       }
     }).start();
+  }
+
+  private void processAndSave(android.graphics.Bitmap cover, java.io.File outFile, Promise promise) {
+    try {
+      // 第一步强制缩到 24px：QQ音乐等来源的封面把歌名大字印在封面上，
+      // 任何保留原分辨率的中间步骤都会让歌名以「残影」形式出现在背景里——24px 下彻底变成色块
+      int tw = 24;
+      int th = Math.max(1, Math.round(24f * cover.getHeight() / cover.getWidth()));
+      android.graphics.Bitmap small = android.graphics.Bitmap.createScaledBitmap(cover, tw, th, true);
+      float scale = Math.max(1080f / tw, 2340f / th);
+      android.graphics.Bitmap mid = android.graphics.Bitmap.createScaledBitmap(small, Math.max(1080, Math.round(tw * scale * 0.5f)), Math.max(2340, Math.round(th * scale * 0.5f)), true);
+      android.graphics.Bitmap full = android.graphics.Bitmap.createScaledBitmap(mid, Math.round(tw * scale), Math.round(th * scale), true);
+      int cx = Math.max(0, (full.getWidth() - 1080) / 2);
+      int cy = Math.max(0, (full.getHeight() - 2340) / 2);
+      android.graphics.Bitmap bg = android.graphics.Bitmap.createBitmap(full, cx, cy, 1080, 2340);
+      int w = bg.getWidth();
+      int h = bg.getHeight();
+      int[] pixels = new int[w * h];
+      bg.getPixels(pixels, 0, w, 0, 0, w, h);
+      java.util.Random rnd = new java.util.Random(outFile.getName().hashCode());
+      for (int i = 0; i < pixels.length; i++) {
+        int c = pixels[i];
+        float n = rnd.nextFloat() * 4f - 2f;
+        int r = (int) (((c >> 16) & 0xFF) * 0.32f + 26f * 0.68f + n);
+        int g = (int) (((c >> 8) & 0xFF) * 0.32f + 26f * 0.68f + n);
+        int b = (int) ((c & 0xFF) * 0.32f + 26f * 0.68f + n);
+        r = r < 0 ? 0 : (r > 255 ? 255 : r);
+        g = g < 0 ? 0 : (g > 255 ? 255 : g);
+        b = b < 0 ? 0 : (b > 255 ? 255 : b);
+        pixels[i] = 0xFF000000 | (r << 16) | (g << 8) | b;
+      }
+      bg.setPixels(pixels, 0, w, 0, 0, w, h);
+      java.io.FileOutputStream fos = new java.io.FileOutputStream(outFile);
+      bg.compress(android.graphics.Bitmap.CompressFormat.WEBP, 90, fos);
+      fos.close();
+      promise.resolve(outFile.getAbsolutePath());
+    } catch (Exception err) {
+      promise.reject("background", err);
+    }
   }
 }
 
