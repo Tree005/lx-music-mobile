@@ -146,30 +146,26 @@ export function pushPlayDetailScreen(componentId: string, skipAnimation = false)
           },
           animations: {
             push: skipAnimation ? {} : {
-              sharedElementTransitions: [
-                {
-                  fromId: NAV_SHEAR_NATIVE_IDS.playDetail_pic,
-                  toId: NAV_SHEAR_NATIVE_IDS.playDetail_pic,
-                  interpolation: { type: 'spring' },
-                },
-              ],
               // 元素转场（header/player 的淡入+位移）全部去掉：RNN 的元素动画在部分进入时机下
               // 不会把位移复位干净，会给元素留下错位残影（表现为播放器压在歌曲信息上、重进才恢复）。
-              // 只保留封面的共享元素动画（那是进入动画的主要观感来源）
+              // 2026-10-08 用户拍板：进入改为整页从下滑入、退出往下滑出（模态式竖直过渡）——
+              // 封面的共享元素动画与整页位移叠加时 RNN 会让封面在滑入过程中消失（转场结束才出现），
+              // 因此共享元素一并移除，滑入本身就是入场动画（封面同屏可见、无空窗）
               // elementTransitions: [],
-              // content: {
-              //   translationX: {
-              //     from: windowSizeTools.getSize().width,
-              //     to: 0,
-              //     duration: 300,
-              //   },
-              // },
+              waitForRender: true,
+              content: {
+                translationY: {
+                  from: windowSizeTools.getSize().height,
+                  to: 0,
+                  duration: DURATION.enter,
+                },
+              },
             },
             pop: {
               content: {
-                translationX: {
+                translationY: {
                   from: 0,
-                  to: windowSizeTools.getSize().width,
+                  to: windowSizeTools.getSize().height,
                   duration: DURATION.enter,
                 },
               },

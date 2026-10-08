@@ -100,7 +100,7 @@ const HistoryList = forwardRef<HistoryListType, HistoryListProps>(({ onSelect },
   return (
     visible
       ? (
-          <Popup ref={popupRef} title={t('setting_sync_history_title')}>
+          <Popup ref={popupRef} title={t('setting_sync_history_title')} slide>
             <ScrollView style={styles.list}>
               {
                 list.length

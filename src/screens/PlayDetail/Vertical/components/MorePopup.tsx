@@ -86,7 +86,7 @@ export default forwardRef<MorePopupType, {}>((_, ref) => {
     visible
       ? (
         <>
-          <Popup ref={popupRef} title={t('play_detail_more_title')}>
+          <Popup ref={popupRef} title={t('play_detail_more_title')} slide>
             <ScrollView>
             <View style={styles.list} onStartShouldSetResponder={() => true}>
               {

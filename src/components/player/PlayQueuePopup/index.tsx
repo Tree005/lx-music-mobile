@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Animated, FlatList, TouchableOpacity, View } from 'react-native'
 import { ListDashes, Prohibit, Repeat, RepeatOnce, Shuffle, Trash } from 'phosphor-react-native'
-import Modal, { type ModalType } from '@/components/common/Modal'
+import Popup, { type PopupType } from '@/components/common/Popup'
 import ConfirmAlert, { type ConfirmAlertType } from '@/components/common/ConfirmAlert'
 import { PhIcon } from '@/components/common/PhIcon'
 import Text from '@/components/common/Text'
@@ -21,19 +21,6 @@ import QueueItem, { ITEM_HEIGHT } from './QueueItem'
 import { PRESS_OPACITY } from '@/theme/motion'
 
 const styles = createStyle({
-  centeredView: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  modalView: {
-    flexGrow: 0,
-    flexShrink: 1,
-    width: '100%',
-    maxHeight: '78%',
-    elevation: 6,
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
-  },
   tabBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -146,7 +133,7 @@ const PlayModeBtn = () => {
 export default memo(({ visible, onClose }: PlayQueuePopupProps) => {
   const theme = useTheme()
   const t = useI18n()
-  const modalRef = useRef<ModalType>(null)
+  const popupRef = useRef<PopupType>(null)
   const confirmRef = useRef<ConfirmAlertType>(null)
   const playInfo = usePlayInfo()
   const windowSize = useWindowSize()
@@ -162,9 +149,9 @@ export default memo(({ visible, onClose }: PlayQueuePopupProps) => {
 
   const listId = playInfo.playerListId
 
-  // 外部 visible 属性同步给 ref 控制的 Modal；每次打开重置 tab 与上次的拖拽残留状态
+  // 外部 visible 属性同步给 ref 控制的 Popup；每次打开重置 tab 与上次的拖拽残留状态
   useEffect(() => {
-    modalRef.current?.setVisible(visible)
+    popupRef.current?.setVisible(visible)
     if (!visible) return
     setTab('current')
     dragIndexRef.current = -1
@@ -285,50 +272,46 @@ export default memo(({ visible, onClose }: PlayQueuePopupProps) => {
 
   return (
     <>
-      <Modal ref={modalRef} onHide={onClose} bgColor="rgba(50,50,50,.2)">
-        <View style={styles.centeredView}>
-          <View style={[styles.modalView, { backgroundColor: theme['c-content-background'] }]} onStartShouldSetResponder={() => true}>
-            <View style={styles.tabBar}>
-              {renderTab('current', t('play_queue_current'))}
-              {renderTab('history', t('play_queue_history'))}
-              <View style={styles.headerSpace} />
-              {
-                // 队列操作只在「当前播放」tab 显示，避免在历史页误清空
-                tab == 'current'
-                  ? (
-                      <>
-                        <PlayModeBtn />
-                        <TouchableOpacity style={styles.headerBtn} activeOpacity={PRESS_OPACITY} onPress={handleClear}>
-                          <PhIcon Icon={Trash} size={20} color={theme['c-font']} />
-                        </TouchableOpacity>
-                      </>
-                    )
-                  : null
-              }
-            </View>
-            {
-              tab == 'history'
-                ? <View style={styles.empty}>
-                    <Text size={14} color={theme['c-font-label']}>{t('play_queue_history_empty')}</Text>
-                  </View>
-                : list.length
-                  ? <FlatList
-                      style={[styles.list, { maxHeight: windowSize.height * 0.7 }]}
-                      showsVerticalScrollIndicator={false}
-                      data={list}
-                      keyExtractor={(item, index) => `${item.id}_${index}`}
-                      renderItem={renderItem}
-                      extraData={dragIndex}
-                      scrollEnabled={dragIndex < 0}
-                      getItemLayout={(_, index) => ({ length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index })}
-                    />
-                  : <View style={styles.empty}>
-                      <Text size={14} color={theme['c-font-label']}>{t('no_item')}</Text>
-                    </View>
-            }
-          </View>
+      <Popup ref={popupRef} onHide={onClose} title="" closeBtn={false} slide>
+        <View style={styles.tabBar}>
+          {renderTab('current', t('play_queue_current'))}
+          {renderTab('history', t('play_queue_history'))}
+          <View style={styles.headerSpace} />
+          {
+            // 队列操作只在「当前播放」tab 显示，避免在历史页误清空
+            tab == 'current'
+              ? (
+                  <>
+                    <PlayModeBtn />
+                    <TouchableOpacity style={styles.headerBtn} activeOpacity={PRESS_OPACITY} onPress={handleClear}>
+                      <PhIcon Icon={Trash} size={20} color={theme['c-font']} />
+                    </TouchableOpacity>
+                  </>
+                )
+              : null
+          }
         </View>
-      </Modal>
+        {
+          tab == 'history'
+            ? <View style={styles.empty}>
+                <Text size={14} color={theme['c-font-label']}>{t('play_queue_history_empty')}</Text>
+              </View>
+            : list.length
+              ? <FlatList
+                  style={[styles.list, { maxHeight: windowSize.height * 0.7 }]}
+                  showsVerticalScrollIndicator={false}
+                  data={list}
+                  keyExtractor={(item, index) => `${item.id}_${index}`}
+                  renderItem={renderItem}
+                  extraData={dragIndex}
+                  scrollEnabled={dragIndex < 0}
+                  getItemLayout={(_, index) => ({ length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index })}
+                />
+              : <View style={styles.empty}>
+                  <Text size={14} color={theme['c-font-label']}>{t('no_item')}</Text>
+                </View>
+        }
+      </Popup>
       <ConfirmAlert
         ref={confirmRef}
         title={t('play_queue_clear_title')}

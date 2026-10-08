@@ -192,10 +192,15 @@ export default forwardRef<PopupType, PopupProps>(({
     <Modal onHide={onHide} keyHide={keyHide} bgHide={bgHide} bgColor="rgba(50,50,50,.2)" ref={modalRef}>
       <View style={{ ...styles.centeredView, ...centeredViewStyle, paddingBottom: keyboardShown ? keyboardHeight : 0 }}>
         <Animated.View style={{ ...styles.modalView, ...modalViewStyle, backgroundColor: theme['c-content-background'], transform: slideTransform }} onStartShouldSetResponder={() => true}>
-          <View style={styles.header}>
-            <Text size={13} style={styles.title} numberOfLines={1}>{title}</Text>
-            {closeBtnComponent}
-          </View>
+          {/* 无标题且无关闭钮时不渲染 header（bare 模式：调用方自带头部，如播放队列/导入歌单） */}
+          {(title !== '' || closeBtn)
+            ? (
+                <View style={styles.header}>
+                  <Text size={13} style={styles.title} numberOfLines={1}>{title}</Text>
+                  {closeBtnComponent}
+                </View>
+              )
+            : null}
           {children}
         </Animated.View>
       </View>

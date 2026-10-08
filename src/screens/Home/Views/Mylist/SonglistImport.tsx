@@ -2,14 +2,13 @@ import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from '
 import { TextInput, TouchableOpacity, View } from 'react-native'
 import { X } from 'phosphor-react-native'
 
-import Modal, { type ModalType } from '@/components/common/Modal'
+import Popup, { type PopupType } from '@/components/common/Popup'
 import Button from '@/components/common/Button'
 import Text from '@/components/common/Text'
 import { PhIcon } from '@/components/common/PhIcon'
 import { createStyle, toMD5, toast } from '@/utils/tools'
 import { useI18n } from '@/lang'
 import { useTheme } from '@/store/theme/hook'
-import { useKeyboard } from '@/utils/hooks'
 import { createList } from '@/core/list'
 import { getListDetail, getListDetailAll } from '@/core/songlist'
 import listState from '@/store/list/state'
@@ -53,20 +52,17 @@ export interface SonglistImportType {
 export default forwardRef<SonglistImportType, {}>((props, ref) => {
   const t = useI18n()
   const theme = useTheme()
-  const { keyboardShown, keyboardHeight } = useKeyboard()
-  const modalRef = useRef<ModalType>(null)
+  const popupRef = useRef<PopupType>(null)
   const inputRef = useRef<TextInput>(null)
   const [text, setText] = useState('')
   const [importing, setImporting] = useState(false)
-  const [visible, setVisible] = useState(false)
 
   useImperativeHandle(ref, () => ({
     show() {
-      setVisible(true)
       setText('')
       setImporting(false)
-      modalRef.current?.setVisible(true)
-      // 弹层动画结束后聚焦输入框，方便直接粘贴
+      popupRef.current?.setVisible(true)
+      // 弹层滑入结束后聚焦输入框，方便直接粘贴
       setTimeout(() => {
         inputRef.current?.focus()
       }, 300)
@@ -74,7 +70,7 @@ export default forwardRef<SonglistImportType, {}>((props, ref) => {
   }), [])
 
   const hide = useCallback(() => {
-    modalRef.current?.setVisible(false)
+    popupRef.current?.setVisible(false)
   }, [])
 
   const handleImport = useCallback(() => {
@@ -115,70 +111,51 @@ export default forwardRef<SonglistImportType, {}>((props, ref) => {
     })()
   }, [text, t, hide])
 
-  if (!visible) return null
-
   return (
-    <Modal bgColor="rgba(50,50,50,.3)" ref={modalRef}>
-      <View style={{ ...styles.mask, paddingBottom: keyboardShown ? keyboardHeight : 0 }}>
-        <View
-          style={{ ...styles.sheet, backgroundColor: theme['c-content-background'] }}
-          onStartShouldSetResponder={() => true}
-        >
-          <View style={styles.header}>
-            <View style={styles.headerBtn} />
-            <Text style={styles.headerTitle} size={17} numberOfLines={1}>{t('songlist_import')}</Text>
-            <TouchableOpacity style={styles.headerBtn} onPress={hide}>
-              <PhIcon Icon={X} size={20} color={theme['c-font']} />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.body}>
-            <TextInput
-              ref={inputRef}
-              value={text}
-              onChangeText={setText}
-              placeholder={t('songlist_import_link_placeholder')}
-              placeholderTextColor={theme['c-font-label']}
-              multiline
-              textAlignVertical="top"
-              style={{
-                ...styles.linkInput,
-                color: theme['c-font'],
-                borderColor: theme['c-border-background'],
-              }}
-            />
-            <Text style={styles.tip} size={12} color={theme['c-font-label']}>{t('songlist_import_tip')}</Text>
-            <View style={styles.btns}>
-              <Button style={{ ...styles.btn, ...styles.btnLeft, backgroundColor: theme['c-050'] }} onPress={hide}>
-                <Text size={16} color={theme['c-font']}>{t('cancel')}</Text>
-              </Button>
-              <Button
-                style={{ ...styles.btn, backgroundColor: theme['c-font'] }}
-                disabled={importing}
-                onPress={handleImport}
-              >
-                <Text size={16} color={theme['c-content-background']}>
-                  {importing ? t('loading') : t('list_import')}
-                </Text>
-              </Button>
-            </View>
-          </View>
+    <Popup ref={popupRef} title="" closeBtn={false} slide>
+      <View style={styles.header}>
+        <View style={styles.headerBtn} />
+        <Text style={styles.headerTitle} size={17} numberOfLines={1}>{t('songlist_import')}</Text>
+        <TouchableOpacity style={styles.headerBtn} onPress={hide}>
+          <PhIcon Icon={X} size={20} color={theme['c-font']} />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.body}>
+        <TextInput
+          ref={inputRef}
+          value={text}
+          onChangeText={setText}
+          placeholder={t('songlist_import_link_placeholder')}
+          placeholderTextColor={theme['c-font-label']}
+          multiline
+          textAlignVertical="top"
+          style={{
+            ...styles.linkInput,
+            color: theme['c-font'],
+            borderColor: theme['c-border-background'],
+          }}
+        />
+        <Text style={styles.tip} size={12} color={theme['c-font-label']}>{t('songlist_import_tip')}</Text>
+        <View style={styles.btns}>
+          <Button style={{ ...styles.btn, ...styles.btnLeft, backgroundColor: theme['c-050'] }} onPress={hide}>
+            <Text size={16} color={theme['c-font']}>{t('cancel')}</Text>
+          </Button>
+          <Button
+            style={{ ...styles.btn, backgroundColor: theme['c-font'] }}
+            disabled={importing}
+            onPress={handleImport}
+          >
+            <Text size={16} color={theme['c-content-background']}>
+              {importing ? t('loading') : t('list_import')}
+            </Text>
+          </Button>
         </View>
       </View>
-    </Modal>
+    </Popup>
   )
 })
 
 const styles = createStyle({
-  mask: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  sheet: {
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingBottom: 20,
-    maxHeight: '85%',
-  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -198,6 +175,8 @@ const styles = createStyle({
   body: {
     paddingLeft: 20,
     paddingRight: 20,
+    // 原 sheet 自带的底部留白（Popup 卡片自带 paddingVertical 8）
+    paddingBottom: 12,
   },
   linkInput: {
     minHeight: 140,

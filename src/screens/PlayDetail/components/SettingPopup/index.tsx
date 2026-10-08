@@ -39,7 +39,7 @@ export default forwardRef<SettingPopupType, SettingPopupProps>(({ direction, ...
   return (
     visible
       ? (
-        <Popup ref={popupRef} title={t('play_detail_setting_title')} {...props}>
+        <Popup ref={popupRef} title={t('play_detail_setting_title')} slide {...props}>
           <ScrollView>
             <View onStartShouldSetResponder={() => true}>
               <SettingLyricProgress />
