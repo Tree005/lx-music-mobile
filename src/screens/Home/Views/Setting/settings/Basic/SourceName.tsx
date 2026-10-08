@@ -1,9 +1,7 @@
 import { memo, useMemo } from 'react'
 
-import { StyleSheet, View } from 'react-native'
-
 import Section from '../../components/Section'
-import CheckBox from '@/components/common/CheckBox'
+import SelectItem, { type SelectItemOption } from '../../components/SelectItem'
 import { useSettingValue } from '@/store/setting/hook'
 import { useI18n } from '@/lang'
 import { updateSetting } from '@/core/common'
@@ -14,53 +12,18 @@ const setSourceNameType = (type: SourceNameType) => {
   updateSetting({ 'common.sourceNameType': type })
 }
 
-
-const useActive = (type: SourceNameType) => {
-  const sourceNameType = useSettingValue('common.sourceNameType')
-  const isActive = useMemo(() => sourceNameType == type, [sourceNameType, type])
-  return isActive
-}
-
-const Item = ({ id, name }: {
-  id: SourceNameType
-  name: string
-}) => {
-  const isActive = useActive(id)
-  // const [toggleCheckBox, setToggleCheckBox] = useState(false)
-  return <CheckBox marginBottom={3} check={isActive} label={name} onChange={() => { setSourceNameType(id) }} need />
-}
-
+// 歌曲来源名称：行显示当前方式，点开弹层选择（网易云式）
 export default memo(() => {
   const t = useI18n()
-  const list = useMemo(() => {
-    return [
-      {
-        id: 'real',
-        name: t('setting_basic_sourcename_real'),
-      },
-      {
-        id: 'alias',
-        name: t('setting_basic_sourcename_alias'),
-      },
-    ] as const
-  }, [t])
+  const sourceNameType = useSettingValue('common.sourceNameType')
+  const options = useMemo<SelectItemOption<SourceNameType>[]>(() => [
+    { value: 'real', label: t('setting_basic_sourcename_real') },
+    { value: 'alias', label: t('setting_basic_sourcename_alias') },
+  ], [t])
 
   return (
-    <Section title={t('setting_basic_sourcename')}>
-      <View style={styles.list}>
-        {
-          list.map(({ id, name }) => <Item name={name} id={id} key={id} />)
-        }
-      </View>
+    <Section>
+      <SelectItem label={t('setting_basic_sourcename')} value={sourceNameType} options={options} onChange={setSourceNameType} />
     </Section>
   )
-})
-
-const styles = StyleSheet.create({
-  list: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    // 原 SubTitle 提供的内边距，改用 Section 后由内容自己提供
-    paddingHorizontal: 20,
-  },
 })

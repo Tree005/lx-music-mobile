@@ -1,15 +1,9 @@
 import { memo, useMemo } from 'react'
 
-import { StyleSheet, View } from 'react-native'
-
-import SubTitle from '../../components/SubTitle'
-import CheckBox from '@/components/common/CheckBox'
+import SelectItem from '../../components/SelectItem'
 import { useI18n } from '@/lang'
 import { setFontSize } from '@/core/common'
 import { useFontSize } from '@/store/common/hook'
-import Text from '@/components/common/Text'
-import { getTextSize } from '@/utils/pixelRatio'
-import { useTheme } from '@/store/theme/hook'
 
 const LIST = [
   {
@@ -40,59 +34,18 @@ const LIST = [
 
 type SIZE_TYPE = typeof LIST[number]['size']
 
-const useActive = (size: SIZE_TYPE) => {
-  const _size = useFontSize()
-  const isActive = useMemo(() => _size == size, [_size, size])
-  return isActive
-}
-
-const SizeText = () => {
-  const size = getTextSize(14) * useFontSize()
-  const t = useI18n()
-  const theme = useTheme()
-
-  return <Text style={{ fontSize: size }} color={theme['c-primary']}>{t('setting_basic_font_size_preview')}</Text>
-}
-
-const Item = ({ size, label }: {
-  size: SIZE_TYPE
-  label: string
-}) => {
-  const isActive = useActive(size)
-  // const [toggleCheckBox, setToggleCheckBox] = useState(false)
-  return <CheckBox marginRight={8} check={isActive} label={label} onChange={() => { setFontSize(size) }} need />
-}
-
+// 字体大小：行显示当前档位，点开弹层选择（网易云式；原「预览」文案随行内列表一起移除，字号变化全界面即时可见）
 export default memo(() => {
   const t = useI18n()
-
-  const list = useMemo(() => {
-    return LIST.map((item) => ({ size: item.size, name: t(item.name) }))
-  }, [t])
+  const size = useFontSize()
+  const options = useMemo(() => LIST.map(item => ({ value: String(item.size), label: t(item.name) })), [t])
 
   return (
-    <SubTitle title={t('setting_basic_font_size')}>
-      <View style={styles.preview}>
-        <SizeText />
-      </View>
-      <View style={styles.list}>
-        {
-          list.map(({ size, name }) => <Item key={size} size={size} label={name} />)
-        }
-      </View>
-    </SubTitle>
+    <SelectItem
+      label={t('setting_basic_font_size')}
+      value={String(size)}
+      options={options}
+      onChange={(v) => { setFontSize(Number(v) as SIZE_TYPE) }}
+    />
   )
-})
-
-const styles = StyleSheet.create({
-  preview: {
-    justifyContent: 'center',
-    // paddingTop: 3,
-    paddingBottom: 10,
-    height: 45,
-  },
-  list: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
 })

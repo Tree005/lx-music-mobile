@@ -1,72 +1,25 @@
 import { memo, useMemo } from 'react'
 
-import { StyleSheet, View } from 'react-native'
-
-import SubTitle from '../../components/SubTitle'
-import CheckBox from '@/components/common/CheckBox'
+import SelectItem from '../../components/SelectItem'
 import { useSettingValue } from '@/store/setting/hook'
 import { updateSetting } from '@/core/common'
 import { useI18n } from '@/lang'
 import { TRY_QUALITYS_LIST } from '@/core/music/utils'
 
-const useActive = (id: LX.Quality) => {
-  const q = useSettingValue('player.playQuality')
-  const isActive = useMemo(() => q == id, [q, id])
-  return isActive
-}
-
-const Item = ({ id, name }: {
-  id: LX.Quality
-  name: string
-}) => {
-  const isActive = useActive(id)
-  // const [toggleCheckBox, setToggleCheckBox] = useState(false)
-  return <CheckBox marginRight={8} check={isActive} label={name} onChange={() => { updateSetting({ 'player.playQuality': id }) }} need />
-}
-
+// 音质选择：行显示当前音质，点开弹层选择（网易云式）
 export default memo(() => {
   const t = useI18n()
-  const playQualityList = useMemo(() => {
-    return [...TRY_QUALITYS_LIST, '128k'].reverse() as LX.Quality[]
+  const quality = useSettingValue('player.playQuality')
+  const options = useMemo(() => {
+    return ([...TRY_QUALITYS_LIST, '128k'].reverse() as LX.Quality[]).map(q => ({ value: q, label: q }))
   }, [])
 
   return (
-    <SubTitle title={t('setting_play_play_quality')}>
-      <View style={styles.list}>
-        {
-          playQualityList.map((q) => <Item name={q} id={q} key={q} />)
-        }
-      </View>
-    </SubTitle>
+    <SelectItem
+      label={t('setting_play_play_quality')}
+      value={quality}
+      options={options}
+      onChange={(v) => { updateSetting({ 'player.playQuality': v }) }}
+    />
   )
 })
-
-const styles = StyleSheet.create({
-  list: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-})
-
-
-// export default memo(() => {
-//   const t = useI18n()
-//   const isPlayHighQuality = useSettingValue('player.isPlayHighQuality')
-//   const setPlayHighQuality = (isPlayHighQuality: boolean) => {
-//     updateSetting({ 'player.isPlayHighQuality': isPlayHighQuality })
-//   }
-
-//   return (
-//     <View style={styles.content}>
-//       <CheckBoxItem check={isPlayHighQuality} onChange={setPlayHighQuality} label={t('setting_play_quality')} />
-//     </View>
-//   )
-// })
-
-
-// const styles = createStyle({
-//   content: {
-//     marginTop: 5,
-//   },
-// })
-
