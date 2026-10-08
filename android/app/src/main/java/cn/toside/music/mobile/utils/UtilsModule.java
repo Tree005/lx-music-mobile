@@ -437,5 +437,74 @@ public class UtilsModule extends ReactContextBaseJavaModule {
       }
     }).start();
   }
+  @ReactMethod
+  public void getBackgroundImage(String url, Promise promise) {
+    // 封面 → 预渲染背景位图：解码到极小尺寸（文字/细节在数学上消失）→ 双线性放大成平滑色雾
+    // → 亮度压缩（image*0.32 + base*0.68）→ 抖动噪声烘焙进位图（±2，打散 8bit 色阶环）
+    // → WebP 缓存。JS 侧直接显示成品位图：无运行时模糊开销、无噪点图层、无形状残留
+    new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          String key = Integer.toHexString(url.hashCode());
+          java.io.File outFile = new java.io.File(reactContext.getCacheDir(), "bgb_" + key + ".webp");
+          if (outFile.exists() && outFile.length() > 0) {
+            promise.resolve(outFile.getAbsolutePath());
+            return;
+          }
+          java.io.InputStream is;
+          if (url.startsWith("file://")) {
+            is = new java.io.FileInputStream(url.replace("file://", ""));
+          } else {
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) new java.net.URL(url).openConnection();
+            conn.setConnectTimeout(8000);
+            conn.setReadTimeout(8000);
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36");
+            is = conn.getInputStream();
+          }
+          android.graphics.BitmapFactory.Options opts = new android.graphics.BitmapFactory.Options();
+          opts.inSampleSize = 32;
+          android.graphics.Bitmap small = android.graphics.BitmapFactory.decodeStream(is, null, opts);
+          is.close();
+          if (small == null) {
+            promise.reject("decode", "cover decode failed");
+            return;
+          }
+          // cover 模式铺满 1080x2340：两轮双线性放大（中间 0.5 倍率）→ 居中裁切，纵横比不变
+          int sw = small.getWidth();
+          int sh = small.getHeight();
+          float scale = Math.max(1080f / sw, 2340f / sh);
+          android.graphics.Bitmap mid = android.graphics.Bitmap.createScaledBitmap(small, Math.max(1080, Math.round(sw * scale * 0.5f)), Math.max(2340, Math.round(sh * scale * 0.5f)), true);
+          android.graphics.Bitmap full = android.graphics.Bitmap.createScaledBitmap(mid, Math.round(sw * scale), Math.round(sh * scale), true);
+          int cx = Math.max(0, (full.getWidth() - 1080) / 2);
+          int cy = Math.max(0, (full.getHeight() - 2340) / 2);
+          android.graphics.Bitmap bg = android.graphics.Bitmap.createBitmap(full, cx, cy, 1080, 2340);
+          int w = bg.getWidth();
+          int h = bg.getHeight();
+          int[] pixels = new int[w * h];
+          bg.getPixels(pixels, 0, w, 0, 0, w, h);
+          java.util.Random rnd = new java.util.Random(url.hashCode());
+          for (int i = 0; i < pixels.length; i++) {
+            int c = pixels[i];
+            float n = rnd.nextFloat() * 4f - 2f;
+            int r = (int) (((c >> 16) & 0xFF) * 0.32f + 26f * 0.68f + n);
+            int g = (int) (((c >> 8) & 0xFF) * 0.32f + 26f * 0.68f + n);
+            int b = (int) ((c & 0xFF) * 0.32f + 26f * 0.68f + n);
+            r = r < 0 ? 0 : (r > 255 ? 255 : r);
+            g = g < 0 ? 0 : (g > 255 ? 255 : g);
+            b = b < 0 ? 0 : (b > 255 ? 255 : b);
+            pixels[i] = 0xFF000000 | (r << 16) | (g << 8) | b;
+          }
+          bg.setPixels(pixels, 0, w, 0, 0, w, h);
+          java.io.FileOutputStream fos = new java.io.FileOutputStream(outFile);
+          bg.compress(android.graphics.Bitmap.CompressFormat.WEBP, 90, fos);
+          fos.close();
+          promise.resolve(outFile.getAbsolutePath());
+        } catch (Exception err) {
+          promise.reject("background", err);
+        }
+      }
+    }).start();
+  }
 }
 

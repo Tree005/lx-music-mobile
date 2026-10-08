@@ -91,34 +91,6 @@ export default () => {
     setPage(Math.round(e.nativeEvent.contentOffset.x / width))
   }, [width])
 
-  // 分页手感（用户反馈原生吸附太快、「像被吸过去」）：
-  // 松手时不交给原生 snap，改为平滑滑行到目标页（观感接近用户手动划过去的减速滑行）。
-  // 快速轻扫（速度超过阈值）直接翻到相邻页；慢拖按就近落位。
-  const scrollRef = useRef<ScrollView>(null)
-  const lastScrollRef = useRef({ x: 0, t: 0 })
-  const dragStartXRef = useRef(0)
-
-  const handleScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    lastScrollRef.current = { x: e.nativeEvent.contentOffset.x, t: Date.now() }
-  }, [])
-
-  const handleScrollBeginDrag = useCallback(() => {
-    dragStartXRef.current = lastScrollRef.current.x
-  }, [])
-
-  const handleDragRelease = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const x = e.nativeEvent.contentOffset.x
-    const dt = Date.now() - lastScrollRef.current.t
-    const velocity = dt > 0 ? (x - lastScrollRef.current.x) / dt : 0 // px/ms
-    let target = Math.round(x / width)
-    if (Math.abs(velocity) > 0.5) {
-      target = velocity > 0 ? Math.floor(x / width) + 1 : Math.ceil(x / width) - 1
-    }
-    target = Math.max(0, Math.min(target, pages.length - 1))
-    // scrollTo(animated) 会打断剩余惯性并以减速曲线滑到目标页
-    scrollRef.current?.scrollTo({ x: target * width, animated: true })
-  }, [width, pages.length])
-
   // 与 Leaderboard/listAction.ts 的 handlePlay 同模式：整列表设为临时列表，再播第 index 首
   const handlePlay = async(index: number) => {
     await setTempList(`home_hot__${boardId}`, [...list])
@@ -160,14 +132,9 @@ export default () => {
             : (
                 <FadeInView>
                   <ScrollView
-                    ref={scrollRef}
                     horizontal
-                    // 分页手感：不用原生 paging/snap（吸附太快），松手后由 handleDragRelease 平滑滑行落位
-                    scrollEventThrottle={16}
+                    pagingEnabled
                     showsHorizontalScrollIndicator={false}
-                    onScroll={handleScroll}
-                    onScrollBeginDrag={handleScrollBeginDrag}
-                    onScrollEndDrag={handleDragRelease}
                     onMomentumScrollEnd={handleScrollEnd}
                   >
                     {

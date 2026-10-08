@@ -6,6 +6,9 @@ export const exitApp = UtilsModule.exitApp
 
 export const getSupportedAbis = UtilsModule.getSupportedAbis
 
+// 封面 → 预渲染背景位图（原生：解码→缩放色雾→压暗→抖动烘焙→WebP 缓存），返回缓存文件路径
+export const getBackgroundImage = (url: string): Promise<string> => UtilsModule.getBackgroundImage(url)
+
 export const installApk = (filePath: string, fileProviderAuthority: string) => UtilsModule.installApk(filePath, fileProviderAuthority)
 
 
